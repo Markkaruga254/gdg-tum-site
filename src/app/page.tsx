@@ -6,9 +6,9 @@ import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 import NumberedRow from "@/components/NumberedRow";
 import SectionLabel from "@/components/SectionLabel";
-import { collection, query, where, orderBy, limit, getDocs } from "firebase/firestore";
+import { collection, query, where, orderBy, limit, getDocsFromServer } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import type { Event, Writeup, Post } from "@/lib/types";
+import type { Event, Writeup } from "@/lib/types";
 
 const TRACKS = [
   { slug: "cloud", name: "Cloud", color: "blue" as const, lead: "[Lead name]" },
@@ -20,18 +20,22 @@ const TRACKS = [
 export default function Home() {
   const [events, setEvents] = useState<Event[]>([]);
   const [writeups, setWriteups] = useState<Writeup[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
+      // getDocs() resolves an empty snapshot when the backend is unreachable, so a
+      // outage would render "No writeups yet." instead of an error.
       try {
-        const evSnap = await getDocs(query(collection(db, "events"), orderBy("date", "asc")));
+        const evSnap = await getDocsFromServer(query(collection(db, "events"), orderBy("date", "asc")));
         setEvents(evSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Event)));
-        const wSnap = await getDocs(query(collection(db, "writeups"), where("status", "==", "published"), orderBy("publishedAt", "desc"), limit(3)));
+        const wSnap = await getDocsFromServer(query(collection(db, "writeups"), where("status", "==", "published"), orderBy("publishedAt", "desc"), limit(3)));
         setWriteups(wSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Writeup)));
-        const pSnap = await getDocs(query(collection(db, "posts"), orderBy("fetchedAt", "desc"), limit(3)));
-        setPosts(pSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Post)));
+      } catch (e) {
+        console.error("Home: Firestore reads failed", e);
+        const code = e instanceof Error && "code" in e ? String((e as { code: unknown }).code) : "unknown";
+        setError(`read failed (${code}).`);
       } finally {
         setLoading(false);
       }
@@ -46,6 +50,11 @@ export default function Home() {
       <Nav />
       <TickerBar />
       <main className="mx-auto max-w-[1280px]">
+        {error && (
+          <section className="border-b-[3px] border-ink bg-red p-4 text-sm text-white">
+            Events and writeups could not be loaded: {error}
+          </section>
+        )}
         <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-2">
           <div className="p-8">
             <h1 className="font-display text-5xl uppercase md:text-7xl">
@@ -62,6 +71,8 @@ export default function Home() {
             <SectionLabel>Next event</SectionLabel>
             {loading ? (
               <p className="mt-4">Loading…</p>
+            ) : error ? (
+              <p className="mt-4">Event unavailable.</p>
             ) : nextEvent ? (
               <>
                 <h2 className="mt-2 font-display text-2xl uppercase">{nextEvent.title}</h2>
@@ -95,6 +106,8 @@ export default function Home() {
           <SectionLabel>Latest writeups</SectionLabel>
           {loading ? (
             <p className="mt-4">Loading…</p>
+          ) : error ? (
+            <p className="mt-4">Writeups unavailable.</p>
           ) : writeups.length === 0 ? (
             <p className="mt-4">No writeups yet.</p>
           ) : (
@@ -124,25 +137,6 @@ export default function Home() {
               <div className="p-4 text-sm">[Track description placeholder]</div>
             </details>
           ))}
-        </section>
-
-        <section className="border-b-[3px] border-ink p-6">
-          <SectionLabel>Tech blog — Curated by GDG TUM Bot</SectionLabel>
-          {loading ? (
-            <p className="mt-4">Loading…</p>
-          ) : posts.length === 0 ? (
-            <p className="mt-4">No posts yet.</p>
-          ) : (
-            posts.map((p, i) => (
-              <NumberedRow key={p.id} n={String(i + 1).padStart(2, "0")}>
-                <a href={p.sourceUrl} className="font-bold">{p.title}</a>
-                <p className="mt-1 text-sm">{p.summary}</p>
-                <div className="mt-1 flex gap-1">
-                  {p.tags?.map((t) => <Tag key={t} label={t} color="ink" />)}
-                </div>
-              </NumberedRow>
-            ))
-          )}
         </section>
 
         <section className="border-b-[3px] border-ink bg-ink p-8 text-white">
