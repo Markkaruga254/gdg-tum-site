@@ -42,8 +42,9 @@ export default function Home() {
     })();
   }, []);
 
-  const nextEvent = events.find((e) => e.status === "upcoming") || events[0];
-  const held = events.filter((e) => e.status === "past").length;
+  const listed = events.filter((e) => e.status !== "cancelled");
+  const nextEvent = listed.find((e) => e.status === "upcoming") || listed[0];
+  const held = listed.filter((e) => e.status === "past").length;
 
   return (
     <>

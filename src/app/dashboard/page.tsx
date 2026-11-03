@@ -100,9 +100,18 @@ export default function DashboardPage() {
   }
 
   async function deleteEvent(id: string) {
-    if (!confirm("Delete this event?")) return;
+    if (!confirm("Delete this event? Deletion is permanent and cannot be undone — cancelling keeps the record and can be reversed.")) return;
     try { await deleteDoc(doc(db, "events", id)); setMsg("Event deleted"); await loadEvents(); }
     catch (e: any) { setErr(e?.message || "Delete failed"); }
+  }
+
+  async function cancelEvent(id: string) {
+    if (!confirm("Cancel this event? It leaves the public listings and can be restored later.")) return;
+    try {
+      await updateDoc(doc(db, "events", id), { status: "cancelled", cancelledAt: serverTimestamp(), cancelledBy: uid });
+      setMsg("Event cancelled"); await loadEvents();
+    }
+    catch (e: any) { setErr(e?.message || "Cancel failed"); }
   }
 
   function startEditEvent(ev: any) {
@@ -167,9 +176,10 @@ export default function DashboardPage() {
       <Nav />
       <div className="mx-auto grid max-w-[1280px] grid-cols-1 md:grid-cols-[200px_1fr]">
         <aside className="border-r-[3px] border-ink p-4">
-          {TABS.map((t) => (
+          {(role === "admin" ? TABS : TABS.filter((t) => t !== "Live ticker")).map((t) => (
             <button key={t} onClick={() => setTab(t)} className={`mb-2 block w-full border-[3px] border-ink px-3 py-2 text-left text-sm font-bold uppercase ${tab === t ? "bg-ink text-white" : ""}`}>{t}</button>
           ))}
+          {role !== "admin" && <p className="text-xs">The live ticker is run by the club admins.</p>}
         </aside>
         <main className="p-6">
           {msg && <p className="mb-2 text-sm text-green">{msg}</p>}
@@ -192,7 +202,7 @@ export default function DashboardPage() {
                 </FormField>
                 <FormField label="Status" id="es">
                   <select id="es" value={eventForm.status} onChange={(e) => setEventForm({ ...eventForm, status: e.target.value as EventForm["status"] })} className="border-[3px] border-ink px-3 py-2">
-                    <option value="upcoming">upcoming</option><option value="live">live</option><option value="past">past</option>
+                    <option value="upcoming">upcoming</option><option value="live">live</option><option value="past">past</option><option value="cancelled">cancelled</option>
                   </select>
                 </FormField>
                 {role === "admin" && (
@@ -216,7 +226,8 @@ export default function DashboardPage() {
                     <div className="text-sm">{ev.venue} · {ev.date?.toDate ? ev.date.toDate().toLocaleString() : ev.date}</div>
                     <div className="mt-2 flex gap-2">
                       <button onClick={() => startEditEvent(ev)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Edit</button>
-                      <button onClick={() => deleteEvent(ev.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Delete</button>
+                      <button onClick={() => cancelEvent(ev.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Cancel event</button>
+                      {role === "admin" && <button onClick={() => deleteEvent(ev.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Delete</button>}
                     </div>
                   </div>
                 ))}
@@ -324,7 +335,7 @@ export default function DashboardPage() {
           {tab === "Live ticker" && (
             <section>
               <h2 className="font-display text-2xl uppercase">Live ticker</h2>
-              <TickerTab uid={uid} events={events} track={track} role={role} setMsg={setMsg} setErr={setErr} />
+              <TickerTab uid={uid} events={events} track={track} setMsg={setMsg} setErr={setErr} />
             </section>
           )}
 
@@ -342,17 +353,15 @@ export default function DashboardPage() {
 }
 
 
-function TickerTab({ uid, events, track, role, setMsg, setErr }: any) {
+function TickerTab({ uid, events, track, setMsg, setErr }: any) {
   const [entries, setEntries] = useState<any[]>([]);
   const [form, setForm] = useState({ eventId: "", message: "" });
   async function load() {
-    let q: any = collection(db, "ticker");
-    if (role === "lead" && track) q = query(collection(db, "ticker"), where("createdBy", "==", uid));
-    const snap = await getDocs(q);
+    const snap = await getDocs(collection(db, "ticker"));
     setEntries(snap.docs.map((d) => ({ id: d.id, ...d.data() as any })));
   }
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { load(); }, [uid, track, role]);
+  useEffect(() => { load(); }, [uid, track]);
   async function goLive(id: string, evTrack: string) {
     try {
       // end others for same track

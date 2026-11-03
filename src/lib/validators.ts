@@ -4,7 +4,7 @@ export interface EventForm {
   title: string;
   date: string;
   venue: string;
-  status: "upcoming" | "live" | "past";
+  status: "upcoming" | "live" | "past" | "cancelled";
   attendance: string;
   trackId: string;
 }

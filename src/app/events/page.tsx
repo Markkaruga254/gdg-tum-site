@@ -25,7 +25,8 @@ export default function EventsPage() {
     })();
   }, []);
 
-  const filtered = track === "all" ? events : events.filter((e) => e.trackId === track);
+  const visible = events.filter((e) => e.status !== "cancelled");
+  const filtered = track === "all" ? visible : visible.filter((e) => e.trackId === track);
 
   return (
     <>
