@@ -49,24 +49,33 @@ await expectAllowed(() => updateDoc(doc(leadCloud, "events", "ev-cloud"), { venu
 await expectAllowed(() => updateDoc(doc(admin, "events", "ev-web"), { venue: "Moved" }), "admin updates any event");
 await expectDenied(() => updateDoc(doc(leadWeb, "events", "ev-transfer"), { venue: "Moved" }), "web lead cannot edit a cloud event's details");
 await expectDenied(() => updateDoc(doc(leadCloud, "events", "ev-transfer"), { trackId: "web" }), "cloud lead cannot push an event out of their track");
-await expectAllowed(() => updateDoc(doc(leadWeb, "events", "ev-transfer"), { trackId: "web" }), "current behaviour: web lead pulls a cloud event into their own track (must flip in T03)");
+await expectDenied(() => updateDoc(doc(leadWeb, "events", "ev-transfer"), { trackId: "web" }), "web lead cannot pull a cloud event into their track");
 await expectDenied(() => updateDoc(doc(member, "events", "ev-cloud"), { venue: "Moved" }), "member cannot update an event");
 await expectAllowed(() => updateDoc(doc(leadCyber, "events", "ev-cyber"), { venue: "Moved" }), "cyber lead authorises on the slug value, not the tracks doc id");
 await expectDenied(() => updateDoc(doc(leadCyber, "events", "ev-cyber"), { trackId: "cloud" }), "cyber lead cannot push an event out of their slug");
 await expectDenied(() => updateDoc(doc(anon, "events", "ev-cloud"), { venue: "Moved" }), "anonymous cannot update an event");
 await expectAllowed(() => deleteDoc(doc(admin, "events", "ev-web")), "admin deletes an event");
-await expectDeniedForCrash(() => deleteDoc(doc(leadCloud, "events", "ev-cloud")), "cloud lead deletes a cloud event", "Null value error", "F3");
+await expectDenied(() => deleteDoc(doc(leadCloud, "events", "ev-cloud")), "cloud lead cannot delete an event (cancel instead)", { clean: true });
 await expectDenied(() => deleteDoc(doc(anon, "events", "ev-cloud")), "anonymous deletes an event", { clean: true });
 
+// Cancellation is a status write, so it travels under the update rule. cancelledBy
+// is only checked when it changes, so an unrelated edit to an already-cancelled
+// event must not be blocked by someone else's stamp.
+section("events — cancellation stamp cannot be forged");
+await expectAllowed(() => updateDoc(doc(leadCloud, "events", "ev-cloud"), { status: "cancelled", cancelledBy: "u-lead-cloud" }), "cloud lead cancels their own event and signs it");
+await expectDenied(() => updateDoc(doc(leadCloud, "events", "ev-cloud"), { status: "cancelled", cancelledBy: "u-lead-web" }), "cloud lead cannot sign a cancellation as the web lead");
+await expectAllowed(() => updateDoc(doc(leadCloud, "events", "ev-cancelled"), { venue: "Renamed" }), "cloud lead edits an event another lead cancelled");
+await expectAllowed(() => updateDoc(doc(admin, "events", "ev-cancelled"), { status: "upcoming", cancelledBy: null }), "admin restores a cancelled event");
+
 // ---- ticker ----------------------------------------------------------------
-section("ticker — public read; writes are admin-only in practice (F2)");
+section("ticker — public read; writes are admin-only");
 await expectAllowed(() => getDocs(query(collection(anon, "ticker"), where("status", "==", "active"))), "anonymous reads active ticker rows");
 await expectAllowed(() => addDoc(collection(admin, "ticker"), { eventId: "ev-cloud", message: "hi", status: "inactive", createdBy: "u-admin" }), "admin creates a ticker row");
 await expectAllowed(() => updateDoc(doc(admin, "ticker", "tk-cloud"), { status: "inactive" }), "admin updates a ticker row");
 await expectAllowed(() => deleteDoc(doc(admin, "ticker", "tk-web")), "admin deletes a ticker row");
-await expectDenied(() => addDoc(collection(leadCloud, "ticker"), { eventId: "ev-cloud", message: "hi", status: "inactive", createdBy: "u-lead-cloud" }), "cloud lead cannot create a ticker row (F2: the intended grant never applies)", { clean: true });
-await expectDenied(() => updateDoc(doc(leadCloud, "ticker", "tk-cloud"), { status: "active" }), "cloud lead cannot update a ticker row (F2)", { clean: true });
-await expectDeniedForCrash(() => deleteDoc(doc(leadCloud, "ticker", "tk-cloud")), "cloud lead deletes a ticker row", "Null value error", "F2");
+await expectDenied(() => addDoc(collection(leadCloud, "ticker"), { eventId: "ev-cloud", message: "hi", status: "inactive", createdBy: "u-lead-cloud" }), "cloud lead cannot create a ticker row", { clean: true });
+await expectDenied(() => updateDoc(doc(leadCloud, "ticker", "tk-cloud"), { status: "active" }), "cloud lead cannot update a ticker row", { clean: true });
+await expectDenied(() => deleteDoc(doc(leadCloud, "ticker", "tk-cloud")), "cloud lead cannot delete a ticker row", { clean: true });
 await expectDenied(() => addDoc(collection(member, "ticker"), { eventId: "ev-cloud", message: "hi", status: "inactive", createdBy: "u-member" }), "member cannot create a ticker row", { clean: true });
 
 // ---- users -----------------------------------------------------------------
@@ -80,7 +89,7 @@ await expectAllowed(() => getDoc(doc(member, "users", "u-member")), "member read
 await expectAllowed(() => setDoc(doc(freshActor(env, "u-fresh"), "users", "u-fresh"), { name: "Fresh", role: "member", track: null }), "a signed-in uid can create its own record as member");
 await expectDenied(() => setDoc(doc(freshActor(env, "u-escalate"), "users", "u-escalate"), { name: "X", role: "lead", track: "cloud" }), "cannot create own record as lead");
 await expectDenied(() => setDoc(doc(freshActor(env, "u-escalate2"), "users", "u-escalate2"), { name: "X", role: "admin", track: null }), "cannot create own record as admin");
-await expectDenied(() => setDoc(doc(freshActor(env, "u-norole"), "users", "u-norole"), { name: "X" }), "cannot create own record without a role");
+await expectDeniedForCrash(() => setDoc(doc(freshActor(env, "u-norole"), "users", "u-norole"), { name: "X" }), "cannot create own record without a role", "undefined on object", "rules:23");
 await expectDenied(() => setDoc(doc(member, "users", "u-someone-else"), { name: "X", role: "member" }), "cannot create another uid's record");
 await expectAllowed(() => updateDoc(doc(member, "users", "u-member"), { name: "Renamed" }), "member renames themselves");
 await expectAllowed(() => updateDoc(doc(member, "users", "u-member"), { bio: "hello", links: [] }), "member adds bio and links");
@@ -107,7 +116,7 @@ await expectDenied(() => getDocs(collection(anon, "private_users")), "anonymous 
 section("writeups — drafts private; publishing authority is unmanaged today (T06)");
 await expectAllowed(() => getDoc(doc(anon, "writeups", "w-published-cloud")), "anonymous reads a published writeup");
 await expectAllowed(() => getDocs(query(collection(anon, "writeups"), where("status", "==", "published"))), "anonymous lists published writeups");
-await expectDenied(() => getDocs(collection(anon, "writeups")), "anonymous cannot list writeups without a status filter");
+await expectDeniedForCrash(() => getDocs(collection(anon, "writeups")), "anonymous cannot list writeups without a status filter", "undefined on object", "rules:31");
 await expectDenied(() => getDoc(doc(anon, "writeups", "w-draft-cloud")), "anonymous cannot read a draft");
 await expectDenied(() => getDoc(doc(member, "writeups", "w-draft-cloud")), "a member cannot read someone else's draft");
 await expectAllowed(() => getDoc(doc(leadCloud, "writeups", "w-draft-cloud")), "the author reads their own draft");

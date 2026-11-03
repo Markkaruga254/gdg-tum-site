@@ -55,6 +55,7 @@ export async function seedFixtures(env) {
     await setDoc(doc(db, "events", "ev-web"), { title: "Fixture Web Event", trackId: "web", status: "past", venue: "Fixture" });
     await setDoc(doc(db, "events", "ev-transfer"), { title: "Fixture Transfer Event", trackId: "cloud", status: "upcoming", venue: "Fixture" });
     await setDoc(doc(db, "events", "ev-cyber"), { title: "Fixture Cyber Event", trackId: "cybersecurity", status: "upcoming", venue: "Fixture" });
+    await setDoc(doc(db, "events", "ev-cancelled"), { title: "Fixture Cancelled Event", trackId: "cloud", status: "cancelled", venue: "Fixture", cancelledBy: "u-lead-web", cancelledAt: new Date() });
 
     await setDoc(doc(db, "writeups", "w-published-cloud"), { title: "Fixture Published", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "published", publishedAt: new Date(), tags: { topics: [], products: [] } });
     await setDoc(doc(db, "writeups", "w-draft-cloud"), { title: "Fixture Draft", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "draft", tags: { topics: [], products: [] } });

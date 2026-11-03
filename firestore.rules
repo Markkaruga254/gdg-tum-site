@@ -12,11 +12,19 @@ service cloud.firestore {
     }
     match /events/{id} {
       allow read: if true;
-      allow create, update, delete: if isAdmin() || isLeadOf(request.resource.data.trackId);
+      allow create: if isAdmin() || isLeadOf(request.resource.data.trackId);
+      // Both sides must be the actor's track: a lead can neither push an event out
+      // of their track nor pull one in and inherit the other track's lead rights.
+      // A lead may only stamp cancelledBy with their own uid.
+      allow update: if isAdmin() || (isLeadOf(resource.data.trackId) && isLeadOf(request.resource.data.trackId)
+        && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(["cancelledBy"])
+            || request.resource.data.cancelledBy == request.auth.uid));
+      // Leads cancel (a status write); only an admin may destroy an event.
+      allow delete: if isAdmin();
     }
     match /ticker/{id} {
       allow read: if true;
-      allow create, update, delete: if isAdmin() || isLeadOf(request.resource.data.eventId == null ? "" : "");
+      allow create, update, delete: if isAdmin();
     }
     match /users/{uid} {
       allow read: if true;
