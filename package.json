@@ -9,6 +9,7 @@
     "lint": "eslint",
     "seed": "npx tsx scripts/seed.ts",
     "typecheck": "tsc --noEmit",
+    "test": "npm run test:rules",
     "emulator": "firebase emulators:start --only firestore --project demo-gdg-tum-site",
     "test:rules": "firebase emulators:exec --only firestore --project demo-gdg-tum-site \"node scripts/test-rules.mjs\""
   },
