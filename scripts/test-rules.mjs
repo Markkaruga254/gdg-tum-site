@@ -68,15 +68,21 @@ await expectAllowed(() => updateDoc(doc(leadCloud, "events", "ev-cancelled"), { 
 await expectAllowed(() => updateDoc(doc(admin, "events", "ev-cancelled"), { status: "upcoming", cancelledBy: null }), "admin restores a cancelled event");
 
 // ---- ticker ----------------------------------------------------------------
-section("ticker — public read; writes are admin-only");
+section("ticker — public read; leads manage their track's events, admins any row");
 await expectAllowed(() => getDocs(query(collection(anon, "ticker"), where("status", "==", "active"))), "anonymous reads active ticker rows");
 await expectAllowed(() => addDoc(collection(admin, "ticker"), { eventId: "ev-cloud", message: "hi", status: "inactive", createdBy: "u-admin" }), "admin creates a ticker row");
 await expectAllowed(() => updateDoc(doc(admin, "ticker", "tk-cloud"), { status: "inactive" }), "admin updates a ticker row");
 await expectAllowed(() => deleteDoc(doc(admin, "ticker", "tk-web")), "admin deletes a ticker row");
-await expectDenied(() => addDoc(collection(leadCloud, "ticker"), { eventId: "ev-cloud", message: "hi", status: "inactive", createdBy: "u-lead-cloud" }), "cloud lead cannot create a ticker row", { clean: true });
-await expectDenied(() => updateDoc(doc(leadCloud, "ticker", "tk-cloud"), { status: "active" }), "cloud lead cannot update a ticker row", { clean: true });
-await expectDenied(() => deleteDoc(doc(leadCloud, "ticker", "tk-cloud")), "cloud lead cannot delete a ticker row", { clean: true });
+await expectAllowed(() => addDoc(collection(leadCloud, "ticker"), { eventId: "ev-cloud", message: "hi", status: "inactive", createdBy: "u-lead-cloud" }), "cloud lead creates a ticker row for a cloud event");
+await expectAllowed(() => updateDoc(doc(leadCloud, "ticker", "tk-cloud"), { status: "active" }), "cloud lead activates their own cloud ticker row");
+await expectAllowed(() => deleteDoc(doc(leadCloud, "ticker", "tk-cloud")), "cloud lead deletes their own cloud ticker row");
+await expectDenied(() => addDoc(collection(leadCloud, "ticker"), { eventId: "ev-web", message: "hi", status: "inactive", createdBy: "u-lead-cloud" }), "cloud lead cannot ticker a web event", { clean: true });
+await expectDenied(() => addDoc(collection(leadWeb, "ticker"), { eventId: "ev-cloud", message: "hi", status: "inactive", createdBy: "u-lead-web" }), "web lead cannot ticker a cloud event", { clean: true });
 await expectDenied(() => addDoc(collection(member, "ticker"), { eventId: "ev-cloud", message: "hi", status: "inactive", createdBy: "u-member" }), "member cannot create a ticker row", { clean: true });
+await expectDenied(() => addDoc(collection(anon, "ticker"), { eventId: "ev-cloud", message: "hi", status: "inactive", createdBy: "u-anon" }), "anonymous cannot create a ticker row", { clean: true });
+await expectDenied(() => updateDoc(doc(leadCloud, "ticker", "tk-web"), { status: "active" }), "cloud lead cannot update a web ticker row");
+await expectDenied(() => deleteDoc(doc(leadCloud, "ticker", "tk-web")), "cloud lead cannot delete a web ticker row");
+await expectDenied(() => updateDoc(doc(leadWeb, "ticker", "tk-cloud"), { status: "active" }), "web lead cannot update another lead's cloud ticker row");
 
 // ---- users -----------------------------------------------------------------
 // The reads below are world-readable today. That is the exposure T05 closes:
@@ -140,16 +146,22 @@ await expectDenied(() => deleteDoc(doc(anon, "writeups", "w-published-cloud")), 
 await expectAllowed(() => updateDoc(doc(admin, "writeups", "w-flip-cloud"), { authorId: "u-admin" }), "admin may reattribute a writeup (T06 keeps this and adds publishedBy)");
 
 // ---- media -----------------------------------------------------------------
-section("media — reads are gated on the parent writeup; there is no write rule at all (F1)");
+section("media — reads gated on the parent writeup; writes for author, track lead, or admin (F1 fixed)");
 await expectAllowed(() => getDoc(doc(anon, "media", "m-published")), "anonymous reads media on a published writeup");
 await expectDenied(() => getDoc(doc(anon, "media", "m-draft")), "anonymous cannot read media on a draft");
 await expectDenied(() => getDoc(doc(member, "media", "m-draft")), "a member cannot read media on someone else's draft");
 await expectAllowed(() => getDoc(doc(leadCloud, "media", "m-draft")), "the author reads their own draft's media");
 await expectAllowed(() => getDocs(query(collection(anon, "media"), where("writeupId", "==", "w-published-cloud"))), "anonymous lists media for a published writeup");
-await expectDenied(() => addDoc(collection(admin, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-admin" }), "current behaviour: not even an admin can create media (F1, must flip in T04)", { clean: true });
-await expectDenied(() => addDoc(collection(leadCloud, "media"), { writeupId: "w-draft-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-lead-cloud" }), "current behaviour: a lead cannot create media (F1, must flip in T04)", { clean: true });
-await expectDenied(() => updateDoc(doc(admin, "media", "m-published"), { caption: "hello" }), "current behaviour: an admin cannot caption media (F1, must flip in T04)", { clean: true });
-await expectDenied(() => deleteDoc(doc(admin, "media", "m-published")), "current behaviour: an admin cannot delete media (F1, must flip in T04)", { clean: true });
+await expectAllowed(() => addDoc(collection(admin, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-admin" }), "admin creates media on a published writeup");
+await expectAllowed(() => addDoc(collection(leadCloud, "media"), { writeupId: "w-draft-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-lead-cloud" }), "cloud lead creates media on their own cloud draft");
+await expectAllowed(() => updateDoc(doc(admin, "media", "m-published"), { caption: "hello" }), "admin captions media");
+await expectAllowed(() => deleteDoc(doc(admin, "media", "m-published")), "admin deletes media");
+await expectAllowed(() => updateDoc(doc(leadCloud, "media", "m-draft"), { caption: "edited" }), "cloud lead captions their own draft's media");
+await expectDenied(() => addDoc(collection(member, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-member" }), "member cannot create media", { clean: true });
+await expectDenied(() => addDoc(collection(anon, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-anon" }), "anonymous cannot create media", { clean: true });
+await expectDenied(() => addDoc(collection(leadCloud, "media"), { writeupId: "w-draft-web", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-lead-cloud" }), "cloud lead cannot create media on a web writeup", { clean: true });
+await expectDenied(() => updateDoc(doc(leadWeb, "media", "m-draft"), { caption: "vandal" }), "web lead cannot caption cloud lead's draft media", { clean: true });
+await expectDenied(() => deleteDoc(doc(member, "media", "m-published")), "member cannot delete media");
 
 // ---- default deny ----------------------------------------------------------
 section("unmatched collections — deny everything (rules:39-41)");

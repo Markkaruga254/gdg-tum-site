@@ -6,6 +6,36 @@ service cloud.firestore {
     function isAdmin() { return isSignedIn() && role() == "admin"; }
     function isLeadOf(trackId) { return isSignedIn() && role() == "lead" && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.track == trackId; }
 
+    function writeupOf(writeupId) {
+      return get(/databases/$(database)/documents/writeups/$(writeupId));
+    }
+    // Null-safe: a missing referenced writeup denies via predicate, never crashes.
+    function readableMedia(writeupId) {
+      let w = writeupOf(writeupId);
+      return w != null && (
+        w.data.status == "published"
+        || isAdmin()
+        || (isSignedIn() && w.data.authorId == request.auth.uid)
+      );
+    }
+    // Author of the parent writeup, a lead of that writeup's track, or an admin.
+    function canManageMedia(writeupId) {
+      let w = writeupOf(writeupId);
+      return w != null && (
+        isAdmin()
+        || (isSignedIn() && w.data.authorId == request.auth.uid)
+        || (isSignedIn() && isLeadOf(w.data.trackId))
+      );
+    }
+    function eventTrackId(eventId) {
+      let e = get(/databases/$(database)/documents/events/$(eventId));
+      return e != null ? e.data.trackId : "";
+    }
+    // Admin, or a lead of the track the ticker's event belongs to.
+    function canManageTicker(eventId) {
+      return isAdmin() || (isSignedIn() && isLeadOf(eventTrackId(eventId)));
+    }
+
     match /tracks/{id} {
       allow read: if true;
       allow write: if isAdmin();
@@ -24,7 +54,11 @@ service cloud.firestore {
     }
     match /ticker/{id} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      // Only the entry's creator may create/update/remove it, and only for an
+      // event in their own track; admins manage any ticker row.
+      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid && canManageTicker(request.resource.data.eventId);
+      allow update: if isAdmin() || (isSignedIn() && resource.data.createdBy == request.auth.uid && canManageTicker(resource.data.eventId));
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.createdBy == request.auth.uid && canManageTicker(resource.data.eventId));
     }
     match /users/{uid} {
       allow read: if true;
@@ -42,7 +76,10 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     match /media/{id} {
-      allow read: if get(/databases/$(database)/documents/writeups/$(resource.data.writeupId)).data.status == "published" || isAdmin() || (isSignedIn() && get(/databases/$(database)/documents/writeups/$(resource.data.writeupId)).data.authorId == request.auth.uid);
+      allow read: if readableMedia(resource.data.writeupId);
+      allow create: if isSignedIn() && canManageMedia(request.resource.data.writeupId);
+      allow update: if isSignedIn() && canManageMedia(resource.data.writeupId);
+      allow delete: if isSignedIn() && canManageMedia(resource.data.writeupId);
     }
     match /{document=**} {
       allow read, write: if false;
