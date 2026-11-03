@@ -20,7 +20,9 @@ export interface Event {
   trackId: TrackSlug;
   date: Timestamp;
   venue: string;
-  status: "upcoming" | "live" | "past";
+  status: "upcoming" | "live" | "past" | "cancelled";
+  cancelledBy?: string;
+  cancelledAt?: Timestamp;
   attendance?: number;
   rsvpCount?: number;
   writeupId?: string;
