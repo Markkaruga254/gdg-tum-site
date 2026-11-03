@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-blue: #1967D2;
+  --color-red: #EA4335;
+  --color-yellow: #FBBC04;
+  --color-green: #34A853;
+  --color-ink: #111;
+  --font-display: var(--font-anton, "Anton", sans-serif);
+  --font-body: var(--font-space, "Space Grotesk", sans-serif);
+}
+
+body {
+  font-family: var(--font-body);
+  background: #fff;
+  color: #111;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
