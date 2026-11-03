@@ -2,8 +2,16 @@ import { initializeTestEnvironment, assertFails, assertSucceeds } from "@firebas
 import { readFileSync } from "fs";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
+// demo-* project IDs are emulator-only: the CLI refuses to route non-emulated
+// services for them, so a misconfigured run cannot reach production Firestore.
+const TEST_PROJECT = "demo-gdg-tum-site";
+if (!process.env.FIRESTORE_EMULATOR_HOST) {
+  console.error("FIRESTORE_EMULATOR_HOST is unset. Run via `npm run test:rules`.");
+  process.exit(1);
+}
+
 const rules = readFileSync("firestore.rules", "utf8");
-const env = await initializeTestEnvironment({ projectId: "gdg-tum-site", firestore: { rules } });
+const env = await initializeTestEnvironment({ projectId: TEST_PROJECT, firestore: { rules } });
 
 // member cannot write events
 const member = env.authenticatedContext("member1", { sub: "member1" });
