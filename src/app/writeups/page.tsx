@@ -6,12 +6,12 @@ import Tag from "@/components/Tag";
 import NumberedRow from "@/components/NumberedRow";
 import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import type { Writeup, Track } from "@/lib/types";
+import type { Writeup, Track, TrackSlug } from "@/lib/types";
 
 export default function WriteupsPage() {
   const [items, setItems] = useState<Writeup[]>([]);
   const [tracks, setTracks] = useState<Track[]>([]);
-  const [track, setTrack] = useState("all");
+  const [track, setTrack] = useState<TrackSlug | "all">("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -33,7 +33,7 @@ export default function WriteupsPage() {
   }, []);
 
   const filtered = track === "all" ? items : items.filter((w) => w.trackId === track);
-  const trackColor = (slug: string) => tracks.find((t) => t.id === slug || t.slug === slug)?.color ?? "blue";
+  const trackColor = (slug: TrackSlug) => tracks.find((t) => t.slug === slug)?.color ?? "blue";
 
   return (
     <>
@@ -42,7 +42,7 @@ export default function WriteupsPage() {
         <div className="mt-4 flex flex-wrap gap-2">
           <button onClick={() => setTrack("all")} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">All</button>
           {tracks.map((t) => (
-            <button key={t.id} onClick={() => setTrack(t.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">{t.name}</button>
+            <button key={t.slug} onClick={() => setTrack(t.slug)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">{t.name}</button>
           ))}
         </div>
         {loading && <p className="mt-4">Loading…</p>}

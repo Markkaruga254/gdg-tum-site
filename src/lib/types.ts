@@ -4,6 +4,8 @@ export type TrackSlug = "cloud" | "cybersecurity" | "web" | "women-in-tech";
 export type TrackColor = "blue" | "red" | "green" | "yellow";
 
 export interface Track {
+  // `slug` is the key trackId references hold; `id` matches it for documents
+  // created by scripts/seed.ts, but legacy rows seeded via add() have random ids.
   id: string;
   name: string;
   slug: TrackSlug;
@@ -15,7 +17,7 @@ export interface Track {
 export interface Event {
   id: string;
   title: string;
-  trackId: string;
+  trackId: TrackSlug;
   date: Timestamp;
   venue: string;
   status: "upcoming" | "live" | "past";
@@ -27,7 +29,7 @@ export interface Event {
 export interface Writeup {
   id: string;
   eventId: string;
-  trackId: string;
+  trackId: TrackSlug;
   authorId: string;
   title: string;
   summary: string;

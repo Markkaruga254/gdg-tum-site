@@ -26,9 +26,9 @@ function View() {
         setTrack(t);
         const leadSnaps = await Promise.all(t.leadIds.map((id) => getDoc(doc(db, "users", id))));
         setLeads(leadSnaps.filter((s) => s.exists()).map((s) => ({ id: s.id, ...s.data() } as AppUser)));
-        const evSnap = await getDocs(query(collection(db, "events"), where("trackId", "==", t.id)));
+        const evSnap = await getDocs(query(collection(db, "events"), where("trackId", "==", t.slug)));
         setEvents(evSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Event)));
-        const wSnap = await getDocs(query(collection(db, "writeups"), where("status", "==", "published"), where("trackId", "==", t.id)));
+        const wSnap = await getDocs(query(collection(db, "writeups"), where("status", "==", "published"), where("trackId", "==", t.slug)));
         setWriteups(wSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Writeup)));
       }
       setLoading(false);

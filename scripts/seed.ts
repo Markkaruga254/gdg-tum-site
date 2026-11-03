@@ -49,7 +49,7 @@ async function main() {
     { name: "Web", slug: "web", color: "green", description: "[Description]", leadIds: [] },
     { name: "Women in Tech", slug: "women-in-tech", color: "yellow", description: "[Description]", leadIds: [] },
   ];
-  for (const t of tracks) await db.collection("tracks").add(t);
+  for (const t of tracks) await db.collection("tracks").doc(t.slug).set(t);
 
   const now = admin.firestore.Timestamp.now();
   const ev1 = await db.collection("events").add({ title: "[Event name]", trackId: "cloud", date: now, venue: "[Venue]", status: "upcoming", rsvpCount: 0 });

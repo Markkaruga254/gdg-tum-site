@@ -32,6 +32,7 @@ export async function seedFixtures(env) {
       "u-admin": { name: "Fixture Admin", role: "admin", track: null },
       "u-lead-cloud": { name: "Fixture Lead Cloud", role: "lead", track: "cloud" },
       "u-lead-web": { name: "Fixture Lead Web", role: "lead", track: "web" },
+      "u-lead-cyber": { name: "Fixture Lead Cyber", role: "lead", track: "cybersecurity" },
       "u-member": { name: "Fixture Member", role: "member", track: null },
       "u-other-member": { name: "Fixture Other Member", role: "member", track: null },
       "u-disposable": { name: "Fixture Delete Target", role: "member", track: null },
@@ -44,12 +45,16 @@ export async function seedFixtures(env) {
     const tracks = {
       cloud: { name: "Cloud", slug: "cloud", color: "blue", description: "Fixture", leadIds: ["u-lead-cloud"] },
       web: { name: "Web", slug: "web", color: "green", description: "Fixture", leadIds: ["u-lead-web"] },
+      // Documents created before scripts/seed.ts keyed tracks by slug keep a
+      // random doc id; rules must still resolve the lead from the slug value.
+      "legacy-row": { name: "Cybersecurity", slug: "cybersecurity", color: "red", description: "Fixture", leadIds: ["u-lead-cyber"] },
     };
     for (const [id, data] of Object.entries(tracks)) await setDoc(doc(db, "tracks", id), data);
 
     await setDoc(doc(db, "events", "ev-cloud"), { title: "Fixture Cloud Event", trackId: "cloud", status: "upcoming", venue: "Fixture" });
     await setDoc(doc(db, "events", "ev-web"), { title: "Fixture Web Event", trackId: "web", status: "past", venue: "Fixture" });
     await setDoc(doc(db, "events", "ev-transfer"), { title: "Fixture Transfer Event", trackId: "cloud", status: "upcoming", venue: "Fixture" });
+    await setDoc(doc(db, "events", "ev-cyber"), { title: "Fixture Cyber Event", trackId: "cybersecurity", status: "upcoming", venue: "Fixture" });
 
     await setDoc(doc(db, "writeups", "w-published-cloud"), { title: "Fixture Published", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "published", publishedAt: new Date(), tags: { topics: [], products: [] } });
     await setDoc(doc(db, "writeups", "w-draft-cloud"), { title: "Fixture Draft", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "draft", tags: { topics: [], products: [] } });
@@ -68,6 +73,7 @@ const identities = {
   admin: "u-admin",
   leadCloud: "u-lead-cloud",
   leadWeb: "u-lead-web",
+  leadCyber: "u-lead-cyber",
   member: "u-member",
   otherMember: "u-other-member",
 };

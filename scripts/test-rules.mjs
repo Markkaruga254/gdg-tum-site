@@ -21,7 +21,7 @@ requireEmulator();
 
 const env = await loadTestEnv();
 await seedFixtures(env);
-const { anon, admin, leadCloud, leadWeb, member, otherMember } = actors(env);
+const { anon, admin, leadCloud, leadWeb, leadCyber, member, otherMember } = actors(env);
 
 // ---- tracks -----------------------------------------------------------------
 section("tracks (rules:9-12) — public read, admin write");
@@ -34,6 +34,7 @@ await expectDenied(() => setDoc(doc(leadCloud, "tracks", "hacker"), { name: "x",
 await expectDenied(() => updateDoc(doc(leadCloud, "tracks", "cloud"), { name: "Renamed" }), "lead cannot rename a track");
 await expectDenied(() => setDoc(doc(member, "tracks", "nope"), { name: "x", slug: "nope" }), "member cannot create a track");
 await expectDenied(() => setDoc(doc(anon, "tracks", "nope"), { name: "x", slug: "nope" }), "anonymous cannot create a track");
+await expectAllowed(() => getDoc(doc(anon, "tracks", "legacy-row")), "a track row with a legacy doc id is readable by its own id");
 
 // ---- events -----------------------------------------------------------------
 section("events — public read; create/update track-scoped; delete admin-only");
@@ -50,6 +51,8 @@ await expectDenied(() => updateDoc(doc(leadWeb, "events", "ev-transfer"), { venu
 await expectDenied(() => updateDoc(doc(leadCloud, "events", "ev-transfer"), { trackId: "web" }), "cloud lead cannot push an event out of their track");
 await expectAllowed(() => updateDoc(doc(leadWeb, "events", "ev-transfer"), { trackId: "web" }), "current behaviour: web lead pulls a cloud event into their own track (must flip in T03)");
 await expectDenied(() => updateDoc(doc(member, "events", "ev-cloud"), { venue: "Moved" }), "member cannot update an event");
+await expectAllowed(() => updateDoc(doc(leadCyber, "events", "ev-cyber"), { venue: "Moved" }), "cyber lead authorises on the slug value, not the tracks doc id");
+await expectDenied(() => updateDoc(doc(leadCyber, "events", "ev-cyber"), { trackId: "cloud" }), "cyber lead cannot push an event out of their slug");
 await expectDenied(() => updateDoc(doc(anon, "events", "ev-cloud"), { venue: "Moved" }), "anonymous cannot update an event");
 await expectAllowed(() => deleteDoc(doc(admin, "events", "ev-web")), "admin deletes an event");
 await expectDeniedForCrash(() => deleteDoc(doc(leadCloud, "events", "ev-cloud")), "cloud lead deletes a cloud event", "Null value error", "F3");
