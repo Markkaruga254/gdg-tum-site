@@ -9,6 +9,11 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import { uploadToCloudinary } from "@/lib/cloudinary";
+import {
+  validateEvent as validateEventSchema,
+  type EventForm,
+  validateWriteup as validateWriteupSchema,
+} from "@/lib/validators";
 import ReactMarkdown from "react-markdown";
 
 const TABS = ["Overview","New writeup","My events","Media","Live ticker","My profile"];
@@ -27,7 +32,7 @@ export default function DashboardPage() {
 
   // event form state
   const [editingEvent, setEditingEvent] = useState<any | null>(null);
-  const [eventForm, setEventForm] = useState({ title: "", date: "", venue: "", status: "upcoming", attendance: "", trackId: "" });
+  const [eventForm, setEventForm] = useState<EventForm>({ title: "", date: "", venue: "", status: "upcoming", attendance: "", trackId: "" });
   const [eventErrors, setEventErrors] = useState<any>({});
 
   // writeup form state
@@ -68,13 +73,9 @@ export default function DashboardPage() {
   useEffect(() => { if (allowed && uid) { loadEvents(); loadWriteups(); } }, [allowed, uid, role, track]);
 
   function validateEvent() {
-    const e: any = {};
-    if (!eventForm.title.trim()) e.title = "Title required";
-    if (!eventForm.date) e.date = "Date required";
-    if (!eventForm.venue.trim()) e.venue = "Venue required";
-    if (role === "admin" && !eventForm.trackId) e.trackId = "Track required";
-    setEventErrors(e);
-    return Object.keys(e).length === 0;
+    const errors = validateEventSchema(eventForm, role);
+    setEventErrors(errors);
+    return Object.keys(errors).length === 0;
   }
 
   async function saveEvent() {
@@ -112,16 +113,9 @@ export default function DashboardPage() {
   }
 
   function validateWriteup(publish: boolean) {
-    const e: any = {};
-    if (!wf.title.trim()) e.title = "Title required";
-    if (!wf.eventId) e.eventId = "Event required";
-    if (publish && !wf.body.trim()) e.body = "Body required to publish";
-    if (wf.attendance && Number(wf.attendance) < 0) e.attendance = "Attendance must be non-negative";
-    for (const l of wf.links) {
-      if (l.url && !/^https?:\/\//.test(l.url)) e.links = "Links must start with http(s)://";
-    }
-    setWfErrors(e);
-    return Object.keys(e).length === 0;
+    const errors = validateWriteupSchema(wf, publish);
+    setWfErrors(errors);
+    return Object.keys(errors).length === 0;
   }
 
   async function saveWriteup(publish: boolean) {
@@ -197,7 +191,7 @@ export default function DashboardPage() {
                   <input id="ev" value={eventForm.venue} onChange={(e) => setEventForm({ ...eventForm, venue: e.target.value })} className="border-[3px] border-ink px-3 py-2" />
                 </FormField>
                 <FormField label="Status" id="es">
-                  <select id="es" value={eventForm.status} onChange={(e) => setEventForm({ ...eventForm, status: e.target.value })} className="border-[3px] border-ink px-3 py-2">
+                  <select id="es" value={eventForm.status} onChange={(e) => setEventForm({ ...eventForm, status: e.target.value as EventForm["status"] })} className="border-[3px] border-ink px-3 py-2">
                     <option value="upcoming">upcoming</option><option value="live">live</option><option value="past">past</option>
                   </select>
                 </FormField>
