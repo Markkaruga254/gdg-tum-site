@@ -53,6 +53,16 @@ jobs:
           FIREBASE_PROJECT_ID: demo-gdg-tum-site
 
       - name: Production build (static export)
+        env:
+          # Placeholder client config: prerendering is client-shell only
+          # (useEffect never runs at build time), so Firebase isn't contacted.
+          # Production deploys are manual with real values from .env.local.
+          NEXT_PUBLIC_FIREBASE_API_KEY: ci-placeholder
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ci-placeholder.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-gdg-tum-site
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ci-placeholder.appspot.com
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "1"
+          NEXT_PUBLIC_FIREBASE_APP_ID: "1:1:web:ci-placeholder"
         run: npm run build
 
       - name: Upload static export
