@@ -18,7 +18,20 @@ NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-gdg-tum-site
 The emulator keeps a separate namespace per project id, so `src/lib/firebase.ts` refuses to start if the host is set while the project id is not a `demo-*` one. Leave both unset for production builds.
 
 ## Seed
-Set `GOOGLE_APPLICATION_CREDENTIALS` to a service account JSON path, then `npm run seed`.
+`scripts/seed.ts` only writes to project ids listed in `ALLOWED_PROJECT_IDS`, and always refuses the production project (`gdg-tum-site`, from `.firebaserc`).
+
+Safe local run against the emulator (no credentials needed):
+
+```
+npm run emulator                                   # terminal 1
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 FIREBASE_PROJECT_ID=demo-gdg-tum-site npm run seed
+```
+
+To seed another non-production project with a service account, set
+`GOOGLE_APPLICATION_CREDENTIALS` to its JSON path and add its `project_id` to
+`ALLOWED_PROJECT_IDS` in `scripts/seed.ts`. The script exits 1 without touching
+Firestore if the project id is missing, unknown, or production.
+
 ## Deploy
 `npm run build && firebase deploy --only hosting,firestore:rules`
 
