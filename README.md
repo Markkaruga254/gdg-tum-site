@@ -5,9 +5,20 @@
 2. Copy `.env.example` to `.env.local` and fill Firebase values.
 3. `npm run dev`
 
+## Run against the Firestore emulator
+`npm run emulator` serves the emulator project `demo-gdg-tum-site` with the local `firestore.rules` on 127.0.0.1:8080.
+
+Set both of these in `.env.local` before `npm run dev` so browser reads and writes go to the emulator instead of the production project:
+
+```
+NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=demo-gdg-tum-site
+```
+
+The emulator keeps a separate namespace per project id, so `src/lib/firebase.ts` refuses to start if the host is set while the project id is not a `demo-*` one. Leave both unset for production builds.
+
 ## Seed
 Set `GOOGLE_APPLICATION_CREDENTIALS` to a service account JSON path, then `npm run seed`.
-
 ## Deploy
 `npm run build && firebase deploy --only hosting,firestore:rules`
 
