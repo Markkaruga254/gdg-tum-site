@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI writeup assistant</title>
+</head>
+<body>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&display=swap">
+<style>
+body{margin:0;background:#fff}
+a{color:#111;text-decoration:none}a:hover{background:#FBBC04}
+.d{font-family:Anton,sans-serif;font-weight:400;text-transform:uppercase;line-height:1}
+.l{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.t{display:inline-block;padding:4px 10px;font-size:11px;font-weight:700;text-transform:uppercase}
+.f{width:100%;box-sizing:border-box;border:3px solid #111;padding:12px;font-family:inherit;font-size:15px;background:#fff;margin:6px 0 16px}
+.ph{min-height:110px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;text-transform:uppercase;border-bottom:3px solid #111}
+.c{border:3px solid #111;background:#fff}
+</style>
+
+<div style="max-width:1280px;margin:0 auto;border:3px solid #111;font-family:'Space Grotesk',sans-serif;color:#111;background:#fff;box-sizing:border-box">
+<div style="display:flex;flex-wrap:wrap;align-items:center;border-bottom:3px solid #111">
+<a href="#top" class="d" style="padding:14px 22px;border-right:3px solid #111;font-size:30px;letter-spacing:1px">GDG.TUM</a>
+<span class="l" style="padding:0 20px">Lead dashboard &middot; New writeup</span>
+<span class="l" style="margin-left:auto;padding:22px 20px;border-left:3px solid #111;background:#1967D2;color:#fff">Cloud Track</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);border-bottom:3px solid #111">
+<div class="l" style="padding:14px 20px;border-right:3px solid #111;background:#111;color:#fff">1 &nbsp;Add your notes</div>
+<div class="l" style="padding:14px 20px;border-right:3px solid #111">2 &nbsp;AI draft</div>
+<div class="l" style="padding:14px 20px">3 &nbsp;Review &amp; publish</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+<div style="padding:26px 28px;border-right:3px solid #111">
+<label for="ev" class="l">Event</label>
+<select id="ev" class="f"><option>[Cloud Track, Week 2: Tools of the trade]</option></select>
+<label for="nt" class="l">Rough notes</label>
+<textarea id="nt" class="f" rows="7" placeholder="What happened? Topics covered, highlights, what went well, what to improve.">[Your notes go here. The AI only uses what you write.]</textarea>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div><label for="at" class="l">Attendance</label><input id="at" class="f" placeholder="[000]"></div>
+<div><label for="lk" class="l">Link (optional)</label><input id="lk" class="f" placeholder="https://"></div>
+</div>
+</div>
+<div style="padding:26px 28px;background:#fafafa">
+<div class="l">Photos</div>
+<p style="font-size:13px;line-height:1.5;margin:6px 0 14px">Tick the photos you want the AI to caption. Unticked photos stay private to you and get no AI caption.</p>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+<div class="c"><div class="ph" style="background:#1967D2;color:#fff">[Photo]</div><label style="display:flex;gap:8px;align-items:center;padding:10px;font-size:12px;font-weight:700"><input type="checkbox" checked> Send for AI caption</label></div>
+<div class="c"><div class="ph" style="background:#EA4335">[Photo]</div><label style="display:flex;gap:8px;align-items:center;padding:10px;font-size:12px;font-weight:700"><input type="checkbox" checked> Send for AI caption</label></div>
+<div class="c"><div class="ph" style="background:#34A853">[Photo]</div><label style="display:flex;gap:8px;align-items:center;padding:10px;font-size:12px;font-weight:700"><input type="checkbox"> Send for AI caption</label></div>
+<div class="c" style="border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:150px;font-weight:700;font-size:13px">+ Add photos</div>
+</div>
+<div style="background:#FBBC04;border:3px solid #111;padding:14px;margin:18px 0;font-size:13px;line-height:1.5;font-weight:700">Ticked photos are sent to Google's Gemini to write captions. Only tick photos where the people shown have agreed.</div>
+<label style="display:flex;gap:10px;align-items:center;font-size:13px;font-weight:700;margin-bottom:18px"><input type="checkbox"> I confirm the people in the ticked photos have agreed</label>
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center">
+<button type="button" class="l" style="background:#1967D2;color:#fff;border:3px solid #111;padding:14px 22px;font-family:inherit">Generate draft with AI &#8599;</button>
+<span class="l">7 of 10 AI drafts left today</span>
+</div>
+</div>
+</div>
+<div style="border-top:3px solid #111;padding:20px 28px;background:#111;color:#fff">
+<div class="l" style="color:#FBBC04">State while generating</div>
+<div style="font-family:Anton,sans-serif;font-size:34px;text-transform:uppercase;margin:10px 0">Writing your draft&hellip;</div>
+<div style="border:3px solid #fff;height:18px;max-width:520px"><div style="background:#34A853;width:55%;height:100%"></div></div>
+<div style="font-size:13px;margin-top:10px">This takes about 20 to 30 seconds. You can keep editing your notes meanwhile.</div>
+</div>
+</div>
+
+</body>
+</html>

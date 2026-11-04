@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lead dashboard</title>
+</head>
+<body>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&display=swap">
+<style>
+body{margin:0;background:#fff}
+a{color:#111;text-decoration:none}a:hover{background:#FBBC04}
+.d{font-family:Anton,sans-serif;font-weight:400;text-transform:uppercase;line-height:1}
+.l{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.t{display:inline-block;padding:4px 10px;font-size:11px;font-weight:700;text-transform:uppercase}
+.f{width:100%;box-sizing:border-box;border:3px solid #111;padding:12px;font-family:inherit;font-size:15px;background:#fff;margin:6px 0 16px}
+</style>
+
+<div style="max-width:1280px;margin:0 auto;border:3px solid #111;font-family:'Space Grotesk',sans-serif;color:#111;background:#fff;box-sizing:border-box">
+<div style="display:flex;flex-wrap:wrap;align-items:center;border-bottom:3px solid #111">
+<a href="#top" class="d" style="padding:14px 22px;border-right:3px solid #111;font-size:30px;letter-spacing:1px">GDG.TUM</a>
+<span class="l" style="padding:0 20px">Lead dashboard</span>
+<span class="l" style="margin-left:auto;padding:22px 20px;border-left:3px solid #111;background:#1967D2;color:#fff">Cloud Track</span>
+</div>
+
+<div style="display:grid;grid-template-columns:minmax(180px,230px) 1fr">
+<div style="border-right:3px solid #111">
+<a href="#top" class="l" style="display:block;padding:18px 20px;border-bottom:3px solid #111">Overview</a>
+<a href="#top" class="l" style="display:block;padding:18px 20px;border-bottom:3px solid #111;background:#FBBC04">New writeup</a>
+<a href="#top" class="l" style="display:block;padding:18px 20px;border-bottom:3px solid #111">My events</a>
+<a href="#top" class="l" style="display:block;padding:18px 20px;border-bottom:3px solid #111">Media</a>
+<a href="#top" class="l" style="display:block;padding:18px 20px;border-bottom:3px solid #111">Live ticker</a>
+<a href="#top" class="l" style="display:block;padding:18px 20px">My profile</a>
+</div>
+
+<div>
+<div style="padding:26px 28px;border-bottom:3px solid #111"><h1 class="d" style="margin:0;font-size:56px">New writeup</h1></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);border-bottom:3px solid #111">
+<div class="l" style="padding:14px 20px;border-right:3px solid #111;background:#111;color:#fff">1 &nbsp;Add your notes</div>
+<div class="l" style="padding:14px 20px;border-right:3px solid #111;background:#FBBC04">2 &nbsp;AI draft</div>
+<div class="l" style="padding:14px 20px">3 &nbsp;Review &amp; publish</div>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+<div style="padding:26px 28px;border-right:3px solid #111">
+<label for="ev" class="l">Event</label>
+<select id="ev" class="f"><option>[Select an event]</option></select>
+<label for="nt" class="l">Rough notes</label>
+<textarea id="nt" class="f" rows="6" placeholder="What happened? Topics covered, highlights, what went well, what to improve."></textarea>
+<label for="at" class="l">Attendance</label>
+<input id="at" class="f" placeholder="[000]">
+<div class="l">Photos, slides &amp; links</div>
+<div style="border:3px dashed #111;padding:26px;text-align:center;margin:6px 0 16px;font-weight:700">Drop files here or browse</div>
+<button type="button" class="l" style="background:#111;color:#fff;border:0;padding:14px 22px;font-family:inherit">Generate draft &#8599;</button>
+</div>
+
+<div style="padding:26px 28px;background:#fafafa">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><span class="t" style="background:#111;color:#fff">Drafted with AI</span><span class="l">Editable</span></div>
+<h2 class="d" style="margin:16px 0 10px;font-size:34px">[Draft title]</h2>
+<div style="border:3px solid #111;background:#fff;padding:18px;font-size:14px;line-height:1.6">
+<b>Summary.</b> [AI-written summary of the session.]<br><br>
+<b>What we covered.</b> [Topics from your notes.]<br><br>
+<b>Key takeaways.</b> [Three short points.]<br><br>
+<b>Resources.</b> [Links you provided.]
+</div>
+<div class="l" style="margin:16px 0 8px">Auto tags</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px"><span class="t" style="background:#1967D2;color:#fff">Cloud</span><span class="t" style="background:#34A853;color:#111">DevOps</span><span class="t" style="border:3px solid #111">+ Add tag</span></div>
+<div style="background:#EA4335;border:3px solid #111;padding:14px;margin:18px 0;font-size:13px;font-weight:700">Check names, numbers and quotes before publishing. The AI only uses what you gave it, but you are the author.</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px">
+<button type="button" class="l" style="background:#FBBC04;border:3px solid #111;padding:14px 22px;font-family:inherit">Publish &#8599;</button>
+<button type="button" class="l" style="background:#fff;border:3px solid #111;padding:14px 22px;font-family:inherit">Save draft</button>
+<button type="button" class="l" style="background:#fff;border:3px solid #111;padding:14px 22px;font-family:inherit">Regenerate</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</body>
+</html>
