@@ -15,8 +15,9 @@ import {
   validateWriteup as validateWriteupSchema,
 } from "@/lib/validators";
 import ReactMarkdown from "react-markdown";
+import PartnersTab from "./PartnersTab";
 
-const TABS = ["Overview","New writeup","My events","Media","Live ticker","My profile"];
+const TABS = ["Overview","New writeup","My events","Media","Live ticker","My profile","Partners"];
 
 export default function DashboardPage() {
   const [allowed, setAllowed] = useState<boolean | null>(null);
@@ -176,7 +177,11 @@ export default function DashboardPage() {
       <Nav />
       <div className="mx-auto grid max-w-[1280px] grid-cols-1 md:grid-cols-[200px_1fr]">
         <aside className="border-r-[3px] border-ink p-4">
-          {(role === "admin" || role === "lead" ? TABS : TABS.filter((t) => t !== "Live ticker")).map((t) => (
+          {(TABS.filter((t) => {
+            if (t === "Partners") return role === "admin";
+            if (t === "Live ticker") return role === "admin" || role === "lead";
+            return true;
+          })).map((t) => (
             <button key={t} onClick={() => setTab(t)} className={`mb-2 block w-full border-[3px] border-ink px-3 py-2 text-left text-sm font-bold uppercase ${tab === t ? "bg-ink text-white" : ""}`}>{t}</button>
           ))}
         </aside>
@@ -339,6 +344,8 @@ export default function DashboardPage() {
               <TickerTab uid={uid} events={events} track={track} setMsg={setMsg} setErr={setErr} />
             </section>
           )}
+
+          {tab === "Partners" && <PartnersTab />}
 
           {tab === "My profile" && (
             <section>
