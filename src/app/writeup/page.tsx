@@ -28,13 +28,23 @@ function View() {
         const data = { id: snap.id, ...snap.data() } as Writeup;
         setW(data);
         if (data.authorId) {
-          const a = await getDoc(doc(db, "users", data.authorId));
-          if (a.exists()) setAuthor({ id: a.id, ...a.data() } as AppUser);
+          try {
+            const a = await getDoc(doc(db, "users", data.authorId));
+            if (a.exists()) setAuthor({ id: a.id, ...a.data() } as AppUser);
+          } catch {
+            // Author profile not readable by public visitors (T05); continue without author info.
+          }
         }
         const r = await getDocs(query(collection(db, "writeups"), where("status", "==", "published"), where("trackId", "==", data.trackId)));
         setRelated(r.docs.map((d) => ({ id: d.id, ...d.data() } as Writeup)).filter((x) => x.id !== id));
-        const m = await getDocs(query(collection(db, "media"), where("writeupId", "==", id)));
-        setMedia(m.docs.map((d) => ({ id: d.id, ...d.data() })) as any);
+        let media: any[] = [];
+        try {
+          const m = await getDocs(query(collection(db, "media"), where("writeupId", "==", id)));
+          media = m.docs.map((d) => ({ id: d.id, ...d.data() })) as any;
+        } catch {
+          media = [];
+        }
+        setMedia(media);
       }
       setLoading(false);
     })();
