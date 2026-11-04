@@ -83,6 +83,7 @@ await expectDenied(() => addDoc(collection(anon, "ticker"), { eventId: "ev-cloud
 await expectDenied(() => updateDoc(doc(leadCloud, "ticker", "tk-web"), { status: "active" }), "cloud lead cannot update a web ticker row");
 await expectDenied(() => deleteDoc(doc(leadCloud, "ticker", "tk-web")), "cloud lead cannot delete a web ticker row");
 await expectDenied(() => updateDoc(doc(leadWeb, "ticker", "tk-cloud"), { status: "active" }), "web lead cannot update another lead's cloud ticker row");
+await expectDenied(() => addDoc(collection(leadCloud, "ticker"), { eventId: "ev-cloud", message: "x".repeat(141), status: "inactive", createdBy: "u-lead-cloud" }), "ticker message over 140 characters is rejected", { clean: true });
 
 // ---- users -----------------------------------------------------------------
 // The reads below are world-readable today. That is the exposure T05 closes:
@@ -163,11 +164,17 @@ await expectDenied(() => addDoc(collection(leadCloud, "media"), { writeupId: "w-
 await expectDenied(() => updateDoc(doc(leadWeb, "media", "m-draft"), { caption: "vandal" }), "web lead cannot caption cloud lead's draft media", { clean: true });
 await expectDenied(() => deleteDoc(doc(member, "media", "m-published")), "member cannot delete media");
 
+// ---- posts ---------------------------------------------------------------
+section("posts — public read, no client writes (news bot uses Admin SDK)");
+await expectAllowed(() => getDocs(collection(anon, "posts")), "anonymous can read posts");
+await expectAllowed(() => getDoc(doc(anon, "posts", "p1")), "anonymous can read one post");
+await expectDenied(() => addDoc(collection(anon, "posts"), { title: "x", summary: "s", sourceName: "n", sourceUrl: "https://example.invalid", tags: [], fetchedAt: new Date() }), "anonymous cannot write posts", { clean: true });
+await expectDenied(() => addDoc(collection(member, "posts"), { title: "x", summary: "s", sourceName: "n", sourceUrl: "https://example.invalid", tags: [], fetchedAt: new Date() }), "member cannot write posts", { clean: true });
+await expectDenied(() => addDoc(collection(leadCloud, "posts"), { title: "x", summary: "s", sourceName: "n", sourceUrl: "https://example.invalid", tags: [], fetchedAt: new Date() }), "lead cannot write posts", { clean: true });
+await expectDenied(() => addDoc(collection(admin, "posts"), { title: "x", summary: "s", sourceName: "n", sourceUrl: "https://example.invalid", tags: [], fetchedAt: new Date() }), "admin cannot write posts from client", { clean: true });
+
 // ---- default deny ----------------------------------------------------------
 section("unmatched collections — deny everything (rules:39-41)");
-await expectDenied(() => getDocs(collection(anon, "posts")), "anonymous cannot read posts (no rule, no writer, F4)", { clean: true });
-await expectDenied(() => getDocs(collection(admin, "posts")), "admin cannot read posts (F4)", { clean: true });
-await expectDenied(() => setDoc(doc(admin, "posts", "p1"), { title: "x" }), "admin cannot create a post", { clean: true });
 await expectDenied(() => setDoc(doc(admin, "auditlogs", "a1"), { x: 1 }), "admin cannot write an unknown collection", { clean: true });
 await expectDenied(() => setDoc(doc(leadCloud, "public_profiles", "u-lead-cloud"), { name: "x" }), "no public_profiles rule exists yet (T05 adds it)", { clean: true });
 

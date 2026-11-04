@@ -8,7 +8,7 @@ import NumberedRow from "@/components/NumberedRow";
 import SectionLabel from "@/components/SectionLabel";
 import { collection, query, where, orderBy, limit, getDocsFromServer } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import type { Event, Writeup } from "@/lib/types";
+import type { Event, Post, Writeup } from "@/lib/types";
 
 const TRACKS = [
   { slug: "cloud", name: "Cloud", color: "blue" as const, lead: "[Lead name]" },
@@ -20,6 +20,7 @@ const TRACKS = [
 export default function Home() {
   const [events, setEvents] = useState<Event[]>([]);
   const [writeups, setWriteups] = useState<Writeup[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +33,12 @@ export default function Home() {
         setEvents(evSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Event)));
         const wSnap = await getDocsFromServer(query(collection(db, "writeups"), where("status", "==", "published"), orderBy("publishedAt", "desc"), limit(3)));
         setWriteups(wSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Writeup)));
+        try {
+          const pSnap = await getDocsFromServer(query(collection(db, "posts")));
+          setPosts(pSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Post)));
+        } catch {
+          setPosts([]);
+        }
       } catch (e) {
         console.error("Home: Firestore reads failed", e);
         const code = e instanceof Error && "code" in e ? String((e as { code: unknown }).code) : "unknown";
@@ -140,7 +147,24 @@ export default function Home() {
           ))}
         </section>
 
-        <section className="border-b-[3px] border-ink bg-ink p-8 text-white">
+        <section className="border-b-[3px] border-ink p-6">
+          <SectionLabel>Posts</SectionLabel>
+          {loading ? (
+            <p className="mt-4">Loading…</p>
+          ) : posts.length === 0 ? (
+            <p className="mt-4">No posts yet.</p>
+          ) : (
+            posts.map((p) => (
+              <div key={p.id} className="mt-4 border-b-[3px] border-ink pb-2 last:border-b-0">
+                <a href={p.sourceUrl} className="font-bold underline">{p.title}</a>
+                <p className="mt-1 text-sm">{p.summary}</p>
+                <p className="mt-1 text-xs text-ink uppercase">{p.sourceName}</p>
+              </div>
+            ))
+          )}
+        </section>
+
+        <section className="border-b-[3px] border-ink">
           <SectionLabel>Labs</SectionLabel>
           <h2 className="font-display text-3xl uppercase">Soon</h2>
           <p className="mt-2 text-sm">Coming soon.</p>
