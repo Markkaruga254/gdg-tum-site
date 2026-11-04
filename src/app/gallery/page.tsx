@@ -4,29 +4,10 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 import { getGalleryPage, type Photo, type GalleryPage } from "@/lib/gallery";
+import { trackFilterOptions, TRACK_BG_COLORS, trackTagColor } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
 
-const FILTERS: { label: string; trackId: TrackSlug | undefined }[] = [
-  { label: "All", trackId: undefined },
-  { label: "Cloud", trackId: "cloud" },
-  { label: "Cybersecurity", trackId: "cybersecurity" },
-  { label: "Web", trackId: "web" },
-  { label: "Women in Tech", trackId: "women-in-tech" },
-];
-
-const TRACK_BG_COLORS: Record<TrackSlug, string> = {
-  cloud: "#3b82f6",
-  cybersecurity: "#ef4444",
-  web: "#10b981",
-  "women-in-tech": "#fbbf24",
-};
-
-function trackTagColor(slug: TrackSlug): "blue" | "red" | "green" | "yellow" {
-  if (slug === "cloud") return "blue";
-  if (slug === "cybersecurity") return "red";
-  if (slug === "web") return "green";
-  return "yellow";
-}
+const FILTERS = trackFilterOptions();
 
 export default function Gallery() {
   const [trackFilter, setTrackFilter] = useState<TrackSlug | undefined>(undefined);

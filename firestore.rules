@@ -57,7 +57,8 @@ service cloud.firestore {
       allow write: if false;
     }
     match /users/{uid} {
-      allow read: if true;
+      // Reads are owner-self or admin-only (T05 closed).
+      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
       allow create: if isSignedIn() && request.auth.uid == uid && request.resource.data.role == "member";
       allow update: if (isSignedIn() && request.auth.uid == uid && !request.resource.data.diff(resource.data).changedKeys().hasAny(["role","track"])) || isAdmin();
       allow delete: if isAdmin();
@@ -67,8 +68,14 @@ service cloud.firestore {
     }
     match /writeups/{id} {
       allow read: if resource.data.status == "published" || (isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin()));
-      allow create: if isSignedIn() && (isAdmin() || (role() == "lead" && request.resource.data.authorId == request.auth.uid && request.resource.data.trackId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.track));
-      allow update: if isAdmin() || (isSignedIn() && resource.data.authorId == request.auth.uid && request.resource.data.authorId == resource.data.authorId && request.resource.data.trackId == resource.data.trackId && (role() == "lead"));
+      // Only an admin may create a published writeup; leads may only create drafts (T06 closed).
+      allow create: if isSignedIn() && (
+        isAdmin()
+        || (role() == "lead" && request.resource.data.authorId == request.auth.uid && request.resource.data.trackId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.track && request.resource.data.status == "draft")
+      );
+      // Only an admin may publish or unpublish; a lead author may only edit while draft (T06 closed).
+      // A lead may not change authorId, trackId, or status.
+      allow update: if isAdmin() || (isSignedIn() && role() == "lead" && resource.data.authorId == request.auth.uid && resource.data.status == "draft" && request.resource.data.authorId == resource.data.authorId && request.resource.data.trackId == resource.data.trackId && request.resource.data.status == resource.data.status);
       allow delete: if isAdmin();
     }
     match /media/{id} {

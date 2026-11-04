@@ -59,7 +59,7 @@ export async function seedFixtures(env) {
 
     await setDoc(doc(db, "writeups", "w-published-cloud"), { title: "Fixture Published", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "published", publishedAt: new Date(), tags: { topics: [], products: [] } });
     await setDoc(doc(db, "writeups", "w-draft-cloud"), { title: "Fixture Draft", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "draft", tags: { topics: [], products: [] } });
-    await setDoc(doc(db, "writeups", "w-flip-cloud"), { title: "Fixture Flip Draft", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "draft", tags: { topics: [], products: [] } });
+    await setDoc(doc(db, "writeups", "w-flip-cloud"), { title: "Fixture Flip Published", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "published", publishedAt: new Date(), tags: { topics: [], products: [] } });
     await setDoc(doc(db, "writeups", "w-draft-web"), { title: "Fixture Web Draft", eventId: "ev-web", trackId: "web", authorId: "u-lead-web", body: "Fixture", status: "draft", tags: { topics: [], products: [] } });
 
     await setDoc(doc(db, "media", "m-published"), { writeupId: "w-published-cloud", url: "https://example.invalid/a.jpg", publicId: "fixture/a", caption: "", altText: "", createdBy: "u-lead-cloud" });
