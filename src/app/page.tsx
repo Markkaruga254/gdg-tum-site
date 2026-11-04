@@ -9,21 +9,8 @@ import SectionLabel from "@/components/SectionLabel";
 import { collection, query, where, orderBy, limit, getDocsFromServer } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getGalleryPage, type Photo } from "@/lib/gallery";
-import type { Event, Partner, Post, TrackSlug, Writeup } from "@/lib/types";
-
-const TRACKS = [
-  { slug: "cloud", name: "Cloud", color: "blue" as const, lead: "[Lead name]" },
-  { slug: "cybersecurity", name: "Cybersecurity", color: "red" as const, lead: "[Lead name]" },
-  { slug: "web", name: "Web", color: "green" as const, lead: "[Lead name]" },
-  { slug: "women-in-tech", name: "Women in Tech", color: "yellow" as const, lead: "[Lead name]" },
-];
-
-const TRACK_BG_COLORS: Record<TrackSlug, string> = {
-  cloud: "#3b82f6",
-  cybersecurity: "#ef4444",
-  web: "#10b981",
-  "women-in-tech": "#fbbf24",
-};
+import { TRACKS, TRACK_BG_COLORS, trackTagColor } from "@/lib/tracks";
+import type { Event, Partner, Post, Writeup } from "@/lib/types";
 
 export default function Home() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -154,7 +141,7 @@ export default function Home() {
             writeups.map((w, i) => (
               <NumberedRow key={w.id} n={String(i + 1).padStart(2, "0")}>
                 <div className="flex items-center gap-2">
-                  <Tag label={w.trackId} color="blue" />
+                  <Tag label={w.trackId} color={trackTagColor(w.trackId)} />
                   <a href={`/writeup?id=${w.id}`} className="font-bold">{w.title}</a>
                 </div>
                 <p className="mt-1 text-sm">{w.summary}</p>
@@ -272,18 +259,18 @@ export default function Home() {
                         el.style.display = "none";
                         const card = el.closest(".flex-1") as HTMLElement | null;
                         if (card) {
-                          card.style.backgroundColor = TRACK_BG_COLORS[photos[0].trackId as TrackSlug];
+                          card.style.backgroundColor = TRACK_BG_COLORS[photos[0].trackId];
                         }
                       }}
                     />
-                    <div className={`absolute inset-0`} style={{ backgroundColor: TRACK_BG_COLORS[photos[0].trackId as TrackSlug] }} />
+                    <div className={`absolute inset-0`} style={{ backgroundColor: TRACK_BG_COLORS[photos[0].trackId] }} />
                   </a>
                   <div className="border-t-[3px] border-ink p-[10px]_[12px] text-[13px] font-bold bg-white">
                     {photos[0].caption}
                   </div>
                   <Tag
                     label={photos[0].trackId}
-                    color={photos[0].trackId === "cloud" ? "blue" : photos[0].trackId === "cybersecurity" ? "red" : photos[0].trackId === "web" ? "green" : "yellow"}
+                    color={trackTagColor(photos[0].trackId)}
                   />
                 </div>
                 <div className="flex-3 flex-1 basis-[340px] grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-[16px]">
@@ -299,11 +286,11 @@ export default function Home() {
                         el.style.display = "none";
                         const wrapper = el.closest(".flex-1") as HTMLElement | null;
                         if (wrapper) {
-                          wrapper.style.backgroundColor = TRACK_BG_COLORS[photo.trackId as TrackSlug];
+                          wrapper.style.backgroundColor = TRACK_BG_COLORS[photo.trackId];
                         }
                       }}
                         />
-                        <div className={`absolute inset-0`} style={{ backgroundColor: TRACK_BG_COLORS[photo.trackId as TrackSlug] }} />
+                        <div className={`absolute inset-0`} style={{ backgroundColor: TRACK_BG_COLORS[photo.trackId] }} />
                       </div>
                       <div className="border-t-[3px] border-ink p-[10px]_[12px] text-[13px] font-bold bg-white">
                         {photo.caption}
@@ -334,12 +321,6 @@ export default function Home() {
               </div>
             ))
           )}
-        </section>
-
-        <section className="border-b-[3px] border-ink">
-          <SectionLabel>Labs</SectionLabel>
-          <h2 className="font-display text-3xl uppercase">Soon</h2>
-          <p className="mt-2 text-sm">Coming soon.</p>
         </section>
       </main>
       <Footer />
