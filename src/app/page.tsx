@@ -166,6 +166,7 @@ export default function Home() {
             <span className="font-bold uppercase text-[14px]">Tracks</span>
             <a href="/tracks" className="border-[3px] border-ink px-[10px] py-[16px] font-bold uppercase text-[12px]">Explore tracks ↗</a>
           </div>
+          <h2 className="font-display text-3xl uppercase mt-4">Four tracks, one community</h2>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
             {TRACKS.map((t) => (
               <div key={t.slug} className="border-[3px] border-ink p-2 text-center">
