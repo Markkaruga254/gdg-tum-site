@@ -1,50 +1,48 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import type { Writeup, AppUser } from "@/lib/types";
+import { getWriteupById, getUserById, getWriteups, getMediaByWriteup, type WriteupWithId, type AppUserWithId, type MediaWithId } from "@/lib/data";
 
 function View() {
   const params = useSearchParams();
   const id = params.get("id");
-  const [w, setW] = useState<Writeup | null>(null);
-  const [author, setAuthor] = useState<AppUser | null>(null);
-  const [related, setRelated] = useState<Writeup[]>([]);
-  const [media, setMedia] = useState<any[]>([]);
+  const [w, setW] = useState<WriteupWithId | null>(null);
+  const [author, setAuthor] = useState<AppUserWithId | null>(null);
+  const [related, setRelated] = useState<WriteupWithId[]>([]);
+  const [media, setMedia] = useState<MediaWithId[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     if (!id) { // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(false); return; }
     (async () => {
-      const snap = await getDoc(doc(db, "writeups", id));
-      if (snap.exists()) {
-        const data = { id: snap.id, ...snap.data() } as Writeup;
+      const data = await getWriteupById(id);
+      if (data) {
         setW(data);
         if (data.authorId) {
           try {
-            const a = await getDoc(doc(db, "users", data.authorId));
-            if (a.exists()) setAuthor({ id: a.id, ...a.data() } as AppUser);
+            const a = await getUserById(data.authorId);
+            if (a) setAuthor(a);
           } catch {
             // Author profile not readable by public visitors (T05); continue without author info.
           }
         }
-        const r = await getDocs(query(collection(db, "writeups"), where("status", "==", "published"), where("trackId", "==", data.trackId)));
-        setRelated(r.docs.map((d) => ({ id: d.id, ...d.data() } as Writeup)).filter((x) => x.id !== id));
-        let media: any[] = [];
         try {
-          const m = await getDocs(query(collection(db, "media"), where("writeupId", "==", id)));
-          media = m.docs.map((d) => ({ id: d.id, ...d.data() })) as any;
+          const r = await getWriteups({ status: "published", trackId: data.trackId });
+          setRelated(r.filter((x) => x.id !== id));
         } catch {
-          media = [];
+          setRelated([]);
         }
-        setMedia(media);
+        try {
+          const m = await getMediaByWriteup(id);
+          setMedia(m);
+        } catch {
+          setMedia([]);
+        }
       }
       setLoading(false);
     })();

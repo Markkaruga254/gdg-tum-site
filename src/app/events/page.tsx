@@ -2,12 +2,10 @@
 import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import type { Event } from "@/lib/types";
+import { getEvents, type EventWithId } from "@/lib/data";
 
 export default function EventsPage() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<EventWithId[]>([]);
   const [track, setTrack] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -15,8 +13,8 @@ export default function EventsPage() {
   useEffect(() => {
     (async () => {
       try {
-        const snap = await getDocs(query(collection(db, "events"), orderBy("date", "desc")));
-        setEvents(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Event)));
+        const fetched = await getEvents();
+        setEvents(fetched);
       } catch {
         setError("Failed to load events");
       } finally {

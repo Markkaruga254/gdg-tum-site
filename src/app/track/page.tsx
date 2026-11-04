@@ -3,39 +3,43 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
 import { useEffect, useState } from "react";
-import type { Track, Event, Writeup, AppUser } from "@/lib/types";
+import { getTrackBySlug, getUserById, getEvents, getWriteups, type TrackWithId, type EventWithId, type WriteupWithId, type AppUserWithId } from "@/lib/data";
 
 function View() {
   const params = useSearchParams();
   const slug = params.get("slug");
-  const [track, setTrack] = useState<Track | null>(null);
-  const [leads, setLeads] = useState<AppUser[]>([]);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [writeups, setWriteups] = useState<Writeup[]>([]);
+  const [track, setTrack] = useState<TrackWithId | null>(null);
+  const [leads, setLeads] = useState<AppUserWithId[]>([]);
+  const [events, setEvents] = useState<EventWithId[]>([]);
+  const [writeups, setWriteups] = useState<WriteupWithId[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
     if (!slug) { // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(false); return; }
     (async () => {
-      const tSnap = await getDocs(query(collection(db, "tracks"), where("slug", "==", slug)));
-      if (!tSnap.empty) {
-        const t = { id: tSnap.docs[0].id, ...tSnap.docs[0].data() } as Track;
-        setTrack(t);
-        let leads: AppUser[] = [];
-        try {
-          const leadSnaps = await Promise.all(t.leadIds.map((id) => getDoc(doc(db, "users", id))));
-          leads = leadSnaps.filter((s) => s.exists()).map((s) => ({ id: s.id, ...s.data() } as AppUser));
-        } catch {
-          leads = [];
-        }
-        setLeads(leads);
-        const evSnap = await getDocs(query(collection(db, "events"), where("trackId", "==", t.slug)));
-        setEvents(evSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Event)).filter((e) => e.status !== "cancelled"));
-        const wSnap = await getDocs(query(collection(db, "writeups"), where("status", "==", "published"), where("trackId", "==", t.slug)));
-        setWriteups(wSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Writeup)));
+      const t = await getTrackBySlug(slug as import("@/lib/types").TrackSlug);
+      if (!t) { setLoading(false); return; }
+      setTrack(t);
+      let fetchedLeads: AppUserWithId[] = [];
+      try {
+        const leadSnaps = await Promise.all(t.leadIds.map((id) => getUserById(id)));
+        fetchedLeads = leadSnaps.filter((s): s is AppUserWithId => s !== null);
+      } catch {
+        fetchedLeads = [];
+      }
+      setLeads(fetchedLeads);
+      try {
+        const fetchedEvents = await getEvents({ trackId: t.slug });
+        setEvents(fetchedEvents.filter((e) => e.status !== "cancelled"));
+      } catch {
+        setEvents([]);
+      }
+      try {
+        const fetchedWriteups = await getWriteups({ status: "published", trackId: t.slug });
+        setWriteups(fetchedWriteups);
+      } catch {
+        setWriteups([]);
       }
       setLoading(false);
     })();
