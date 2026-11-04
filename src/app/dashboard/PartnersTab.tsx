@@ -39,6 +39,15 @@ function getSafeImageSrc(src: string | null): string | null {
   return null;
 }
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export default function PartnersTab() {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -196,7 +205,7 @@ export default function PartnersTab() {
             <input id="pimg" type="file" accept="image/jpeg,image/png,image/webp" onChange={handleLogoChange} className="border-[3px] border-ink px-3 py-2" />
             {logoFile && (
               <div className="mt-2">
-                <p className="text-xs">{logoFile.name} ({Math.round(logoFile.size / 1024)} KB)</p>
+                <p className="text-xs">{escapeHtml(logoFile.name)} ({Math.round(logoFile.size / 1024)} KB)</p>
                 {safeLogoPreview && <img src={safeLogoPreview} alt="logo preview" className="h-24 w-24 object-cover border-[3px] border-ink mt-2" />}
                 {uploadProgress != null && <p className="text-xs mt-1">Uploading {uploadProgress}%…</p>}
               </div>
