@@ -158,9 +158,13 @@ export default function DashboardPage() {
     finally { setSaving(false); }
   }
 
+  async function publishWriteup(id: string) {
+    try { await updateDoc(doc(db, "writeups", id), { status: "published", publishedAt: serverTimestamp() }); setMsg("Published"); await loadWriteups(); }
+    catch (e: any) { setErr(e?.code === "permission-denied" ? "You can only publish writeups in your own track." : e?.message || "Failed"); }
+  }
   async function unpublish(id: string) {
     try { await updateDoc(doc(db, "writeups", id), { status: "draft" }); setMsg("Unpublished"); await loadWriteups(); }
-    catch (e: any) { setErr(e?.message || "Failed"); }
+    catch (e: any) { setErr(e?.code === "permission-denied" ? "You can only unpublish writeups in your own track." : e?.message || "Failed"); }
   }
   async function deleteWriteup(id: string) {
     if (!confirm("Delete this writeup?")) return;
@@ -297,7 +301,11 @@ export default function DashboardPage() {
                     <div className="font-bold">{w.title} — {w.status}</div>
                     <div className="mt-2 flex gap-2">
                       <button onClick={() => startEditWriteup(w)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Edit</button>
-                      {w.status === "published" && <button onClick={() => unpublish(w.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Unpublish</button>}
+                      {w.status === "published" ? (
+                        <button onClick={() => unpublish(w.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Unpublish</button>
+                      ) : (
+                        <button onClick={() => publishWriteup(w.id)} className="border-[3px] border-ink bg-ink px-3 py-1 text-sm font-bold uppercase text-white">Publish</button>
+                      )}
                       {role === "admin" && <button onClick={() => deleteWriteup(w.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Delete</button>}
                     </div>
                   </div>

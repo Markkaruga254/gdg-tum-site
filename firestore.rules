@@ -57,8 +57,8 @@ service cloud.firestore {
       allow write: if false;
     }
     match /users/{uid} {
-      // Reads are owner-self or admin-only (T05 closed).
-      allow read: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      // Public user docs hold no email; emails live in private_users.
+      allow read: if true;
       allow create: if isSignedIn() && request.auth.uid == uid && request.resource.data.role == "member";
       allow update: if (isSignedIn() && request.auth.uid == uid && !request.resource.data.diff(resource.data).changedKeys().hasAny(["role","track"])) || isAdmin();
       allow delete: if isAdmin();
@@ -68,18 +68,19 @@ service cloud.firestore {
     }
     match /writeups/{id} {
       allow read: if resource.data.status == "published" || (isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin()));
-      // Only an admin may create a published writeup; leads may only create drafts (T06 closed).
+      // Admin may create any writeup; a lead may create a draft or published
+      // writeup in their own track, attributed to themselves.
       allow create: if isSignedIn() && (
         isAdmin()
-        || (role() == "lead" && request.resource.data.authorId == request.auth.uid && request.resource.data.trackId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.track && request.resource.data.status == "draft")
+        || (role() == "lead" && request.resource.data.authorId == request.auth.uid && request.resource.data.trackId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.track && (request.resource.data.status == "draft" || request.resource.data.status == "published"))
       );
-      // Only an admin may publish or unpublish; a lead author may only edit while draft (T06 closed).
-      // A lead may not change authorId, trackId, or status.
-      allow update: if isAdmin() || (isSignedIn() && role() == "lead" && resource.data.authorId == request.auth.uid && resource.data.status == "draft" && request.resource.data.authorId == resource.data.authorId && request.resource.data.trackId == resource.data.trackId && request.resource.data.status == resource.data.status);
+      // Admin may update anything; a lead author may update their own writeup
+      // as long as authorId and trackId are unchanged (status may change).
+      allow update: if isAdmin() || (isSignedIn() && role() == "lead" && resource.data.authorId == request.auth.uid && request.resource.data.authorId == resource.data.authorId && request.resource.data.trackId == resource.data.trackId);
       allow delete: if isAdmin();
     }
     match /media/{id} {
-      allow read: if writeupOf(resource.data.writeupId).data.status == "published" || isAdmin() || (isSignedIn() && writeupOf(resource.data.writeupId).data.authorId == request.auth.uid);
+      allow read: if writeupOf(resource.data.writeupId).data.status == "published" || (isSignedIn() && writeupOf(resource.data.writeupId).data.authorId == request.auth.uid);
       allow create: if isSignedIn() && canManageMedia(request.resource.data.writeupId);
       allow update: if isSignedIn() && canManageMedia(resource.data.writeupId);
       allow delete: if isSignedIn() && canManageMedia(resource.data.writeupId);

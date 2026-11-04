@@ -102,7 +102,7 @@ export default function Gallery() {
                   />
                   <div className={`absolute inset-0`} style={{ backgroundColor: TRACK_BG_COLORS[photo.trackId as TrackSlug] }} />
                 </div>
-                <div className="border-t-[3px] border-ink p-[10px]_[12px] text-[13px] font-bold bg-white">
+                <div className="border-t-[3px] border-ink p-[10px_12px] text-[13px] font-bold bg-white">
                   {photo.caption}
                 </div>
                 <Tag label={photo.trackId} color={trackTagColor(photo.trackId)} />
