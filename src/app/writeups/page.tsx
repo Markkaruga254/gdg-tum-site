@@ -4,13 +4,13 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 import NumberedRow from "@/components/NumberedRow";
-import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import type { Writeup, Track, TrackSlug } from "@/lib/types";
+import { getTracks, getWriteups, type TrackWithId, type WriteupWithId } from "@/lib/data";
+import { trackColor } from "@/lib/tracks";
+import type { TrackSlug } from "@/lib/types";
 
 export default function WriteupsPage() {
-  const [items, setItems] = useState<Writeup[]>([]);
-  const [tracks, setTracks] = useState<Track[]>([]);
+  const [items, setItems] = useState<WriteupWithId[]>([]);
+  const [tracks, setTracks] = useState<TrackWithId[]>([]);
   const [track, setTrack] = useState<TrackSlug | "all">("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,12 +18,9 @@ export default function WriteupsPage() {
   useEffect(() => {
     (async () => {
       try {
-        const [w, t] = await Promise.all([
-          getDocs(query(collection(db, "writeups"), where("status", "==", "published"), orderBy("publishedAt", "desc"))),
-          getDocs(collection(db, "tracks")),
-        ]);
-        setItems(w.docs.map((d) => ({ id: d.id, ...d.data() } as Writeup)));
-        setTracks(t.docs.map((d) => ({ id: d.id, ...d.data() } as Track)));
+        const [w, t] = await Promise.all([getWriteups({ status: "published" }), getTracks()]);
+        setItems(w);
+        setTracks(t);
       } catch {
         setError("Failed to load writeups");
       } finally {
@@ -33,7 +30,6 @@ export default function WriteupsPage() {
   }, []);
 
   const filtered = track === "all" ? items : items.filter((w) => w.trackId === track);
-  const trackColor = (slug: TrackSlug) => tracks.find((t) => t.slug === slug)?.color ?? "blue";
 
   return (
     <>

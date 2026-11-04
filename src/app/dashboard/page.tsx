@@ -7,7 +7,7 @@ import FormField from "@/components/form/FormField";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/firebase";
-import { doc, getDoc, collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from "firebase/firestore";
+import { doc, collection, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import { uploadToCloudinary } from "@/lib/cloudinary";
 import {
   validateEvent as validateEventSchema,
@@ -16,6 +16,8 @@ import {
 } from "@/lib/validators";
 import ReactMarkdown from "react-markdown";
 import PartnersTab from "./PartnersTab";
+import { getUserById, getEvents, getWriteups, getMediaByWriteup, getTicker } from "@/lib/data";
+import type { TrackSlug } from "@/lib/types";
 
 const TABS = ["Overview","New writeup","My events","Media","Live ticker","My profile","Partners"];
 
@@ -46,29 +48,31 @@ export default function DashboardPage() {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       if (!u) { setAllowed(false); return; }
-      const snap = await getDoc(doc(db, "users", u.uid));
-      const r = snap.exists() ? snap.data().role : "member";
+      const userData = await getUserById(u.uid);
+      const r = userData?.role ?? "member";
       const ok = r === "lead" || r === "admin";
       setAllowed(ok);
-      if (ok) { setUid(u.uid); setRole(r); setTrack(snap.exists() ? snap.data().track : ""); }
+      if (ok) { setUid(u.uid); setRole(r); setTrack(userData?.track ?? ""); }
     });
     return () => unsub();
   }, []);
 
   async function loadEvents() {
-    let q: any = collection(db, "events");
-    if (role === "lead" && track) q = query(collection(db, "events"), where("trackId", "==", track));
-    const snap = await getDocs(q);
-    setEvents(snap.docs.map((d) => ({ id: d.id, ...d.data() as any })));
+    try {
+      const fetched = role === "lead" && track ? await getEvents({ trackId: track as TrackSlug }) : await getEvents();
+      setEvents(fetched as any[]);
+    } catch {
+      setEvents([]);
+    }
   }
   async function loadWriteups() {
     if (!uid) return;
-    const snap = await getDocs(query(collection(db, "writeups"), where("authorId", "==", uid)));
-    setWriteups(snap.docs.map((d) => ({ id: d.id, ...d.data() as any })));
+    const fetched = await getWriteups({ authorId: uid });
+    setWriteups(fetched as any[]);
   }
   async function loadMedia(wid: string) {
-    const snap = await getDocs(query(collection(db, "media"), where("writeupId", "==", wid)));
-    setMediaList(snap.docs.map((d) => ({ id: d.id, ...d.data() as any })));
+    const fetched = await getMediaByWriteup(wid);
+    setMediaList(fetched as any[]);
   }
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (allowed && uid) { loadEvents(); loadWriteups(); } }, [allowed, uid, role, track]);
@@ -365,8 +369,8 @@ function TickerTab({ uid, events, track, setMsg, setErr }: any) {
   const [entries, setEntries] = useState<any[]>([]);
   const [form, setForm] = useState({ eventId: "", message: "" });
   async function load() {
-    const snap = await getDocs(collection(db, "ticker"));
-    setEntries(snap.docs.map((d) => ({ id: d.id, ...d.data() as any })));
+    const fetched = await getTicker();
+    setEntries(fetched as any[]);
   }
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [uid, track]);
@@ -438,9 +442,9 @@ function ProfileTab({ uid, setMsg, setErr }: any) {
   const [photoUrl, setPhotoUrl] = useState("");
   useEffect(() => {
     (async () => {
-      const snap = await getDoc(doc(db, "users", uid));
-      if (snap.exists()) {
-        const d = snap.data();
+      const userData = await getUserById(uid);
+      if (userData) {
+        const d = userData;
         setName(d.name || ""); setBio(d.bio || ""); setLinks(d.links?.length ? d.links : [{ title: "", url: "" }]); setPhotoUrl(d.photoUrl || "");
       }
     })();

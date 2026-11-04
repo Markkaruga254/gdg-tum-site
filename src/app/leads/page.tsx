@@ -4,19 +4,17 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 import BorderCard from "@/components/BorderCard";
-import { collection, getDocs, query, where } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import type { AppUser } from "@/lib/types";
+import { getUsers, type AppUserWithId } from "@/lib/data";
 
 export default function LeadsPage() {
-  const [leads, setLeads] = useState<AppUser[]>([]);
+  const [leads, setLeads] = useState<AppUserWithId[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     (async () => {
       try {
-        const snap = await getDocs(query(collection(db, "users"), where("role", "==", "lead")));
-        setLeads(snap.docs.map((d) => ({ id: d.id, ...d.data() } as AppUser)));
+        const fetched = await getUsers("lead");
+        setLeads(fetched);
       } catch { setError("Failed to load leads"); }
       finally { setLoading(false); }
     })();
