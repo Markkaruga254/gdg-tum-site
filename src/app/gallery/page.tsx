@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
@@ -38,7 +38,7 @@ export default function Gallery() {
   const hasMore = !!nextCursor;
   const photosRef = useRef<Photo[]>([]);
 
-  const loadPage = useCallback(async (append: boolean) => {
+  async function loadPage(append: boolean) {
     setLoading(true);
     setError("");
     try {
@@ -53,12 +53,13 @@ export default function Gallery() {
       setLoading(false);
       setMoreLoading(false);
     }
-  }, [trackFilter, nextCursor, photos.length]);
+  }
 
   useEffect(() => {
     photosRef.current = [];
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadPage(false);
-  }, [trackFilter, loadPage]);
+  }, [trackFilter]);
 
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
   const contactHref = contactEmail ? `mailto:${contactEmail}` : undefined;
