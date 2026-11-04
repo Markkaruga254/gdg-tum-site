@@ -150,8 +150,9 @@ section("media — reads gated on the parent writeup; writes for author, track l
 await expectAllowed(() => getDoc(doc(anon, "media", "m-published")), "anonymous reads media on a published writeup");
 await expectDenied(() => getDoc(doc(anon, "media", "m-draft")), "anonymous cannot read media on a draft");
 await expectDenied(() => getDoc(doc(member, "media", "m-draft")), "a member cannot read media on someone else's draft");
-await expectAllowed(() => getDoc(doc(leadCloud, "media", "m-draft")), "the author reads their own draft's media");
-await expectAllowed(() => getDocs(query(collection(anon, "media"), where("writeupId", "==", "w-published-cloud"))), "anonymous lists media for a published writeup");
+    await expectAllowed(() => getDoc(doc(leadCloud, "media", "m-draft")), "the author reads their own draft's media");
+    await expectAllowed(() => getDoc(doc(admin, "media", "m-draft")), "admin reads media on someone else's draft");
+    await expectAllowed(() => getDocs(query(collection(anon, "media"), where("writeupId", "==", "w-published-cloud"))), "anonymous lists media for a published writeup");
 await expectAllowed(() => addDoc(collection(admin, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-admin" }), "admin creates media on a published writeup");
 await expectAllowed(() => addDoc(collection(leadCloud, "media"), { writeupId: "w-draft-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-lead-cloud" }), "cloud lead creates media on their own cloud draft");
 await expectAllowed(() => updateDoc(doc(admin, "media", "m-published"), { caption: "hello" }), "admin captions media");
