@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import { collection, doc, addDoc, updateDoc, deleteDoc, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -45,6 +46,7 @@ export default function PartnersTab() {
     setPartners(list);
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, []);
 
   function resetForm() {

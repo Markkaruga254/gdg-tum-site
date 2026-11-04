@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateEvent, validateWriteup, validateLinks, trackColor, validatePartner } from "../validators";
+import { validateEvent, validateWriteup, validateLinks, trackColor, validatePartner, type PartnerType } from "../validators";
 
 describe("validateEvent", () => {
   it("accepts a complete member event", () => {
@@ -158,7 +158,7 @@ describe("validatePartner", () => {
   });
 
   it("rejects invalid type", () => {
-    expect(validatePartner({ ...base, type: "bogus" as any })).toEqual({
+    expect(validatePartner({ ...base, type: "bogus" as PartnerType })).toEqual({
       type: "Type required",
     });
   });
