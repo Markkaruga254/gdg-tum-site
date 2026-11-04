@@ -4,11 +4,36 @@ import Nav from "@/components/Nav";
 import TickerBar from "@/components/TickerBar";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
-import SectionLabel from "@/components/SectionLabel";
-import { getEvents, getWriteups, getPosts, getPartners, type EventWithId, type WriteupWithId, type PostWithId, type PartnerWithId } from "@/lib/data";
+import SectionHeader from "@/components/SectionHeader";
+import StatBlock from "@/components/StatBlock";
+import {
+  getEvents,
+  getWriteups,
+  getPosts,
+  getPartners,
+  getTracks,
+  type EventWithId,
+  type WriteupWithId,
+  type PostWithId,
+  type PartnerWithId,
+  type TrackWithId,
+} from "@/lib/data";
 import { getGalleryPage, type Photo } from "@/lib/gallery";
-import { TRACKS, TRACK_BG_COLORS, trackColor, trackTagColor } from "@/lib/tracks";
-import type { TrackSlug } from "@/lib/types";
+import { trackTagColor } from "@/lib/tracks";
+
+const COLOR_CLASS: Record<string, string> = {
+  blue: "bg-blue",
+  red: "bg-red",
+  green: "bg-green",
+  yellow: "bg-yellow",
+  ink: "bg-ink",
+};
+
+function formatDateTime(date: unknown): string {
+  if (!date || typeof (date as { toDate: () => Date }).toDate !== "function") return "";
+  const d = (date as { toDate: () => Date }).toDate();
+  return `${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })} · ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
+}
 
 export default function Home() {
   const [events, setEvents] = useState<EventWithId[]>([]);
@@ -17,6 +42,7 @@ export default function Home() {
   const [postsLoading, setPostsLoading] = useState(false);
   const [postsError, setPostsError] = useState<string | null>(null);
   const [partners, setPartners] = useState<PartnerWithId[]>([]);
+  const [tracks, setTracks] = useState<TrackWithId[]>([]);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [momentsLoading, setMomentsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -29,6 +55,12 @@ export default function Home() {
         setEvents(fetchedEvents);
         const fetchedWriteups = await getWriteups({ status: "published", limitCount: 3 });
         setWriteups(fetchedWriteups);
+        try {
+          const fetchedTracks = await getTracks?.().catch(() => []);
+          setTracks(fetchedTracks);
+        } catch {
+          // Tracks non-critical
+        }
         try {
           setPostsLoading(true);
           const fetchedPosts = await getPosts();
@@ -66,15 +98,14 @@ export default function Home() {
 
   const listed = events.filter((e) => e.status !== "cancelled");
   const nextEvent = listed.find((e) => e.status === "upcoming") || listed[0];
-  const held = listed.filter((e) => e.status === "past").length;
+  const held = listed.filter((e) => e.status !== "cancelled").length;
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
   const activeOrderedPartners = [...partners].filter((p) => p.active).sort((a, b) => a.order - b.order);
   const partnerTypes = [...new Set(activeOrderedPartners.map((p) => p.type))];
-  const activePartners = partners.filter((p) => p.active);
 
   return (
     <>
-      <Nav />
+      <Nav home />
       <TickerBar />
       <main className="mx-auto max-w-[1280px]">
         {error && (
@@ -82,106 +113,156 @@ export default function Home() {
             Events and writeups could not be loaded: {error}
           </section>
         )}
-        <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-2">
-          <div className="p-8">
-            <h1 className="font-display text-5xl uppercase md:text-7xl">
-              BUILD. LEARN. <span className="text-red">SHIP.</span>
+
+        {/* Hero + next event + stats */}
+        <section className="grid grid-cols-[repeat(auto-fit,minmax(340px,1fr))] border-b-[3px] border-ink">
+          <div className="p-[44px] p-[40px] border-r-[3px] border-ink">
+            <h1 className="font-display font-normal text-[clamp(64px,9vw,128px)] leading-[.92] uppercase">
+              Build.<br />
+              Learn.<br />
+              <span className="text-red">Ship.</span>
             </h1>
-            <p className="mt-4 max-w-md text-sm">
-              GDG on Campus TUM is a student developer club at the Technical University of Mombasa.
+            <p className="text-[18px] leading-[1.5] max-w-[460px] mt-[26px]">
+              Student developers at the Technical University of Mombasa, learning Google technologies by building real things together.
             </p>
-            <a href="/tracks" className="mt-6 inline-block border-[3px] border-ink bg-ink px-4 py-2 font-bold uppercase text-white">
-              Explore tracks →
+            <a
+              href="/tracks"
+              className="mt-[26px] inline-block border-[3px] border-ink px-[22px] py-[12px] font-bold text-[13px] uppercase"
+            >
+              Explore tracks ↗
             </a>
           </div>
-          <div className="bg-blue p-8 text-white">
-            <SectionLabel>Next event</SectionLabel>
-            {loading ? (
-              <p className="mt-4">Loading…</p>
-            ) : error ? (
-              <p className="mt-4">Event unavailable.</p>
-            ) : nextEvent ? (
-              <>
-                <h2 className="mt-2 font-display text-2xl uppercase">{nextEvent.title}</h2>
-                <p className="mt-1 text-sm">{nextEvent.venue}</p>
-                <p className="mt-1 text-sm">{nextEvent.date?.toDate?.().toLocaleString?.()}</p>
-                <button disabled className="mt-4 border-[3px] border-white px-4 py-2 font-bold uppercase opacity-60">
-                  RSVP (soon)
-                </button>
-              </>
+          <div className="flex flex-col">
+            <div className={`bg-blue text-white px-[32px] py-[30px] border-b-[3px] border-ink flex-1`}>
+              <SectionHeader className="tracking-[1px]">Next event</SectionHeader>
+              {loading ? (
+                <p className="mt-[12px] text-[15px]">Loading…</p>
+              ) : nextEvent ? (
+                <>
+                  <h2 className="font-display text-[44px] leading-[1.05] uppercase mt-[12px]">{nextEvent.title}</h2>
+                  <p className="text-[15px] mt-[4px]">{formatDateTime(nextEvent.date)} · {nextEvent.venue}</p>
+                  <a
+                    href="#events"
+                    className="mt-[18px] inline-block border-[3px] border-ink bg-white px-[18px] py-[10px] font-bold text-[13px] uppercase opacity-60 pointer-events-none"
+                  >
+                    RSVP ↗
+                  </a>
+                </>
+              ) : (
+                <p className="mt-[12px] text-[15px]">No upcoming events.</p>
+              )}
+            </div>
+            <div className="grid grid-cols-3 gap-[18px] p-[18px] border-t-[3px] border-ink">
+              <StatBlock value={held} label="Events held" />
+              <StatBlock value={writeups.length} label="Writeups" />
+              <StatBlock value={tracks.length || 4} label="Tracks" />
+            </div>
+          </div>
+        </section>
+
+        {/* Latest writeups (numbered rows, row 2 red) */}
+        <section id="events" className="grid grid-cols-[minmax(160px,1fr)_3fr] border-b-[3px] border-ink">
+          <div className="p-[28px] p-[24px] border-r-[3px] border-ink flex flex-col justify-between gap-[20px]">
+            <div>
+              <SectionHeader className="text-[14px]">Latest writeups</SectionHeader>
+              <a href="/writeups" className="text-[12px] font-bold uppercase">
+                See all ↗
+              </a>
+            </div>
+          </div>
+          <div>
+            {writeups.length === 0 ? (
+              <div className="p-[18px] p-[24px]">No writeups yet.</div>
             ) : (
-              <p className="mt-4">No upcoming events.</p>
+              writeups.slice(0, 3).map((w, i) => {
+                const num = String(i + 1).padStart(2, "0");
+                const isRed = i === 1;
+                return (
+                  <div
+                    key={w.id}
+                    className={`grid grid-cols-[90px_1fr_auto] gap-[18px] p-[18px] p-[24px] align-center border-b-[3px] border-ink ${isRed ? "bg-red" : ""}`}
+                  >
+                    <span className="font-display text-[64px] leading-1">{num}</span>
+                    <div>
+                      <div className="font-bold text-[20px]">{w.title}</div>
+                      <div className="text-[12px] mt-[4px] text-[#444]">
+                        Drafted with AI · reviewed by Lead
+                      </div>
+                    </div>
+                    <Tag label={w.trackId} color={isRed ? "ink" : trackTagColor(w.trackId)} />
+                  </div>
+                );
+              })
             )}
           </div>
         </section>
 
-        <section className="grid grid-cols-2 border-b-[3px] border-ink md:grid-cols-4">
-          {[
-            { label: "Events held", value: held },
-            { label: "Writeups", value: writeups.length },
-            { label: "Tracks", value: 4 },
-            { label: "Members", value: "[N]" },
-          ].map((s) => (
-            <div key={s.label} className="border-r-[3px] border-ink p-6 last:border-r-0">
-              <div className="font-display text-4xl">{s.value}</div>
-              <div className="text-xs font-bold uppercase">{s.label}</div>
-            </div>
-          ))}
-        </section>
-
-        <section className="border-b-[3px] border-ink p-6">
-          <div className="flex justify-between items-center border-b-[3px] border-ink pb-2 mb-4">
-            <p className="text-xs font-bold uppercase tracking-widest">Latest writeups</p>
+        {/* Tracks block */}
+        <section id="tracks" className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] border-b-[3px] border-ink">
+          <div className="p-[36px] p-[32px] border-r-[3px] border-ink bg-yellow">
+            <h2 className="font-display font-normal text-[72px] leading-[.95] uppercase">
+              Four<br />
+              tracks.<br />
+              One<br />
+              club.
+            </h2>
+            <p className="text-[15px] leading-[1.5] mt-[18px]">
+              Each track is led by a student lead who runs sessions, posts writeups and builds a public portfolio.
+            </p>
           </div>
-          {writeups.length === 0 ? (
-            <p className="text-sm">No writeups yet.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {writeups.map((w) => (
-                <a key={w.id} href={`/writeup?id=${w.id}`} className="border-[3px] border-ink p-3">
-                  <div className="font-bold">{w.title}</div>
-                  <div className="text-sm mt-1">{w.summary}</div>
-                  <Tag label={w.trackId} color={trackColor(w.trackId) as "blue" | "red" | "green" | "yellow"} />
-                </a>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="border-b-[3px] border-ink p-6">
-          <div className="flex flex-wrap gap-4">
-            {posts.map((p) => (
-              <a key={p.id} href={p.sourceUrl} target="_blank" rel="noopener noreferrer" className="border-[3px] border-ink p-4">
-                <div className="font-bold">{p.title}</div>
-                <div className="text-sm mt-1">{p.summary}</div>
-              </a>
-            ))}
-          </div>
-        </section>
-
-        <section className="border-b-[3px] border-ink">
-          <div className="px-[26px] py-[20px] border-b-[3px] border-ink flex justify-between items-center">
-            <span className="font-bold uppercase text-[14px]">Who we work with</span>
-            {contactEmail ? (
-              <a href={`mailto:${contactEmail}`} className="border-[3px] border-ink px-[10px] py-[16px] font-bold uppercase text-[12px]">Become a partner ↗</a>
+          <div>
+            {tracks.length === 0 ? (
+              <div className="p-[22px] p-[26px] border-b-[3px] border-ink">No tracks yet.</div>
             ) : (
-              <span className="border-[3px] border-ink px-[10px] py-[16px] font-bold uppercase text-[12px]">Become a partner ↗</span>
+              tracks.map((t, i) => {
+                const last = i === tracks.length - 1;
+                const isYellow = t.color === "yellow";
+                return (
+                  <div
+                    key={t.id}
+                    className={`flex justify-between items-center px-[26px] py-[22px] ${!last ? "border-b-[3px]" : "border-b-0"} border-ink`}
+                  >
+                    <span className="text-[22px] font-bold flex items-center gap-[12px]">
+                      <span
+                        className={`inline-block w-[14px] h-[14px] ${COLOR_CLASS[t.color]} ${isYellow ? "border-[2px] border-ink box-border" : ""}`}
+                      ></span>
+                      {String(i + 1).padStart(2, "0")} &nbsp; {t.name}
+                    </span>
+                    <span className="text-[28px]">+</span>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </section>
+
+        {/* Partners */}
+        <section id="partners" className="border-b-[3px] border-ink">
+          <div className="flex justify-between items-center flex-wrap gap-[10px] p-[20px] p-[26px] border-b-[3px] border-ink">
+            <SectionHeader className="text-[14px]">Who we work with</SectionHeader>
+            {contactEmail ? (
+              <a href={`mailto:${contactEmail}`} className="text-[12px] font-bold uppercase">
+                Become a partner ↗
+              </a>
+            ) : (
+              <span className="text-[12px] font-bold uppercase">Become a partner ↗</span>
             )}
           </div>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
             {activeOrderedPartners.map((p) => (
               <a key={p.id} href={p.link} target="_blank" rel="noopener noreferrer" className="block">
-                <div className="min-h-[120px] flex flex-col items-center justify-center border-r-[3px] border-ink border-b-[3px] border-ink p-2">
+                <div className="min-h-[120px] flex flex-col items-center justify-center border-r-[3px] border-ink border-b-[3px] border-ink p-[2px]">
                   {p.logoUrl ? (
-                    <img src={p.logoUrl} alt={p.name} className="object-contain max-h-[64px] mb-2" />
+                    <img src={p.logoUrl} alt={p.name} className="object-contain max-h-[64px] mb-[2px]" />
                   ) : (
-                    <span className="font-bold uppercase text-[13px] text-ink">{p.name}</span>
+                    <span className="font-bold text-[13px] text-ink uppercase">{p.name}</span>
                   )}
                   {p.type === "company" ? (
-                    <span className="mt-2 inline-block border-[3px] border-ink px-2 py-0.5 text-xs font-bold uppercase bg-white text-ink">Company</span>
+                    <span className="mt-[2px] inline-block border-[3px] border-ink px-[2px] py-[0.5px] text-[10px] font-bold uppercase bg-white text-ink">
+                      Company
+                    </span>
                   ) : (
                     <Tag
-                      key={p.type}
                       label={p.type[0].toUpperCase() + p.type.slice(1)}
                       color={p.type === "university" ? "blue" : p.type === "community" ? "green" : "red"}
                     />
@@ -189,78 +270,54 @@ export default function Home() {
                 </div>
               </a>
             ))}
-            <div key="placeholder" className="min-h-[120px] flex flex-col items-center justify-center border-[3px] border-ink bg-[#FBBC04] p-2">
+            <div key="placeholder" className="min-h-[120px] flex flex-col items-center justify-center border-[3px] border-ink bg-[#FBBC04] p-[2px]">
               {contactEmail ? (
-                <a href={`mailto:${contactEmail}`} className="font-bold uppercase text-[13px] text-ink">Your organisation here ↗</a>
+                <a href={`mailto:${contactEmail}`} className="font-bold text-[13px] text-ink uppercase">Your organisation here ↗</a>
               ) : (
-                <span className="font-bold uppercase text-[13px] text-ink">Your organisation here ↗</span>
+                <span className="font-bold text-[13px] text-ink uppercase">Your organisation here ↗</span>
               )}
             </div>
           </div>
-          {partnerTypes.length > 0 && (
-            <div className="px-[26px] py-[4px] flex flex-wrap gap-2">
-              {partnerTypes.map((t) => (
-                <Tag
-                  key={t}
-                  label={t[0].toUpperCase() + t.slice(1)}
-                  color={t === "university" ? "blue" : t === "community" ? "green" : t === "sponsor" ? "red" : "ink"}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="border-b-[3px] border-ink">
-          <div className="px-[26px] py-[20px] border-b-[3px] border-ink flex justify-between items-center">
-            <span className="font-bold uppercase text-[14px]">Tracks</span>
-            <a href="/tracks" className="border-[3px] border-ink px-[10px] py-[16px] font-bold uppercase text-[12px]">Explore tracks ↗</a>
-          </div>
-          <h2 className="font-display text-3xl uppercase mt-4">Four tracks, one community</h2>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-            {TRACKS.map((t) => (
-              <div key={t.slug} className="border-[3px] border-ink p-2 text-center">
-                <a href={`/track?slug=${t.slug}`} className="block bg-[#FBBC04] p-4 text-ink font-bold uppercase">
-                  {t.name}
-                </a>
-              </div>
+          <div className="flex flex-wrap gap-[10px] p-[14px] p-[26px]">
+            {partnerTypes.map((t) => (
+              <Tag
+                key={t}
+                label={t[0].toUpperCase() + t.slice(1)}
+                color={t === "university" ? "blue" : t === "community" ? "green" : "red"}
+              />
             ))}
           </div>
         </section>
 
-        <section className="border-b-[3px] border-ink">
-          <div className="px-[26px] py-[20px] border-b-[3px] border-ink flex justify-between items-center">
-            <h2 className="font-display text-[56px] uppercase">Moments</h2>
-            <a href="/gallery" className="border-[3px] border-ink px-[10px] py-[16px] font-bold uppercase text-[12px]">Open the gallery ↗</a>
+        {/* Moments */}
+        <section id="moments" className="border-b-[3px] border-ink">
+          <div className="flex justify-between items-center flex-wrap gap-[10px] p-[20px] p-[26px] border-b-[3px] border-ink">
+            <h2 className="font-display font-normal text-[56px] uppercase mt-0">Moments</h2>
+            <a
+              href="/gallery"
+              className="border-[3px] border-ink px-[16px] py-[10px] font-bold text-[12px] uppercase"
+            >
+              Open the gallery ↗
+            </a>
           </div>
-          <div className="p-[20px] flex flex-wrap gap-[16px]">
+          <div className="flex flex-wrap gap-[16px] p-[20px]">
             {momentsLoading ? (
-              <div className="border-[3px] border-ink rounded p-[20px] text-center w-full text-sm font-bold">Loading photos…</div>
+              <div className="border-[3px] border-ink text-center text-[12px] font-bold">Loading photos…</div>
             ) : photos.length === 0 ? (
-              <p className="col-span-full text-center text-sm">Photos from our events will appear here.</p>
+              <p className="col-span-full text-center text-[12px] font-bold uppercase">
+                Photos from our events will appear here.
+              </p>
             ) : (
               <>
                 <a
-                  key={photos[0].mediaId}
                   href={`/writeup?id=${photos[0].writeupId}`}
                   className="border-[3px] border-ink flex flex-col flex-[2_1_340px] min-h-[440px]"
                 >
                   <div className="flex-1 relative overflow-hidden">
-                    <img
-                      src={photos[0].url}
-                      alt={photos[0].altText}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const el = e.target as HTMLImageElement;
-                        el.style.display = "none";
-                        const wrapper = el.closest(".flex-1") as HTMLElement | null;
-                        if (wrapper) {
-                          wrapper.style.backgroundColor = TRACK_BG_COLORS[photos[0].trackId as import("@/lib/types").TrackSlug];
-                        }
-                      }}
-                    />
+                    <img src={photos[0].url} alt={photos[0].altText} className="w-full h-full object-cover" />
                   </div>
-                  <div className="border-t-[3px] border-ink p-[10px_12px] text-[13px] font-bold bg-white flex flex-col gap-1">
-                    {photos[0].caption}
+                  <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
+                    {photos[0].caption} &middot;{" "}
                     <Tag label={photos[0].trackId} color={trackTagColor(photos[0].trackId)} />
                   </div>
                 </a>
@@ -272,21 +329,9 @@ export default function Home() {
                       className="border-[3px] border-ink flex flex-col min-h-[240px]"
                     >
                       <div className="flex-1 relative overflow-hidden">
-                        <img
-                          src={photo.url}
-                          alt={photo.altText}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            const el = e.target as HTMLImageElement;
-                            el.style.display = "none";
-                            const wrapper = el.closest(".flex-1") as HTMLElement | null;
-                            if (wrapper) {
-                              wrapper.style.backgroundColor = TRACK_BG_COLORS[photo.trackId as import("@/lib/types").TrackSlug];
-                            }
-                          }}
-                        />
+                        <img src={photo.url} alt={photo.altText} className="w-full h-full object-cover" />
                       </div>
-                      <div className="border-t-[3px] border-ink p-[10px_12px] text-[13px] font-bold bg-white flex flex-col gap-1">
+                      <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                         {photo.caption}
                         <Tag label={photo.trackId} color={trackTagColor(photo.trackId)} />
                       </div>
@@ -296,38 +341,88 @@ export default function Home() {
               </>
             )}
           </div>
-          <div className="px-[0] py-[0_26px_20px] text-[12px] font-bold uppercase">Photos come from published writeups. Each links to its event.</div>
+          <div className="px-[0] py-[0_26px_20px] text-[12px] font-bold uppercase">
+            Photos come from published writeups. Each links to its event.
+          </div>
         </section>
 
-        <section className="border-b-[3px] border-ink p-6">
-          <div className="flex justify-between items-center border-b-[3px] border-ink pb-2 mb-4">
-            <p className="text-xs font-bold uppercase tracking-widest">Curated by GDG TUM Bot</p>
+        {/* Blog preview */}
+        <section id="blog" className="border-b-[3px] border-ink">
+          <div className="flex justify-between items-center flex-wrap gap-[10px] p-[20px] p-[26px] border-b-[3px] border-ink">
+            <SectionHeader className="text-[14px]">Tech blog</SectionHeader>
+            <span className="bg-ink text-white px-[10px] py-[4px] text-[12px] font-bold uppercase">
+              Curated by GDG TUM Bot
+            </span>
           </div>
-          {postsLoading ? (
-            <p className="text-sm">Loading…</p>
-          ) : postsError ? (
-            <p className="text-sm text-red">{postsError}</p>
-          ) : posts.length === 0 ? (
-            <p className="text-sm">No posts yet.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {posts.slice(0, 3).map((p) => (
-                <a key={p.id} href={p.sourceUrl} target="_blank" rel="noopener noreferrer" className="border-[3px] border-ink p-4 flex flex-col">
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {p.tags.map((tag) => (
-                      <div key={tag} className="mb-1">
-                        <Tag label={tag} color="ink" />
-                      </div>
-                    ))}
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
+            {[
+              ...posts.slice(0, 3),
+              ...(posts.length < 3
+                ? [
+                    {
+                      id: "placeholder",
+                      title: "News headline",
+                      summary: "Two-line summary and why it matters for students.",
+                      tags: ["Cloud"],
+                      sourceUrl: "#",
+                    },
+                  ]
+                : []),
+            ].map((p, i) => {
+              const last = i === 2;
+              const tag = (p.tags?.[0] ?? "Cloud") as string;
+              return (
+                <div
+                  key={p.id}
+                  className={`p-[24px] border-r-[3px] border-ink border-b-[3px] border-ink ${!last ? "" : "border-r-0 border-b-0"}`}
+                >
+                  <Tag label={tag} color="green" />
+                  <div className="font-bold text-[20px] leading-[1.25] mt-[16px] mb-[8px]">{p.title}</div>
+                  <div className="text-[14px] leading-[1.5] text-[#333]">
+                    {p.summary} <a href={p.sourceUrl} className="font-bold">
+                      Source ↗
+                    </a>
                   </div>
-                  <div className="font-bold">{p.title}</div>
-                  <div className="text-sm mt-1">{p.summary}</div>
-                  <span className="mt-2 block text-sm underline">Source ↗</span>
-                </a>
-              ))}
-            </div>
-          )}
+                </div>
+              );
+            })}
+          </div>
         </section>
+
+        {/* Labs Soon + red digest */}
+        <section id="labs" className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] border-b-[3px] border-ink">
+          <div className="p-[34px] p-[32px] border-r-[3px] border-ink bg-ink text-white flex flex-col gap-[12px]">
+            <Tag label="Soon" color="yellow" />
+            <h2 className="font-display font-normal text-[64px] leading-[1.1] uppercase mb-[8px]">Labs</h2>
+            <p className="text-[16px] leading-[1.6] mt-[8px]">Where students upskill with hands-on, guided practice.</p>
+          </div>
+          <div id="join" className="p-[34px] p-[32px] bg-red flex flex-col gap-[22px]">
+            <h2 className="font-display font-normal text-[44px] leading-[1.1] uppercase mb-[14px]">
+              Get the weekly digest
+            </h2>
+            <div className="flex flex-wrap border-[3px] border-ink bg-white gap-[18px]">
+              <label htmlFor="em" className="sr-only">
+                Email
+              </label>
+              <input
+                id="em"
+                type="email"
+                placeholder="ENTER YOUR EMAIL"
+                disabled
+                className="flex-1 min-w-[160px] border-0 px-[16px] py-[16px] text-[14px] font-bold bg-transparent focus:outline-none"
+              />
+              <button type="button" disabled className="bg-ink text-white border-0 px-[26px] py-[16px] text-[14px] font-bold uppercase">
+                Coming soon
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer strip */}
+        <div className="flex flex-wrap justify-between gap-[12px] px-[26px] py-[16px] text-[12px] font-bold uppercase">
+          <span>&copy; 2026 GDG on Campus TUM</span>
+          <span>GitHub &middot; LinkedIn &middot; Instagram &middot; X</span>
+        </div>
       </main>
       <Footer />
     </>

@@ -4,16 +4,17 @@ import { useSearchParams } from "next/navigation";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { useEffect, useState } from "react";
-import { getEventById, type EventWithId } from "@/lib/data";
-
-function EventDetail() {
+import { getEventById, type EventWithId } from "@/lib/data";function EventDetail() {
   const params = useSearchParams();
   const id = params.get("id");
   const [ev, setEv] = useState<EventWithId | null>(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    if (!id) { // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLoading(false); return; }
+    if (!id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLoading(false);
+      return;
+    }
     (async () => {
       const data = await getEventById(id);
       if (data) setEv(data);
@@ -22,7 +23,8 @@ function EventDetail() {
   }, [id]);
   return (
     <>
-      <Nav /><main className="mx-auto max-w-[1280px] p-6">
+      <Nav />
+      <main className="mx-auto max-w-[1280px]">
         {loading && <p>Loading…</p>}
         {!loading && !ev && <p>Event not found.</p>}
         {ev && (
@@ -35,7 +37,8 @@ function EventDetail() {
             {ev.status === "past" && <p className="mt-4">Past event</p>}
           </>
         )}
-      </main><Footer />
+      </main>
+      <Footer />
     </>
   );
 }

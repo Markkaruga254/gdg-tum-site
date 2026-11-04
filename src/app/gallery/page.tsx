@@ -2,7 +2,8 @@
 import { useEffect, useRef, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import Tag from "@/components/Tag";
+import PhotoCard from "@/components/PhotoCard";
+import Button from "@/components/Button";
 import { getGalleryPage, type Photo, type GalleryPage } from "@/lib/gallery";
 import { trackFilterOptions, TRACK_BG_COLORS, trackTagColor } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
@@ -49,11 +50,11 @@ export default function Gallery() {
     <>
       <Nav />
       <main className="mx-auto max-w-[1280px]">
-        <header className="px-[26px] py-[34px] border-b-[3px] border-ink">
-          <h1 className="font-display uppercase" style={{ fontSize: "clamp(60px, 9vw, 120px)" }}>
+        <header className="p-[34px] p-[26px] border-b-[3px] border-ink">
+          <h1 className="font-display font-normal uppercase" style={{ fontSize: "clamp(60px, 9vw, 120px)" }}>
             Moments
           </h1>
-          <p className="mt-4 text-[17px] max-w-[560px]">
+          <p className="mt-[14px] text-[17px] max-w-[560px] leading-[1.5]">
             Photos from our events and sessions, across all tracks.
           </p>
         </header>
@@ -62,14 +63,14 @@ export default function Gallery() {
           {FILTERS.map((f) => {
             const active = f.trackId === trackFilter || (f.trackId === undefined && trackFilter === undefined);
             return (
-              <button
+              <a
                 key={f.label}
-                onClick={() => setTrackFilter(f.trackId)}
+                onClick={(e) => { e.preventDefault(); setTrackFilter(f.trackId); }}
                 aria-pressed={active}
-                className={`px-[16px] py-[22px] border-r-[3px] border-ink font-bold uppercase text-[12px] focus:outline focus:outline-2 focus:outline-ink ${active ? "bg-[#FBBC04]" : ""}`}
+                className={`px-[22px] py-[16px] border-r-[3px] border-ink font-bold uppercase text-[12px] ${active ? "bg-[#FBBC04]" : ""} whitespace-nowrap`}
               >
                 {f.label}
-              </button>
+              </a>
             );
           })}
         </div>
@@ -80,52 +81,37 @@ export default function Gallery() {
           </section>
         )}
 
-        <div className="p-[20px] grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-[16px]">
+        <div className="gap-[16px] p-[20px] grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
           {photos.length === 0 && !loading ? (
             <p className="col-span-full text-center text-sm">No photos yet</p>
           ) : (
             photos.map((photo) => (
-              <a key={photo.mediaId} href={`/writeup?id=${photo.writeupId}`} className="border-[3px] border-ink flex flex-col min-h-[240px]">
-                <div className="flex-1 relative overflow-hidden">
-                  <img
-                    src={photo.url}
-                    alt={photo.altText}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      const el = e.target as HTMLImageElement;
-                      el.style.display = "none";
-                      const wrapper = el.closest(".flex-1") as HTMLElement | null;
-                      if (wrapper) {
-                        wrapper.style.backgroundColor = TRACK_BG_COLORS[photo.trackId as TrackSlug];
-                      }
-                    }}
-                  />
-                </div>
-                <div className="border-t-[3px] border-ink p-[10px_12px] text-[13px] font-bold bg-white">
-                  {photo.caption}
-                </div>
-                <Tag label={photo.trackId} color={trackTagColor(photo.trackId)} />
-              </a>
+              <PhotoCard
+                key={photo.mediaId}
+                url={photo.url}
+                caption={photo.caption}
+                trackId={photo.trackId}
+                writeupId={photo.writeupId}
+                tagColor={trackTagColor(photo.trackId as TrackSlug)}
+                bg={TRACK_BG_COLORS[photo.trackId as TrackSlug] ?? "#111"}
+              />
             ))
           )}
         </div>
 
         {hasMore && !moreLoading && !error && (
-          <button
-            onClick={() => { setMoreLoading(true); loadPage(true); }}
-            className="mx-auto border-[3px] border-ink px-[14px] py-[26px] font-bold uppercase text-[12px] focus:outline focus:outline-2 focus:outline-ink"
-          >
+          <Button variant="outline" className="mx-auto">
             Load more ↓
-          </button>
+          </Button>
         )}
         {moreLoading && <p className="text-center text-sm">Loading more…</p>}
 
-        <footer className="border-t-[3px] border-ink px-[26px] py-[18px] flex justify-between items-center text-[13px]">
+        <footer className="border-t-[3px] border-ink px-[26px] py-[18px] flex justify-between items-center text-[13px] font-bold uppercase">
           <span>Click a photo to open its event writeup.</span>
           <div className="flex items-center gap-1">
-            <span className="font-bold">Want a photo removed? </span>
+            <span className="font-bold uppercase">Want a photo removed? </span>
             {contactHref ? (
-              <a href={contactHref} target="_blank" rel="noopener noreferrer" className="focus:outline focus:outline-2 focus:outline-ink underline">
+              <a href={contactHref} target="_blank" rel="noopener noreferrer" className="underline focus:outline focus:outline-2 focus:outline-ink">
                 Contact us
               </a>
             ) : (
