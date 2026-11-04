@@ -7,6 +7,7 @@ import { auth, signInGoogle, signOut } from "@/lib/auth";
 const links = [
   { href: "/events", label: "Events" },
   { href: "/tracks", label: "Tracks" },
+  { href: "/gallery", label: "Gallery" },
   { href: "/blog", label: "Blog" },
   { href: "/writeups", label: "Writeups" },
   { href: "/leads", label: "Leads" },
