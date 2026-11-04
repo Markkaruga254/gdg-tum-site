@@ -169,36 +169,33 @@ export default function Home() {
             )}
           </div>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-            {activeOrderedPartners.length > 0 ? (
-              activeOrderedPartners.map((p) => (
-                <a key={p.id} href={p.link} target="_blank" rel="noopener noreferrer" className="block">
-                  <div className="min-h-[120px] flex flex-col items-center justify-center border-r-[3px] border-ink border-b-[3px] border-ink p-2">
-                    {p.logoUrl ? (
-                      <img src={p.logoUrl} alt={p.name} className="object-contain max-h-[64px] mb-2" />
-                    ) : (
-                      <span className="font-bold uppercase text-[13px] text-ink">{p.name}</span>
-                    )}
-                    {p.type === "company" ? (
-                      <span className="mt-2 inline-block border-[3px] border-ink px-2 py-0.5 text-xs font-bold uppercase bg-white text-ink">Company</span>
-                    ) : (
-                      <Tag
-                        key={p.type}
-                        label={p.type[0].toUpperCase() + p.type.slice(1)}
-                        color={p.type === "university" ? "blue" : p.type === "community" ? "green" : "red"}
-                      />
-                    )}
-                  </div>
-                </a>
-              ))
-            ) : (
-              <div key="placeholder" className="min-h-[120px] flex flex-col items-center justify-center border-[3px] border-ink bg-[#FBBC04] p-2">
-                {contactEmail ? (
-                  <a href={`mailto:${contactEmail}`} className="font-bold uppercase text-[13px] text-ink">Your organisation here ↗</a>
-                ) : (
-                  <span className="font-bold uppercase text-[13px] text-ink">Your organisation here ↗</span>
-                )}
-              </div>
-            )}
+            {activeOrderedPartners.map((p) => (
+              <a key={p.id} href={p.link} target="_blank" rel="noopener noreferrer" className="block">
+                <div className="min-h-[120px] flex flex-col items-center justify-center border-r-[3px] border-ink border-b-[3px] border-ink p-2">
+                  {p.logoUrl ? (
+                    <img src={p.logoUrl} alt={p.name} className="object-contain max-h-[64px] mb-2" />
+                  ) : (
+                    <span className="font-bold uppercase text-[13px] text-ink">{p.name}</span>
+                  )}
+                  {p.type === "company" ? (
+                    <span className="mt-2 inline-block border-[3px] border-ink px-2 py-0.5 text-xs font-bold uppercase bg-white text-ink">Company</span>
+                  ) : (
+                    <Tag
+                      key={p.type}
+                      label={p.type[0].toUpperCase() + p.type.slice(1)}
+                      color={p.type === "university" ? "blue" : p.type === "community" ? "green" : "red"}
+                    />
+                  )}
+                </div>
+              </a>
+            ))}
+            <div key="placeholder" className="min-h-[120px] flex flex-col items-center justify-center border-[3px] border-ink bg-[#FBBC04] p-2">
+              {contactEmail ? (
+                <a href={`mailto:${contactEmail}`} className="font-bold uppercase text-[13px] text-ink">Your organisation here ↗</a>
+              ) : (
+                <span className="font-bold uppercase text-[13px] text-ink">Your organisation here ↗</span>
+              )}
+            </div>
           </div>
           {partnerTypes.length > 0 && (
             <div className="px-[26px] py-[4px] flex flex-wrap gap-2">
@@ -236,7 +233,9 @@ export default function Home() {
             <a href="/gallery" className="border-[3px] border-ink px-[10px] py-[16px] font-bold uppercase text-[12px]">Open the gallery ↗</a>
           </div>
           <div className="p-[20px] flex flex-wrap gap-[16px]">
-            {photos.length === 0 && !momentsLoading ? (
+            {momentsLoading ? (
+              <div className="border-[3px] border-ink rounded p-[20px] text-center w-full text-sm font-bold">Loading photos…</div>
+            ) : photos.length === 0 ? (
               <p className="col-span-full text-center text-sm">Photos from our events will appear here.</p>
             ) : (
               <>

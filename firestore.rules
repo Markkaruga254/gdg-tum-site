@@ -80,7 +80,7 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     match /media/{id} {
-      allow read: if writeupOf(resource.data.writeupId).data.status == "published" || (isSignedIn() && writeupOf(resource.data.writeupId).data.authorId == request.auth.uid);
+      allow read: if writeupOf(resource.data.writeupId).data.status == "published" || isAdmin() || (isSignedIn() && writeupOf(resource.data.writeupId).data.authorId == request.auth.uid);
       allow create: if isSignedIn() && canManageMedia(request.resource.data.writeupId);
       allow update: if isSignedIn() && canManageMedia(resource.data.writeupId);
       allow delete: if isSignedIn() && canManageMedia(resource.data.writeupId);
