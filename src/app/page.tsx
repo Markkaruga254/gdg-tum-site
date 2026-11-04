@@ -8,7 +8,8 @@ import NumberedRow from "@/components/NumberedRow";
 import SectionLabel from "@/components/SectionLabel";
 import { collection, query, where, orderBy, limit, getDocsFromServer } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import type { Event, Partner, Post, Writeup } from "@/lib/types";
+import { getGalleryPage, type Photo } from "@/lib/gallery";
+import type { Event, Partner, Post, TrackSlug, Writeup } from "@/lib/types";
 
 const TRACKS = [
   { slug: "cloud", name: "Cloud", color: "blue" as const, lead: "[Lead name]" },
@@ -17,12 +18,22 @@ const TRACKS = [
   { slug: "women-in-tech", name: "Women in Tech", color: "yellow" as const, lead: "[Lead name]" },
 ];
 
+const TRACK_BG_COLORS: Record<TrackSlug, string> = {
+  cloud: "#3b82f6",
+  cybersecurity: "#ef4444",
+  web: "#10b981",
+  "women-in-tech": "#fbbf24",
+};
+
 export default function Home() {
   const [events, setEvents] = useState<Event[]>([]);
   const [writeups, setWriteups] = useState<Writeup[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [partners, setPartners] = useState<Partner[]>([]);
   const [partnersError, setPartnersError] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [momentsLoading, setMomentsLoading] = useState(false);
+  const [momentsError, setMomentsError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,6 +57,15 @@ export default function Home() {
           setPartners(prSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Partner)));
         } catch {
           setPartnersError("Partners could not be loaded.");
+        }
+        try {
+          setMomentsLoading(true);
+          const { photos: fetchedPhotos } = await getGalleryPage({ pageSize: 5 });
+          setPhotos(fetchedPhotos);
+        } catch {
+          setMomentsError("Photos could not be loaded.");
+        } finally {
+          setMomentsLoading(false);
         }
       } catch (e) {
         console.error("Home: Firestore reads failed", e);
@@ -217,6 +237,86 @@ export default function Home() {
               })}
             </div>
           )}
+        </section>
+
+        {momentsError && (
+          <section className="border-b-[3px] border-ink bg-red p-4 text-sm text-white">
+            {momentsError}
+          </section>
+        )}
+
+        <section className="border-b-[3px] border-ink">
+          <div className="px-[26px] py-[20px] border-b-[3px] border-ink flex justify-between items-center">
+            <h2 className="font-display text-[56px] uppercase">Moments</h2>
+            <a href="/gallery" className="border-[3px] border-ink px-[10px] py-[16px] font-bold uppercase text-[12px]">
+              Open the gallery ↗
+            </a>
+          </div>
+          <div className="p-[20px] flex flex-wrap gap-[16px]">
+            {momentsLoading ? (
+              <p className="mt-4">Loading…</p>
+            ) : photos.length === 0 ? (
+              <div className="border-[3px] border-ink p-6 text-sm text-center">
+                Photos from our events will appear here.
+              </div>
+            ) : (
+              <>
+                  <div className="flex-2 flex-1 basis-[340px] min-h-[440px] border-[3px] border-ink flex flex-col">
+                  <a href={`/writeup?id=${photos[0].writeupId}`} className="flex-1 relative overflow-hidden">
+                    <img
+                      src={photos[0].url}
+                      alt={photos[0].altText}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const el = e.target as HTMLImageElement;
+                        el.style.display = "none";
+                        const card = el.closest(".flex-1") as HTMLElement | null;
+                        if (card) {
+                          card.style.backgroundColor = TRACK_BG_COLORS[photos[0].trackId as TrackSlug];
+                        }
+                      }}
+                    />
+                    <div className={`absolute inset-0`} style={{ backgroundColor: TRACK_BG_COLORS[photos[0].trackId as TrackSlug] }} />
+                  </a>
+                  <div className="border-t-[3px] border-ink p-[10px]_[12px] text-[13px] font-bold bg-white">
+                    {photos[0].caption}
+                  </div>
+                  <Tag
+                    label={photos[0].trackId}
+                    color={photos[0].trackId === "cloud" ? "blue" : photos[0].trackId === "cybersecurity" ? "red" : photos[0].trackId === "web" ? "green" : "yellow"}
+                  />
+                </div>
+                <div className="flex-3 flex-1 basis-[340px] grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-[16px]">
+                  {photos.slice(1, 5).map((photo) => (
+                    <a key={photo.mediaId} href={`/writeup?id=${photo.writeupId}`} className="border-[3px] border-ink flex flex-col min-h-[240px]">
+                      <div className="flex-1 relative overflow-hidden">
+                        <img
+                          src={photo.url}
+                          alt={photo.altText}
+                          className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const el = e.target as HTMLImageElement;
+                        el.style.display = "none";
+                        const wrapper = el.closest(".flex-1") as HTMLElement | null;
+                        if (wrapper) {
+                          wrapper.style.backgroundColor = TRACK_BG_COLORS[photo.trackId as TrackSlug];
+                        }
+                      }}
+                        />
+                        <div className={`absolute inset-0`} style={{ backgroundColor: TRACK_BG_COLORS[photo.trackId as TrackSlug] }} />
+                      </div>
+                      <div className="border-t-[3px] border-ink p-[10px]_[12px] text-[13px] font-bold bg-white">
+                        {photo.caption}
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+          <div className="px-[0] py-[0]_[26px]_[20px] text-[12px] font-bold uppercase">
+            Photos come from published writeups. Each links to its event.
+          </div>
         </section>
 
         <section className="border-b-[3px] border-ink p-6">

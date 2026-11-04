@@ -13,6 +13,7 @@ export default function Footer() {
           <a href="#" className="focus:outline focus:outline-2 focus:outline-ink">Twitter</a>
           <a href="#" className="focus:outline focus:outline-2 focus:outline-ink">GitHub</a>
           <a href="#" className="focus:outline focus:outline-2 focus:outline-ink">Discord</a>
+          <a href="/gallery" className="focus:outline focus:outline-2 focus:outline-ink">Gallery</a>
         </div>
       </div>
     </footer>

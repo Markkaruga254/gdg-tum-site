@@ -84,3 +84,14 @@ export interface Partner {
   order: number;
   active: boolean;
 }
+
+export interface Media {
+  id: string;
+  writeupId: string;
+  url: string;
+  publicId?: string;
+  caption?: string;
+  altText?: string;
+  captionSource?: string;
+  createdBy?: string;
+}
