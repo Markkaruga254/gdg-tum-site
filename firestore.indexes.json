@@ -9,6 +9,15 @@
       ]
     },
     {
+      "collectionGroup": "writeups",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "trackId", "order": "ASCENDING" },
+        { "fieldPath": "publishedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "ticker",
       "queryScope": "COLLECTION",
       "fields": [
