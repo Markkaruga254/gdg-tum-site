@@ -91,7 +91,7 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+        run: npx playwright install chromium
 
       - name: Setup Java (Firestore emulator)
         uses: actions/setup-java@v4

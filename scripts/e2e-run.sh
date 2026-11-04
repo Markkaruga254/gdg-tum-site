@@ -26,17 +26,17 @@ echo "=== Starting Firestore emulator ==="
 firebase emulators:start --only firestore --project "$PROJECT_ID" &
 EMULATOR_PID=$!
 
-# Wait for emulator to be ready
-for i in $(seq 1 30); do
-  if curl -s "http://$EMULATOR_HOST/emulator/v1/projects/$PROJECT_ID" > /dev/null 2>&1; then
+# Wait for emulator to be ready (port is accepting connections)
+for i in $(seq 1 60); do
+  if (echo > /dev/tcp/127.0.0.1/8080) > /dev/null 2>&1; then
     echo "Emulator ready."
     break
   fi
-  if [ "$i" -eq 30 ]; then
+  if [ "$i" -eq 60 ]; then
     echo "ERROR: Emulator did not start in time." >&2
     exit 1
   fi
-  sleep 1
+  sleep 2
 done
 
 echo "=== Seeding Firestore data ==="
