@@ -8,7 +8,7 @@ import NumberedRow from "@/components/NumberedRow";
 import SectionLabel from "@/components/SectionLabel";
 import { collection, query, where, orderBy, limit, getDocsFromServer } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import type { Event, Post, Writeup } from "@/lib/types";
+import type { Event, Partner, Post, Writeup } from "@/lib/types";
 
 const TRACKS = [
   { slug: "cloud", name: "Cloud", color: "blue" as const, lead: "[Lead name]" },
@@ -21,6 +21,8 @@ export default function Home() {
   const [events, setEvents] = useState<Event[]>([]);
   const [writeups, setWriteups] = useState<Writeup[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
+  const [partners, setPartners] = useState<Partner[]>([]);
+  const [partnersError, setPartnersError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,6 +41,12 @@ export default function Home() {
         } catch {
           setPosts([]);
         }
+        try {
+          const prSnap = await getDocsFromServer(query(collection(db, "partners"), orderBy("order", "asc")));
+          setPartners(prSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Partner)));
+        } catch {
+          setPartnersError("Partners could not be loaded.");
+        }
       } catch (e) {
         console.error("Home: Firestore reads failed", e);
         const code = e instanceof Error && "code" in e ? String((e as { code: unknown }).code) : "unknown";
@@ -52,6 +60,10 @@ export default function Home() {
   const listed = events.filter((e) => e.status !== "cancelled");
   const nextEvent = listed.find((e) => e.status === "upcoming") || listed[0];
   const held = listed.filter((e) => e.status === "past").length;
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
+  const contactHref = contactEmail ? `mailto:${contactEmail}` : undefined;
+  const activePartners = partners.filter((p) => p.active);
+  const partnerTypes = [...new Set(activePartners.map((p) => p.type))];
 
   return (
     <>
@@ -145,6 +157,66 @@ export default function Home() {
               <div className="p-4 text-sm">[Track description placeholder]</div>
             </details>
           ))}
+        </section>
+
+        {partnersError && (
+          <section className="border-b-[3px] border-ink bg-red p-4 text-sm text-white">
+            {partnersError}
+          </section>
+        )}
+
+        <section className="border-b-[3px] border-ink">
+          <div className="px-[26px] py-[20px] border-b-[3px] border-ink flex justify-between items-center">
+            <span className="font-bold uppercase text-[14px]">Who we work with</span>
+            {contactHref ? (
+              <a href={contactHref} target="_blank" rel="noopener noreferrer" className="font-bold uppercase text-[12px]">
+                Become a partner ↗
+              </a>
+            ) : (
+              <span className="font-bold uppercase text-[12px]">Become a partner ↗</span>
+            )}
+          </div>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+            {activePartners.map((p) => (
+              <div key={p.id} className="min-h-[120px] flex flex-col items-center justify-center border-r-[3px] border-b-[3px] border-ink p-2">
+                {p.logoUrl ? (
+                  <a href={p.link} target="_blank" rel="noopener noreferrer" className="mb-1">
+                    <img src={p.logoUrl} alt={p.name} className="object-contain max-h-[64px]" />
+                  </a>
+                ) : (
+                  <a href={p.link} target="_blank" rel="noopener noreferrer" className="mb-1 font-bold uppercase text-[13px]">
+                    {p.name}
+                  </a>
+                )}
+                <Tag label={p.type} color={p.type === "university" ? "blue" : p.type === "community" ? "green" : p.type === "sponsor" ? "red" : "yellow"} />
+              </div>
+            ))}
+            <div className="min-h-[120px] flex flex-col items-center justify-center border-b-[3px] border-ink bg-[#FBBC04] p-2">
+              {contactHref ? (
+                <a href={contactHref} target="_blank" rel="noopener noreferrer" className="font-bold uppercase text-[13px] text-ink">
+                  Your organisation here ↗
+                </a>
+              ) : (
+                <span className="font-bold uppercase text-[13px] text-ink">
+                  Your organisation here ↗
+                </span>
+              )}
+            </div>
+          </div>
+          {activePartners.length > 0 && (
+            <div className="px-[26px] py-[14px] flex flex-wrap gap-[10px]">
+              {partnerTypes.map((t) => {
+                if (t === "company") {
+                  return (
+                    <span key={t} className="inline-block border-[3px] border-ink bg-white px-2 py-0.5 text-xs font-bold uppercase text-ink">
+                      {t}
+                    </span>
+                  );
+                }
+                return <Tag key={t} label={t} color={t === "university" ? "blue" : t === "community" ? "green" : "red"} />;
+              })}
+            </div>
+          )}
         </section>
 
         <section className="border-b-[3px] border-ink p-6">
