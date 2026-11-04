@@ -24,8 +24,14 @@ function View() {
       if (!tSnap.empty) {
         const t = { id: tSnap.docs[0].id, ...tSnap.docs[0].data() } as Track;
         setTrack(t);
-        const leadSnaps = await Promise.all(t.leadIds.map((id) => getDoc(doc(db, "users", id))));
-        setLeads(leadSnaps.filter((s) => s.exists()).map((s) => ({ id: s.id, ...s.data() } as AppUser)));
+        let leads: AppUser[] = [];
+        try {
+          const leadSnaps = await Promise.all(t.leadIds.map((id) => getDoc(doc(db, "users", id))));
+          leads = leadSnaps.filter((s) => s.exists()).map((s) => ({ id: s.id, ...s.data() } as AppUser));
+        } catch {
+          leads = [];
+        }
+        setLeads(leads);
         const evSnap = await getDocs(query(collection(db, "events"), where("trackId", "==", t.slug)));
         setEvents(evSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Event)).filter((e) => e.status !== "cancelled"));
         const wSnap = await getDocs(query(collection(db, "writeups"), where("status", "==", "published"), where("trackId", "==", t.slug)));

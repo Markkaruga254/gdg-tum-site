@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
     "test": "npm run test:unit",
+    "test:e2e": "playwright test",
+    "test:e2e:ci": "bash scripts/e2e-run.sh",
     "emulator": "firebase emulators:start --only firestore --project demo-gdg-tum-site",
     "test:rules": "firebase emulators:exec --only firestore --project demo-gdg-tum-site \"node scripts/test-rules.mjs\""
   },
@@ -24,6 +26,7 @@
   },
   "devDependencies": {
     "@firebase/rules-unit-testing": "^5.0.2",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/postcss": "^4.3.4",
     "@tailwindcss/turbopack": "^4",
     "@testing-library/dom": "^10.4.2",
