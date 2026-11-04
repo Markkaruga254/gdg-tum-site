@@ -173,6 +173,17 @@ await expectDenied(() => addDoc(collection(member, "posts"), { title: "x", summa
 await expectDenied(() => addDoc(collection(leadCloud, "posts"), { title: "x", summary: "s", sourceName: "n", sourceUrl: "https://example.invalid", tags: [], fetchedAt: new Date() }), "lead cannot write posts", { clean: true });
 await expectDenied(() => addDoc(collection(admin, "posts"), { title: "x", summary: "s", sourceName: "n", sourceUrl: "https://example.invalid", tags: [], fetchedAt: new Date() }), "admin cannot write posts from client", { clean: true });
 
+// ---- partners -------------------------------------------------------------
+section("partners — public read, admin write only");
+await expectAllowed(() => getDocs(collection(anon, "partners")), "anonymous can read partners");
+await expectAllowed(() => getDoc(doc(anon, "partners", "partner-u")), "anonymous can read one partner");
+await expectDenied(() => addDoc(collection(member, "partners"), { name: "X", link: "https://example.invalid", type: "company", order: 1, active: true }), "member cannot create a partner", { clean: true });
+await expectDenied(() => addDoc(collection(leadCloud, "partners"), { name: "X", link: "https://example.invalid", type: "company", order: 1, active: true }), "lead cannot create a partner", { clean: true });
+await expectDenied(() => addDoc(collection(anon, "partners"), { name: "X", link: "https://example.invalid", type: "company", order: 1, active: true }), "anonymous cannot create a partner", { clean: true });
+await expectAllowed(() => addDoc(collection(admin, "partners"), { name: "New Partner", link: "https://example.invalid", type: "company", order: 1, active: true }), "admin can create a partner");
+await expectAllowed(() => updateDoc(doc(admin, "partners", "partner-u"), { name: "Updated University" }), "admin can update a partner");
+await expectAllowed(() => deleteDoc(doc(admin, "partners", "partner-s")), "admin can delete a partner");
+
 // ---- default deny ----------------------------------------------------------
 section("unmatched collections — deny everything (rules:39-41)");
 await expectDenied(() => setDoc(doc(admin, "auditlogs", "a1"), { x: 1 }), "admin cannot write an unknown collection", { clean: true });

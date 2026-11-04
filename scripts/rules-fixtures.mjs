@@ -65,6 +65,10 @@ export async function seedFixtures(env) {
     await setDoc(doc(db, "media", "m-published"), { writeupId: "w-published-cloud", url: "https://example.invalid/a.jpg", publicId: "fixture/a", caption: "", altText: "", createdBy: "u-lead-cloud" });
     await setDoc(doc(db, "media", "m-draft"), { writeupId: "w-draft-cloud", url: "https://example.invalid/b.jpg", publicId: "fixture/b", caption: "", altText: "", createdBy: "u-lead-cloud" });
 
+    await setDoc(doc(db, "partners", "partner-u"), { name: "Fixture University", logoUrl: "https://example.invalid/u.png", link: "https://example.invalid/u", type: "university", order: 1, active: true });
+    await setDoc(doc(db, "partners", "partner-c"), { name: "Fixture Community", link: "https://example.invalid/c", type: "community", order: 2, active: true });
+    await setDoc(doc(db, "partners", "partner-s"), { name: "Fixture Sponsor", logoUrl: "https://example.invalid/s.png", link: "https://example.invalid/s", type: "sponsor", order: 3, active: false });
+
     await setDoc(doc(db, "ticker", "tk-cloud"), { eventId: "ev-cloud", message: "Fixture ticker", status: "active", createdBy: "u-lead-cloud" });
     await setDoc(doc(db, "ticker", "tk-web"), { eventId: "ev-web", message: "Fixture web ticker", status: "inactive", createdBy: "u-lead-web" });
   });

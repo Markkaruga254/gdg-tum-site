@@ -82,9 +82,13 @@ service cloud.firestore {
     }
     match /media/{id} {
       allow read: if readableMedia(resource.data.writeupId);
-      allow create: if isSignedIn() && canManageMedia(request.resource.data.writeupId);
+      allow create: if isSignedIn() && canManageMedia(resource.data.writeupId);
       allow update: if isSignedIn() && canManageMedia(resource.data.writeupId);
       allow delete: if isSignedIn() && canManageMedia(resource.data.writeupId);
+    }
+    match /partners/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
     match /{document=**} {
       allow read, write: if false;
