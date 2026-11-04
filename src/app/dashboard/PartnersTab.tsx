@@ -27,6 +27,18 @@ const TYPE_COLORS: Record<PartnerType, "blue" | "red" | "green" | "yellow"> = {
 const ACTIVE_COLOR = "text-green";
 const INACTIVE_COLOR = "text-red";
 
+function getSafeImageSrc(src: string | null): string | null {
+  if (!src) return null;
+  if (src.startsWith("blob:")) return src;
+  try {
+    const u = new URL(src, window.location.origin);
+    if (u.protocol === "https:") return u.toString();
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 export default function PartnersTab() {
   const [partners, setPartners] = useState<Partner[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -128,6 +140,7 @@ export default function PartnersTab() {
   }
 
   const editing = partners.find((p) => p.id === editingId);
+  const safeLogoPreview = getSafeImageSrc(logoPreview);
 
   return (
     <div>
@@ -184,12 +197,12 @@ export default function PartnersTab() {
             {logoFile && (
               <div className="mt-2">
                 <p className="text-xs">{logoFile.name} ({Math.round(logoFile.size / 1024)} KB)</p>
-                {logoPreview && <img src={logoPreview} alt="logo preview" className="h-24 w-24 object-cover border-[3px] border-ink mt-2" />}
+                {safeLogoPreview && <img src={safeLogoPreview} alt="logo preview" className="h-24 w-24 object-cover border-[3px] border-ink mt-2" />}
                 {uploadProgress != null && <p className="text-xs mt-1">Uploading {uploadProgress}%…</p>}
               </div>
             )}
-            {!logoFile && editing && logoPreview && (
-              <img src={logoPreview} alt="current logo" className="h-24 w-24 object-cover border-[3px] border-ink mt-2" />
+            {!logoFile && editing && safeLogoPreview && (
+              <img src={safeLogoPreview} alt="current logo" className="h-24 w-24 object-cover border-[3px] border-ink mt-2" />
             )}
           </FormField>
           {uploading ? (
