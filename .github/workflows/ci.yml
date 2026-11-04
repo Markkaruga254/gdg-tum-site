@@ -106,6 +106,12 @@ jobs:
         run: bash scripts/e2e-run.sh
         env:
           FIREBASE_PROJECT_ID: demo-gdg-tum-site
+          NEXT_PUBLIC_FIREBASE_API_KEY: ci-placeholder
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ci-placeholder.firebaseapp.com
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-gdg-tum-site
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ci-placeholder.appspot.com
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "1"
+          NEXT_PUBLIC_FIREBASE_APP_ID: "1:1:web:ci-placeholder"
         timeout-minutes: 15
 
       - name: Upload Playwright report
