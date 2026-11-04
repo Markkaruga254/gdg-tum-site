@@ -7,7 +7,7 @@ import Tag from "@/components/Tag";
 import SectionLabel from "@/components/SectionLabel";
 import { getEvents, getWriteups, getPosts, getPartners, type EventWithId, type WriteupWithId, type PostWithId, type PartnerWithId } from "@/lib/data";
 import { getGalleryPage, type Photo } from "@/lib/gallery";
-import { TRACKS, TRACK_BG_COLORS, trackTagColor } from "@/lib/tracks";
+import { TRACKS, TRACK_BG_COLORS, trackColor, trackTagColor } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
 
 export default function Home() {
@@ -118,6 +118,25 @@ export default function Home() {
               <div className="text-xs font-bold uppercase">{s.label}</div>
             </div>
           ))}
+        </section>
+
+        <section className="border-b-[3px] border-ink p-6">
+          <div className="flex justify-between items-center border-b-[3px] border-ink pb-2 mb-4">
+            <p className="text-xs font-bold uppercase tracking-widest">Latest writeups</p>
+          </div>
+          {writeups.length === 0 ? (
+            <p className="text-sm">No writeups yet.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {writeups.map((w) => (
+                <a key={w.id} href={`/writeup?id=${w.id}`} className="border-[3px] border-ink p-3">
+                  <div className="font-bold">{w.title}</div>
+                  <div className="text-sm mt-1">{w.summary}</div>
+                  <Tag label={w.trackId} color={trackColor(w.trackId) as "blue" | "red" | "green" | "yellow"} />
+                </a>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="border-b-[3px] border-ink p-6">
