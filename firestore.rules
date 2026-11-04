@@ -19,9 +19,12 @@ service cloud.firestore {
     }
 
     function canManageMedia(writeupId) {
-      return isAdmin()
-        || (isSignedIn() && writeupOf(writeupId).data.authorId == request.auth.uid)
-        || (isSignedIn() && isLeadOf(writeupOf(writeupId).data.trackId));
+      let w = writeupOf(writeupId);
+      return w != null && (
+        isAdmin()
+        || (isSignedIn() && w.data.authorId == request.auth.uid)
+        || (isSignedIn() && isLeadOf(w.data.trackId))
+      );
     }
 
     match /tracks/{id} {
