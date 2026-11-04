@@ -176,10 +176,9 @@ export default function DashboardPage() {
       <Nav />
       <div className="mx-auto grid max-w-[1280px] grid-cols-1 md:grid-cols-[200px_1fr]">
         <aside className="border-r-[3px] border-ink p-4">
-          {(role === "admin" ? TABS : TABS.filter((t) => t !== "Live ticker")).map((t) => (
+          {(role === "admin" || role === "lead" ? TABS : TABS.filter((t) => t !== "Live ticker")).map((t) => (
             <button key={t} onClick={() => setTab(t)} className={`mb-2 block w-full border-[3px] border-ink px-3 py-2 text-left text-sm font-bold uppercase ${tab === t ? "bg-ink text-white" : ""}`}>{t}</button>
           ))}
-          {role !== "admin" && <p className="text-xs">The live ticker is run by the club admins.</p>}
         </aside>
         <main className="p-6">
           {msg && <p className="mb-2 text-sm text-green">{msg}</p>}
@@ -391,6 +390,7 @@ function TickerTab({ uid, events, track, setMsg, setErr }: any) {
   async function create(e: any) {
     e.preventDefault();
     if (!form.eventId || !form.message.trim()) { setErr("Event and message required"); return; }
+    if (form.message.length > 140) { setErr("Message must be 140 characters or fewer"); return; }
     try {
       await addDoc(collection(db, "ticker"), { eventId: form.eventId, message: form.message, status: "inactive", createdBy: uid, updatedAt: serverTimestamp() });
       setMsg("Created"); setForm({ eventId: "", message: "" }); load();
@@ -404,6 +404,7 @@ function TickerTab({ uid, events, track, setMsg, setErr }: any) {
           {events.map((ev: any) => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
         </select>
         <input value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Message" className="border-[3px] border-ink px-3 py-2" />
+        <p className="mt-0.5 mb-0 text-xs text-ink">{form.message.length}/140</p>
         <button className="border-[3px] border-ink bg-ink px-4 py-2 font-bold uppercase text-white">Create entry</button>
       </form>
       <div className="mt-4 grid gap-2">

@@ -55,10 +55,15 @@ service cloud.firestore {
     match /ticker/{id} {
       allow read: if true;
       // Only the entry's creator may create/update/remove it, and only for an
-      // event in their own track; admins manage any ticker row.
-      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid && canManageTicker(request.resource.data.eventId);
-      allow update: if isAdmin() || (isSignedIn() && resource.data.createdBy == request.auth.uid && canManageTicker(resource.data.eventId));
+      // event in their own track; admins manage any ticker row. Messages are
+      // capped at 140 characters.
+      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid && canManageTicker(request.resource.data.eventId) && request.resource.data.message is string && request.resource.data.message.size() >= 1 && request.resource.data.message.size() <= 140;
+      allow update: if isAdmin() || (isSignedIn() && resource.data.createdBy == request.auth.uid && canManageTicker(resource.data.eventId) && request.resource.data.message is string && request.resource.data.message.size() >= 1 && request.resource.data.message.size() <= 140);
       allow delete: if isAdmin() || (isSignedIn() && resource.data.createdBy == request.auth.uid && canManageTicker(resource.data.eventId));
+    }
+    match /posts/{id} {
+      allow read: if true;
+      allow write: if false;
     }
     match /users/{uid} {
       allow read: if true;

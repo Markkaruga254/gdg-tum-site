@@ -36,6 +36,8 @@ export interface Writeup {
   title: string;
   summary: string;
   body: string;
+  attendance?: number;
+  links: { title: string; url: string }[];
   tags: { topics: string[]; products: string[] };
   status: "draft" | "published";
   aiDrafted: boolean;
@@ -67,5 +69,6 @@ export interface Ticker {
   eventId: string;
   message: string;
   status: "active" | "inactive";
+  createdBy: string;
   updatedAt: Timestamp;
 }
