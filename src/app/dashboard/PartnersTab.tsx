@@ -115,7 +115,7 @@ export default function PartnersTab() {
   async function toggleActive(p: Partner) {
     try {
       await updateDoc(doc(db, "partners", p.id), { active: !p.active });
-      setMsg(`${p.active ? "Deactivated" : "Reactivated"} ${p.name}`);
+      setMsg(p.active ? "Partner deactivated" : "Partner reactivated");
       await load();
     } catch (err2: any) { setErr(err2?.message || "Failed"); }
   }
