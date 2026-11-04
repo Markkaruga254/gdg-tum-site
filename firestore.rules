@@ -9,24 +9,6 @@ service cloud.firestore {
     function writeupOf(writeupId) {
       return get(/databases/$(database)/documents/writeups/$(writeupId));
     }
-    // Null-safe: a missing referenced writeup denies via predicate, never crashes.
-    function readableMedia(writeupId) {
-      let w = writeupOf(writeupId);
-      return w != null && (
-        w.data.status == "published"
-        || isAdmin()
-        || (isSignedIn() && w.data.authorId == request.auth.uid)
-      );
-    }
-    // Author of the parent writeup, a lead of that writeup's track, or an admin.
-    function canManageMedia(writeupId) {
-      let w = writeupOf(writeupId);
-      return w != null && (
-        isAdmin()
-        || (isSignedIn() && w.data.authorId == request.auth.uid)
-        || (isSignedIn() && isLeadOf(w.data.trackId))
-      );
-    }
     function eventTrackId(eventId) {
       let e = get(/databases/$(database)/documents/events/$(eventId));
       return e != null ? e.data.trackId : "";
@@ -34,6 +16,15 @@ service cloud.firestore {
     // Admin, or a lead of the track the ticker's event belongs to.
     function canManageTicker(eventId) {
       return isAdmin() || (isSignedIn() && isLeadOf(eventTrackId(eventId)));
+    }
+
+    function canManageMedia(writeupId) {
+      let w = writeupOf(writeupId);
+      return w != null && (
+        isAdmin()
+        || (isSignedIn() && w.data.authorId == request.auth.uid)
+        || (isSignedIn() && isLeadOf(w.data.trackId))
+      );
     }
 
     match /tracks/{id} {
@@ -81,10 +72,14 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     match /media/{id} {
-      allow read: if readableMedia(resource.data.writeupId);
+      allow read: if writeupOf(resource.data.writeupId).data.status == "published" || isAdmin() || (isSignedIn() && writeupOf(resource.data.writeupId).data.authorId == request.auth.uid);
       allow create: if isSignedIn() && canManageMedia(request.resource.data.writeupId);
       allow update: if isSignedIn() && canManageMedia(resource.data.writeupId);
       allow delete: if isSignedIn() && canManageMedia(resource.data.writeupId);
+    }
+    match /partners/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
     match /{document=**} {
       allow read, write: if false;

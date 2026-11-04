@@ -1,4 +1,5 @@
 export type TrackSlug = "cloud" | "cybersecurity" | "web" | "women-in-tech";
+export type PartnerType = "university" | "community" | "sponsor" | "company";
 
 export interface EventForm {
   title: string;
@@ -21,6 +22,14 @@ export interface WriteupForm {
   body: string;
   attendance: string;
   links: WriteupLink[];
+}
+
+export interface PartnerForm {
+  name: string;
+  link: string;
+  type: PartnerType;
+  order: string;
+  active: boolean;
 }
 
 export const URL_RE = /^https?:\/\//;
@@ -52,4 +61,15 @@ export function validateLinks(links: WriteupLink[]): string | null {
 
 export function trackColor(slug: TrackSlug | string, tracks: { slug: string; color: string }[]): string {
   return tracks.find((t) => t.slug === slug)?.color ?? "blue";
+}
+
+export function validatePartner(form: PartnerForm): Record<string, string> {
+  const errors: Record<string, string> = {};
+  if (!form.name.trim()) errors.name = "Name required";
+  else if (form.name.length > 80) errors.name = "Name too long (max 80)";
+  if (!URL_RE.test(form.link)) errors.link = "Link must start with http(s)://";
+  if (!["university", "community", "sponsor", "company"].includes(form.type)) errors.type = "Type required";
+  const order = Number(form.order);
+  if (!Number.isInteger(order) || order < 0) errors.order = "Order must be a non-negative integer";
+  return errors;
 }

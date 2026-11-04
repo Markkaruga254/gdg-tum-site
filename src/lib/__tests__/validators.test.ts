@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateEvent, validateWriteup, validateLinks, trackColor } from "../validators";
+import { validateEvent, validateWriteup, validateLinks, trackColor, validatePartner, type PartnerType } from "../validators";
 
 describe("validateEvent", () => {
   it("accepts a complete member event", () => {
@@ -125,5 +125,61 @@ describe("trackColor", () => {
   it("defaults to blue for an unknown slug", () => {
     expect(trackColor("women-in-tech", tracks)).toBe("blue");
     expect(trackColor("nope", tracks)).toBe("blue");
+  });
+});
+
+describe("validatePartner", () => {
+  const base: Parameters<typeof validatePartner>[0] = {
+    name: "Test Partner",
+    link: "https://example.invalid",
+    type: "company",
+    order: "1",
+    active: true,
+  };
+
+  it("accepts a complete partner", () => {
+    expect(validatePartner({ ...base })).toEqual({});
+  });
+
+  it("rejects missing name", () => {
+    expect(validatePartner({ ...base, name: "" })).toEqual({ name: "Name required" });
+  });
+
+  it("rejects name over 80 chars", () => {
+    expect(validatePartner({ ...base, name: "x".repeat(81) })).toEqual({
+      name: "Name too long (max 80)",
+    });
+  });
+
+  it("rejects non-http link", () => {
+    expect(validatePartner({ ...base, link: "ftp://example.invalid" })).toEqual({
+      link: "Link must start with http(s)://",
+    });
+  });
+
+  it("rejects invalid type", () => {
+    expect(validatePartner({ ...base, type: "bogus" as PartnerType })).toEqual({
+      type: "Type required",
+    });
+  });
+
+  it("rejects negative order", () => {
+    expect(validatePartner({ ...base, order: "-3" })).toEqual({
+      order: "Order must be a non-negative integer",
+    });
+  });
+
+  it("rejects non-integer order", () => {
+    expect(validatePartner({ ...base, order: "1.5" })).toEqual({
+      order: "Order must be a non-negative integer",
+    });
+  });
+
+  it("accepts zero order", () => {
+    expect(validatePartner({ ...base, order: "0" })).toEqual({});
+  });
+
+  it("trims whitespace-only name", () => {
+    expect(validatePartner({ ...base, name: "   " })).toEqual({ name: "Name required" });
   });
 });

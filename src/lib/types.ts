@@ -72,3 +72,15 @@ export interface Ticker {
   createdBy: string;
   updatedAt: Timestamp;
 }
+
+export type PartnerType = "university" | "community" | "sponsor" | "company";
+
+export interface Partner {
+  id: string;
+  name: string;
+  logoUrl?: string;
+  link: string;
+  type: PartnerType;
+  order: number;
+  active: boolean;
+}
