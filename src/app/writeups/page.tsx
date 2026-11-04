@@ -5,7 +5,7 @@ import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 import NumberedRow from "@/components/NumberedRow";
 import { getTracks, getWriteups, type TrackWithId, type WriteupWithId } from "@/lib/data";
-import { trackColor } from "@/lib/tracks";
+import { trackTagColor } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
 
 export default function WriteupsPage() {
@@ -33,12 +33,24 @@ export default function WriteupsPage() {
 
   return (
     <>
-      <Nav /><main className="mx-auto max-w-[1280px] p-6">
+      <Nav />
+      <main className="mx-auto max-w-[1280px]">
         <h1 className="font-display text-4xl uppercase">Writeups</h1>
         <div className="mt-4 flex flex-wrap gap-2">
-          <button onClick={() => setTrack("all")} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">All</button>
+          <button
+            onClick={() => setTrack("all")}
+            className={`border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase ${track === "all" ? "bg-yellow" : ""}`}
+          >
+            All
+          </button>
           {tracks.map((t) => (
-            <button key={t.slug} onClick={() => setTrack(t.slug)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">{t.name}</button>
+            <button
+              key={t.slug}
+              onClick={() => setTrack(t.slug)}
+              className={`border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase ${track === t.slug ? "bg-yellow" : ""}`}
+            >
+              {t.name}
+            </button>
           ))}
         </div>
         {loading && <p className="mt-4">Loading…</p>}
@@ -49,12 +61,13 @@ export default function WriteupsPage() {
             <a href={`/writeup?id=${w.id}`} className="font-bold">{w.title}</a>
             <p className="mt-1 text-sm">{w.summary}</p>
             <div className="mt-1 flex items-center gap-2">
-              <Tag label={w.trackId} color={trackColor(w.trackId) as "blue" | "red" | "green" | "yellow"} />
+              <Tag label={w.trackId} color={trackTagColor(w.trackId)} />
               {w.aiDrafted && <span className="text-xs italic">Drafted with AI, reviewed by [author]</span>}
             </div>
           </NumberedRow>
         ))}
-      </main><Footer />
+      </main>
+      <Footer />
     </>
   );
 }
