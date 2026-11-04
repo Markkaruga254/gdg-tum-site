@@ -86,12 +86,11 @@ await expectDenied(() => updateDoc(doc(leadWeb, "ticker", "tk-cloud"), { status:
 await expectDenied(() => addDoc(collection(leadCloud, "ticker"), { eventId: "ev-cloud", message: "x".repeat(141), status: "inactive", createdBy: "u-lead-cloud" }), "ticker message over 140 characters is rejected", { clean: true });
 
 // ---- users -----------------------------------------------------------------
-// The reads below are world-readable today. That is the exposure T05 closes:
-// anyone can enumerate every member, their role and their track.
-section("users — role/track drive every other rule; reads are owner-or-admin (T05 closed)");
-await expectDenied(() => getDoc(doc(anon, "users", "u-admin")), "anonymous cannot read any user record (T05 closed)");
-await expectDenied(() => getDocs(collection(anon, "users")), "anonymous cannot list users (T05 closed)");
-await expectDenied(() => getDoc(doc(member, "users", "u-other-member")), "a member cannot read another member (T05 closed)");
+// Public user docs hold no email; emails live in private_users.
+section("users — public read; create/update restricted (T05 reopened for public docs)");
+await expectAllowed(() => getDoc(doc(anon, "users", "u-admin")), "anonymous can read a user doc");
+await expectAllowed(() => getDocs(collection(anon, "users")), "anonymous can list user docs");
+await expectAllowed(() => getDoc(doc(member, "users", "u-other-member")), "anyone can read another member's public doc");
 await expectAllowed(() => getDoc(doc(member, "users", "u-member")), "member reads their own record");
 await expectAllowed(() => setDoc(doc(freshActor(env, "u-fresh"), "users", "u-fresh"), { name: "Fresh", role: "member", track: null }), "a signed-in uid can create its own record as member");
 await expectDenied(() => setDoc(doc(freshActor(env, "u-escalate"), "users", "u-escalate"), { name: "X", role: "lead", track: "cloud" }), "cannot create own record as lead");
@@ -110,7 +109,7 @@ await expectDenied(() => deleteDoc(doc(member, "users", "u-disposable")), "membe
 await expectAllowed(() => deleteDoc(doc(admin, "users", "u-disposable")), "admin deletes a user");
 
 // ---- private_users ---------------------------------------------------------
-section("private_users — email is owner-or-admin only");
+section("private_users — owner-or-admin only (emails live here)");
 await expectAllowed(() => getDoc(doc(member, "private_users", "u-member")), "owner reads own email");
 await expectAllowed(() => getDoc(doc(admin, "private_users", "u-member")), "admin reads any email");
 await expectDenied(() => getDoc(doc(otherMember, "private_users", "u-member")), "another user cannot read an email");
@@ -120,7 +119,7 @@ await expectDenied(() => updateDoc(doc(otherMember, "private_users", "u-member")
 await expectDenied(() => getDocs(collection(anon, "private_users")), "anonymous cannot list emails");
 
 // ---- writeups --------------------------------------------------------------
-section("writeups — drafts private; publishing is admin-only (T06 closed)");
+section("writeups — drafts private; leads publish/unpublish own writeups");
 await expectAllowed(() => getDoc(doc(anon, "writeups", "w-published-cloud")), "anonymous reads a published writeup");
 await expectAllowed(() => getDocs(query(collection(anon, "writeups"), where("status", "==", "published"))), "anonymous lists published writeups");
 await expectDeniedForCrash(() => getDocs(collection(anon, "writeups")), "anonymous cannot list writeups without a status filter", "undefined on object", "rules:31");
@@ -129,22 +128,22 @@ await expectDenied(() => getDoc(doc(member, "writeups", "w-draft-cloud")), "a me
 await expectAllowed(() => getDoc(doc(leadCloud, "writeups", "w-draft-cloud")), "the author reads their own draft");
 await expectAllowed(() => getDoc(doc(admin, "writeups", "w-draft-web")), "admin reads any draft");
 await expectAllowed(() => addDoc(collection(leadCloud, "writeups"), { title: "D", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", status: "draft", body: "b", tags: { topics: [], products: [] } }), "cloud lead creates a cloud draft for themselves");
-await expectDenied(() => addDoc(collection(leadCloud, "writeups"), { title: "P", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", status: "published", body: "b", tags: { topics: [], products: [] } }), "lead cannot self-publish on create (T06 closed)");
+await expectAllowed(() => addDoc(collection(leadCloud, "writeups"), { title: "P", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", status: "published", body: "b", tags: { topics: [], products: [] } }), "cloud lead creates a cloud writeup as published");
 await expectDenied(() => addDoc(collection(leadCloud, "writeups"), { title: "D", eventId: "ev-web", trackId: "web", authorId: "u-lead-cloud", status: "draft", body: "b", tags: { topics: [], products: [] } }), "lead cannot create in another track");
 await expectDenied(() => addDoc(collection(leadCloud, "writeups"), { title: "D", eventId: "ev-cloud", trackId: "cloud", authorId: "u-member", status: "draft", body: "b", tags: { topics: [], products: [] } }), "lead cannot attribute a writeup to someone else");
 await expectDenied(() => addDoc(collection(member, "writeups"), { title: "D", eventId: "ev-cloud", trackId: "cloud", authorId: "u-member", status: "draft", body: "b", tags: { topics: [], products: [] } }), "member cannot create a writeup");
 await expectAllowed(() => addDoc(collection(admin, "writeups"), { title: "A", eventId: "ev-web", trackId: "web", authorId: "u-lead-web", status: "published", body: "b", tags: { topics: [], products: [] } }), "admin creates a published writeup credited to a lead");
 await expectAllowed(() => updateDoc(doc(leadCloud, "writeups", "w-draft-cloud"), { body: "edited" }), "author edits their draft body");
-await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-flip-cloud"), { status: "published" }), "author cannot publish their own draft (T06 closed)");
-await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-flip-cloud"), { status: "draft" }), "author cannot unpublish their own writeup (T06 closed)");
+await expectAllowed(() => updateDoc(doc(leadCloud, "writeups", "w-draft-cloud"), { status: "published" }), "lead publishes their own draft");
+await expectAllowed(() => updateDoc(doc(leadCloud, "writeups", "w-flip-cloud"), { status: "draft" }), "lead unpublishes their own writeup");
 await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-draft-cloud"), { authorId: "u-lead-web" }), "author cannot reassign attribution");
 await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-draft-cloud"), { trackId: "web" }), "author cannot move a writeup to another track");
 await expectDenied(() => updateDoc(doc(leadWeb, "writeups", "w-draft-cloud"), { body: "vandal" }), "a lead cannot edit another author's draft");
 await expectAllowed(() => updateDoc(doc(admin, "writeups", "w-draft-web"), { status: "published" }), "admin publishes another author's draft");
 await expectAllowed(() => deleteDoc(doc(admin, "writeups", "w-draft-web")), "admin deletes a writeup");
-await expectDenied(() => deleteDoc(doc(leadCloud, "writeups", "w-flip-cloud")), "author cannot delete their own draft");
+await expectDenied(() => deleteDoc(doc(leadCloud, "writeups", "w-flip-cloud")), "author cannot delete their own writeup");
 await expectDenied(() => deleteDoc(doc(anon, "writeups", "w-published-cloud")), "anonymous cannot delete a writeup");
-await expectAllowed(() => updateDoc(doc(admin, "writeups", "w-flip-cloud"), { authorId: "u-admin" }), "admin may reattribute a writeup (T06 keeps this and adds publishedBy)");
+await expectAllowed(() => updateDoc(doc(admin, "writeups", "w-flip-cloud"), { authorId: "u-admin" }), "admin may reattribute a writeup");
 
 // ---- media -----------------------------------------------------------------
 section("media — reads gated on the parent writeup; writes for author, track lead, or admin (F1 fixed)");

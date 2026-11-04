@@ -14,6 +14,8 @@ export default function Home() {
   const [events, setEvents] = useState<EventWithId[]>([]);
   const [writeups, setWriteups] = useState<WriteupWithId[]>([]);
   const [posts, setPosts] = useState<PostWithId[]>([]);
+  const [postsLoading, setPostsLoading] = useState(false);
+  const [postsError, setPostsError] = useState<string | null>(null);
   const [partners, setPartners] = useState<PartnerWithId[]>([]);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [momentsLoading, setMomentsLoading] = useState(false);
@@ -28,10 +30,14 @@ export default function Home() {
         const fetchedWriteups = await getWriteups({ status: "published", limitCount: 3 });
         setWriteups(fetchedWriteups);
         try {
+          setPostsLoading(true);
           const fetchedPosts = await getPosts();
           setPosts(fetchedPosts);
         } catch {
           setPosts([]);
+          setPostsError("Failed to load posts.");
+        } finally {
+          setPostsLoading(false);
         }
         try {
           const fetchedPartners = await getPartners();
@@ -61,6 +67,9 @@ export default function Home() {
   const listed = events.filter((e) => e.status !== "cancelled");
   const nextEvent = listed.find((e) => e.status === "upcoming") || listed[0];
   const held = listed.filter((e) => e.status === "past").length;
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
+  const activeOrderedPartners = [...partners].filter((p) => p.active).sort((a, b) => a.order - b.order);
+  const partnerTypes = [...new Set(activeOrderedPartners.map((p) => p.type))];
   const activePartners = partners.filter((p) => p.active);
 
   return (
@@ -153,16 +162,59 @@ export default function Home() {
         <section className="border-b-[3px] border-ink">
           <div className="px-[26px] py-[20px] border-b-[3px] border-ink flex justify-between items-center">
             <span className="font-bold uppercase text-[14px]">Who we work with</span>
-            <span className="font-bold uppercase text-[12px]">Become a partner ↗</span>
+            {contactEmail ? (
+              <a href={`mailto:${contactEmail}`} className="border-[3px] border-ink px-[10px] py-[16px] font-bold uppercase text-[12px]">Become a partner ↗</a>
+            ) : (
+              <span className="border-[3px] border-ink px-[10px] py-[16px] font-bold uppercase text-[12px]">Become a partner ↗</span>
+            )}
           </div>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-            {partners.map((p) => (
-              <div key={p.id} className="min-h-[120px] flex flex-col items-center justify-center border-b-[3px] border-ink bg-[#FBBC04] p-2">
-                <span className="font-bold uppercase text-[13px] text-ink">{p.name}</span>
+            {activeOrderedPartners.length > 0 ? (
+              activeOrderedPartners.map((p) => (
+                <a key={p.id} href={p.link} target="_blank" rel="noopener noreferrer" className="block">
+                  <div className="min-h-[120px] flex flex-col items-center justify-center border-r-[3px] border-ink border-b-[3px] border-ink p-2">
+                    {p.logoUrl ? (
+                      <img src={p.logoUrl} alt={p.name} className="object-contain max-h-[64px] mb-2" />
+                    ) : (
+                      <span className="font-bold uppercase text-[13px] text-ink">{p.name}</span>
+                    )}
+                    {p.type === "company" ? (
+                      <span className="mt-2 inline-block border-[3px] border-ink px-2 py-0.5 text-xs font-bold uppercase bg-white text-ink">Company</span>
+                    ) : (
+                      <Tag
+                        key={p.type}
+                        label={p.type[0].toUpperCase() + p.type.slice(1)}
+                        color={p.type === "university" ? "blue" : p.type === "community" ? "green" : "red"}
+                      />
+                    )}
+                  </div>
+                </a>
+              ))
+            ) : (
+              <div key="placeholder" className="min-h-[120px] flex flex-col items-center justify-center border-[3px] border-ink bg-[#FBBC04] p-2">
+                {contactEmail ? (
+                  <a href={`mailto:${contactEmail}`} className="font-bold uppercase text-[13px] text-ink">Your organisation here ↗</a>
+                ) : (
+                  <span className="font-bold uppercase text-[13px] text-ink">Your organisation here ↗</span>
+                )}
               </div>
-            ))}
+            )}
           </div>
-          <div className="px-[26px] py-[20px] border-t-[3px] border-ink flex justify-between items-center">
+          {partnerTypes.length > 0 && (
+            <div className="px-[26px] py-[4px] flex flex-wrap gap-2">
+              {partnerTypes.map((t) => (
+                <Tag
+                  key={t}
+                  label={t[0].toUpperCase() + t.slice(1)}
+                  color={t === "university" ? "blue" : t === "community" ? "green" : t === "sponsor" ? "red" : "ink"}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="border-b-[3px] border-ink">
+          <div className="px-[26px] py-[20px] border-b-[3px] border-ink flex justify-between items-center">
             <span className="font-bold uppercase text-[14px]">Tracks</span>
             <a href="/tracks" className="border-[3px] border-ink px-[10px] py-[16px] font-bold uppercase text-[12px]">Explore tracks ↗</a>
           </div>
@@ -187,38 +239,95 @@ export default function Home() {
             {photos.length === 0 && !momentsLoading ? (
               <p className="col-span-full text-center text-sm">Photos from our events will appear here.</p>
             ) : (
-              photos.map((photo) => (
-                <a key={photo.mediaId} href={`/writeup?id=${photo.writeupId}`} className="border-[3px] border-ink flex flex-col min-h-[240px]">
+              <>
+                <a
+                  key={photos[0].mediaId}
+                  href={`/writeup?id=${photos[0].writeupId}`}
+                  className="border-[3px] border-ink flex flex-col flex-[2_1_340px] min-h-[440px]"
+                >
                   <div className="flex-1 relative overflow-hidden">
                     <img
-                      src={photo.url}
-                      alt={photo.altText}
+                      src={photos[0].url}
+                      alt={photos[0].altText}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         const el = e.target as HTMLImageElement;
                         el.style.display = "none";
                         const wrapper = el.closest(".flex-1") as HTMLElement | null;
                         if (wrapper) {
-                          wrapper.style.backgroundColor = TRACK_BG_COLORS[photo.trackId as import("@/lib/types").TrackSlug];
+                          wrapper.style.backgroundColor = TRACK_BG_COLORS[photos[0].trackId as import("@/lib/types").TrackSlug];
                         }
                       }}
                     />
-                    <div className={`absolute inset-0`} style={{ backgroundColor: TRACK_BG_COLORS[photo.trackId as import("@/lib/types").TrackSlug] }} />
                   </div>
-                  <div className="border-t-[3px] border-ink p-[10px]_[12px] text-[13px] font-bold bg-white">
-                    {photo.caption}
+                  <div className="border-t-[3px] border-ink p-[10px_12px] text-[13px] font-bold bg-white flex flex-col gap-1">
+                    {photos[0].caption}
+                    <Tag label={photos[0].trackId} color={trackTagColor(photos[0].trackId)} />
                   </div>
-                  <Tag label={photo.trackId} color={trackTagColor(photo.trackId)} />
                 </a>
-              ))
+                <div className="flex-[3_1_340px] grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-[16px]">
+                  {photos.slice(1, 5).map((photo) => (
+                    <a
+                      key={photo.mediaId}
+                      href={`/writeup?id=${photo.writeupId}`}
+                      className="border-[3px] border-ink flex flex-col min-h-[240px]"
+                    >
+                      <div className="flex-1 relative overflow-hidden">
+                        <img
+                          src={photo.url}
+                          alt={photo.altText}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const el = e.target as HTMLImageElement;
+                            el.style.display = "none";
+                            const wrapper = el.closest(".flex-1") as HTMLElement | null;
+                            if (wrapper) {
+                              wrapper.style.backgroundColor = TRACK_BG_COLORS[photo.trackId as import("@/lib/types").TrackSlug];
+                            }
+                          }}
+                        />
+                      </div>
+                      <div className="border-t-[3px] border-ink p-[10px_12px] text-[13px] font-bold bg-white flex flex-col gap-1">
+                        {photo.caption}
+                        <Tag label={photo.trackId} color={trackTagColor(photo.trackId)} />
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </>
             )}
           </div>
-          <div className="px-[0] py-[0]_[26px]_[20px] text-[12px] font-bold uppercase">Photos come from published writeups. Each links to its event.</div>
+          <div className="px-[0] py-[0_26px_20px] text-[12px] font-bold uppercase">Photos come from published writeups. Each links to its event.</div>
         </section>
 
         <section className="border-b-[3px] border-ink p-6">
-          <p className="text-xs font-bold uppercase tracking-widest">Posts</p>
-          <p className="mt-4">Loading…</p>
+          <div className="flex justify-between items-center border-b-[3px] border-ink pb-2 mb-4">
+            <p className="text-xs font-bold uppercase tracking-widest">Curated by GDG TUM Bot</p>
+          </div>
+          {postsLoading ? (
+            <p className="text-sm">Loading…</p>
+          ) : postsError ? (
+            <p className="text-sm text-red">{postsError}</p>
+          ) : posts.length === 0 ? (
+            <p className="text-sm">No posts yet.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {posts.slice(0, 3).map((p) => (
+                <a key={p.id} href={p.sourceUrl} target="_blank" rel="noopener noreferrer" className="border-[3px] border-ink p-4 flex flex-col">
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {p.tags.map((tag) => (
+                      <div key={tag} className="mb-1">
+                        <Tag label={tag} color="ink" />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="font-bold">{p.title}</div>
+                  <div className="text-sm mt-1">{p.summary}</div>
+                  <span className="mt-2 block text-sm underline">Source ↗</span>
+                </a>
+              ))}
+            </div>
+          )}
         </section>
       </main>
       <Footer />

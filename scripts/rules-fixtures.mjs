@@ -62,8 +62,12 @@ export async function seedFixtures(env) {
     await setDoc(doc(db, "writeups", "w-flip-cloud"), { title: "Fixture Flip Published", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "published", publishedAt: new Date(), tags: { topics: [], products: [] } });
     await setDoc(doc(db, "writeups", "w-draft-web"), { title: "Fixture Web Draft", eventId: "ev-web", trackId: "web", authorId: "u-lead-web", body: "Fixture", status: "draft", tags: { topics: [], products: [] } });
 
+    // Dedicated draft writeup that no other test mutates, used by media tests
+    // that must read media on a draft writeup.
+    await setDoc(doc(db, "writeups", "w-media-draft"), { title: "Fixture Media Draft", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "draft", tags: { topics: [], products: [] } });
+
     await setDoc(doc(db, "media", "m-published"), { writeupId: "w-published-cloud", url: "https://example.invalid/a.jpg", publicId: "fixture/a", caption: "", altText: "", createdBy: "u-lead-cloud" });
-    await setDoc(doc(db, "media", "m-draft"), { writeupId: "w-draft-cloud", url: "https://example.invalid/b.jpg", publicId: "fixture/b", caption: "", altText: "", createdBy: "u-lead-cloud" });
+    await setDoc(doc(db, "media", "m-draft"), { writeupId: "w-media-draft", url: "https://example.invalid/b.jpg", publicId: "fixture/b", caption: "", altText: "", createdBy: "u-lead-cloud" });
 
     await setDoc(doc(db, "partners", "partner-u"), { name: "Fixture University", logoUrl: "https://example.invalid/u.png", link: "https://example.invalid/u", type: "university", order: 1, active: true });
     await setDoc(doc(db, "partners", "partner-c"), { name: "Fixture Community", link: "https://example.invalid/c", type: "community", order: 2, active: true });

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   collection,
   doc,
@@ -8,7 +8,6 @@ import {
   where,
   orderBy,
   limit,
-  startAfter,
   type QueryConstraint,
   type DocumentData,
 } from "firebase/firestore";
@@ -138,7 +137,7 @@ export function useCollection<T>(
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
 
-  async function load() {
+  const load = useCallback(async () => {
     if (options.enabled === false) {
       setLoading(false);
       return;
@@ -154,13 +153,12 @@ export function useCollection<T>(
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
-  }, []);
+  }, [load]);
 
   return { data, loading, error, refetch: load };
 }
