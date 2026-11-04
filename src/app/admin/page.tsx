@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import Button from "@/components/Button";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/firebase";
@@ -18,6 +19,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (!u) { setAllowed(false); setLoading(false); return; }
       setUid(u.uid);
       const snap = await getDoc(doc(db, "users", u.uid));
@@ -43,11 +45,12 @@ export default function AdminPage() {
     } catch (e: any) { setErr(e?.message || "Save failed"); }
   }
 
-  if (loading) return <><Nav /><main className="p-6">Loading…</main><Footer /></>;
-  if (!allowed) return <><Nav /><main className="p-6">Not allowed.</main><Footer /></>;
+  if (loading) return <><Nav /><main className="mx-auto max-w-[1280px] p-6">Loading…</main><Footer /></>;
+  if (!allowed) return <><Nav /><main className="mx-auto max-w-[1280px] p-6">Not allowed.</main><Footer /></>;
   return (
     <>
-      <Nav /><main className="mx-auto max-w-[1280px] p-6">
+      <Nav />
+      <main className="mx-auto max-w-[1280px]">
         <h1 className="font-display text-4xl uppercase">Admin</h1>
         {msg && <p className="mt-2 text-sm text-green">{msg}</p>}
         {err && <p className="mt-2 text-sm text-red">{err}</p>}
@@ -57,24 +60,31 @@ export default function AdminPage() {
             <UserRow key={u.id} u={u} self={u.id === uid} onSave={saveUser} />
           ))}
         </div>
-      </main><Footer />
+      </main>
+      <Footer />
     </>
   );
 }
 
 function UserRow({ u, self, onSave }: any) {
-  const [role, setRole] = useState(u.role);
-  const [track, setTrack] = useState(u.track || "");
+  const [r, setR] = useState(u.role);
+  const [t, setT] = useState(u.track || "");
   return (
     <div className="border-[3px] border-ink p-3 grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
       <div>{u.name} {self && "(you)"}</div>
-      <select value={role} onChange={(e) => setRole(e.target.value)} className="border-[3px] border-ink px-2 py-1">
-        <option value="member">member</option><option value="lead">lead</option><option value="admin">admin</option>
+      <select value={r} onChange={(e) => setR(e.target.value)} className="border-[3px] border-ink px-2 py-1">
+        <option value="member">member</option>
+        <option value="lead">lead</option>
+        <option value="admin">admin</option>
       </select>
-      <select value={track} onChange={(e) => setTrack(e.target.value)} className="border-[3px] border-ink px-2 py-1">
-        <option value="">none</option><option value="cloud">cloud</option><option value="cybersecurity">cybersecurity</option><option value="web">web</option><option value="women-in-tech">women-in-tech</option>
+      <select value={t} onChange={(e) => setT(e.target.value)} className="border-[3px] border-ink px-2 py-1">
+        <option value="">none</option>
+        <option value="cloud">cloud</option>
+        <option value="cybersecurity">cybersecurity</option>
+        <option value="web">web</option>
+        <option value="women-in-tech">women-in-tech</option>
       </select>
-      <button onClick={() => onSave(u, role, track)} className="border-[3px] border-ink bg-ink px-3 py-1 font-bold uppercase text-white">Save</button>
+      <Button variant="dark" onClick={() => onSave(u, r, t)}>Save</Button>
     </div>
   );
 }

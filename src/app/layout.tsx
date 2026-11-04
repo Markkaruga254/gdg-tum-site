@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Anton, Space_Grotesk } from "next/font/google";
+import PageFrame from "@/components/PageFrame";
 import "./globals.css";
 
 const anton = Anton({ subsets: ["latin"], weight: "400", variable: "--font-anton" });
@@ -13,7 +14,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${anton.variable} ${space.variable}`}>
-      <body className="min-h-screen" suppressHydrationWarning>{children}</body>
+      <body className="min-h-screen" suppressHydrationWarning>
+        <PageFrame>{children}</PageFrame>
+      </body>
     </html>
   );
 }

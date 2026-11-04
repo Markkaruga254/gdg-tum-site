@@ -15,9 +15,10 @@ export default function TickerBar() {
   }, []);
   if (!msg) return null;
   return (
-    <div className="flex items-center gap-3 border-b-[3px] border-ink bg-ink px-4 py-2 text-white">
-      <span className="bg-green px-2 py-0.5 text-xs font-bold uppercase text-ink">Live now</span>
-      <span className="text-sm">{msg}</span>
+    <div className="flex items-center gap-[14px] bg-ink text-white px-[22px] py-[12px] text-[13px] font-bold uppercase tracking-[.5px] flex-wrap">
+      <span className="bg-green text-ink px-[10px] py-[3px]">Live now</span>
+      <span>{msg}</span>
+      <span className="ml-auto text-yellow">Updated by track leads in real time</span>
     </div>
   );
 }

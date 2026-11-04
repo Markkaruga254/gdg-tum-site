@@ -1,15 +1,22 @@
 "use client";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import SectionHeader from "@/components/SectionHeader";
+import Button from "@/components/Button";
 import { signInGoogle } from "@/lib/auth";
 
 export default function LoginPage() {
   return (
     <>
-      <Nav /><main className="mx-auto max-w-[1280px] p-6">
+      <Nav />
+      <main className="mx-auto max-w-[1280px]">
         <h1 className="font-display text-4xl uppercase">Login</h1>
-        <button onClick={() => signInGoogle()} className="mt-4 border-[3px] border-ink bg-yellow px-4 py-2 font-bold uppercase text-ink">Sign in with Google</button>
-      </main><Footer />
+        <SectionHeader>Sign in</SectionHeader>
+        <Button variant="dark" onClick={() => signInGoogle()}>
+          Sign in with Google
+        </Button>
+      </main>
+      <Footer />
     </>
   );
 }

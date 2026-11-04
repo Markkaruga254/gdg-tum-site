@@ -7,6 +7,7 @@ import Tag from "@/components/Tag";
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { getWriteupById, getUserById, getWriteups, getMediaByWriteup, type WriteupWithId, type AppUserWithId, type MediaWithId } from "@/lib/data";
+import { trackTagColor } from "@/lib/tracks";
 
 function View() {
   const params = useSearchParams();
@@ -17,8 +18,11 @@ function View() {
   const [media, setMedia] = useState<MediaWithId[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    if (!id) { // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLoading(false); return; }
+    if (!id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setLoading(false);
+      return;
+    }
     (async () => {
       const data = await getWriteupById(id);
       if (data) {
@@ -49,25 +53,26 @@ function View() {
   }, [id]);
   return (
     <>
-      <Nav /><main className="mx-auto max-w-[1280px] p-6">
+      <Nav />
+      <main className="mx-auto max-w-[1280px]">
         {loading && <p>Loading…</p>}
         {!loading && !w && <p>Not found.</p>}
         {w && (
           <>
             <h1 className="font-display text-4xl uppercase">{w.title}</h1>
             <div className="mt-2 flex items-center gap-2">
-              <Tag label={w.trackId} color="blue" />
+              <Tag label={w.trackId} color={trackTagColor(w.trackId)} />
               {author && <a href={`/lead?id=${author.id}`} className="text-sm underline">{author.name}</a>}
             </div>
             <p className="mt-4 text-sm">{w.summary}</p>
-            <div className="prose mt-4 max-w-none">
+            <div className="mt-4">
               <ReactMarkdown>{w.body}</ReactMarkdown>
             </div>
             {media.length > 0 && (
               <section className="mt-4 grid gap-2">
                 {media.map((m) => (
                   <figure key={m.id} className="border-[3px] border-ink p-2">
-                    <img src={m.url} alt={m.altText || ""} />
+                    <img src={m.url} alt={m.altText || ""} className="block max-w-full" />
                     {m.caption && <figcaption className="text-sm">{m.caption}</figcaption>}
                   </figure>
                 ))}
@@ -83,7 +88,8 @@ function View() {
             )}
           </>
         )}
-      </main><Footer />
+      </main>
+      <Footer />
     </>
   );
 }

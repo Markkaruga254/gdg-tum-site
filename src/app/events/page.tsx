@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
+import Button from "@/components/Button";
 import { getEvents, type EventWithId } from "@/lib/data";
 
 export default function EventsPage() {
@@ -11,6 +12,7 @@ export default function EventsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     (async () => {
       try {
         const fetched = await getEvents();
@@ -28,15 +30,28 @@ export default function EventsPage() {
 
   return (
     <>
-      <Nav /><main className="mx-auto max-w-[1280px] p-6">
+      <Nav />
+      <main className="mx-auto max-w-[1280px]">
         <h1 className="font-display text-4xl uppercase">Events</h1>
-        <select aria-label="Filter by track" value={track} onChange={(e) => setTrack(e.target.value)} className="mt-4 border-[3px] border-ink px-3 py-2">
-          <option value="all">All tracks</option>
-          <option value="cloud">Cloud</option>
-          <option value="cybersecurity">Cybersecurity</option>
-          <option value="web">Web</option>
-          <option value="women-in-tech">Women in Tech</option>
-        </select>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setTrack("all")}
+            className={`text-[12px] px-3 py-1 ${track === "all" ? "bg-yellow" : ""}`}
+          >
+            All
+          </Button>
+          {[...new Set(visible.map((e) => e.trackId))].map((t) => (
+            <Button
+              key={t}
+              variant="outline"
+              onClick={() => setTrack(t)}
+              className={`text-[12px] px-3 py-1 ${track === t ? "bg-yellow" : ""}`}
+            >
+              {t}
+            </Button>
+          ))}
+        </div>
         {loading && <p className="mt-4">Loading…</p>}
         {error && <p className="mt-4">{error}</p>}
         {!loading && filtered.length === 0 && <p className="mt-4">No events.</p>}
@@ -48,7 +63,8 @@ export default function EventsPage() {
             </a>
           ))}
         </div>
-      </main><Footer />
+      </main>
+      <Footer />
     </>
   );
 }
