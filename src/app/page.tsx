@@ -63,55 +63,52 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const fetchedEvents = await getEvents({ orderAsc: true });
-        setEvents(fetchedEvents);
-        const fetchedWriteups = await getWriteups({ status: "published", limitCount: 3 });
-        setWriteups(fetchedWriteups);
-        try {
-          setTracks(await getTracks());
-        } catch {
-          setTracksError("Tracks could not be loaded. Open the tracks page to retry.");
-        }
-        try {
-          setLeads(await getUsers("lead"));
-        } catch {
-          setLeads([]);
-        }
-        try {
-          setPostsLoading(true);
-          const fetchedPosts = await getPosts();
-          setPosts(fetchedPosts);
-        } catch {
-          setPosts([]);
-          setPostsError("Failed to load posts.");
-        } finally {
-          setPostsLoading(false);
-        }
-        try {
-          const fetchedPartners = await getPartners();
-          setPartners(fetchedPartners);
-        } catch {
-          setPartnersError("Partners could not be loaded.");
-        }
-        try {
-          setMomentsLoading(true);
-          const { photos: fetchedPhotos } = await getGalleryPage({ pageSize: 5 });
-          setPhotos(fetchedPhotos);
-        } catch {
-          setMomentsError("Moments could not be loaded. Refresh the page to retry.");
-        } finally {
-          setMomentsLoading(false);
-        }
-      } catch (e) {
-        console.error("Home: Firestore reads failed", e);
-        const code = e instanceof Error && "code" in e ? String((e as { code: unknown }).code) : "unknown";
-        setError(`read failed (${code}).`);
-      } finally {
-        setLoading(false);
+    let active = true;
+    const load = async () => {
+      const results = await Promise.allSettled([
+        getEvents({ orderAsc: true }),
+        getWriteups({ status: "published", limitCount: 3 }),
+        getTracks(),
+        getUsers("lead"),
+        getPosts(),
+        getPartners(),
+        getGalleryPage({ pageSize: 5 }),
+      ]);
+      if (!active) return;
+
+      const [eventsResult, writeupsResult, tracksResult, leadsResult, postsResult, partnersResult, momentsResult] = results;
+
+      if (eventsResult.status === "fulfilled") setEvents(eventsResult.value);
+      else setError("Events could not be loaded.");
+
+      if (writeupsResult.status === "fulfilled") setWriteups(writeupsResult.value);
+      else setError("Writeups could not be loaded.");
+
+      if (tracksResult.status === "fulfilled") setTracks(tracksResult.value);
+      else setTracksError("Tracks could not be loaded. Open the tracks page to retry.");
+
+      if (leadsResult.status === "fulfilled") setLeads(leadsResult.value);
+      else setLeads([]);
+
+      if (postsResult.status === "fulfilled") setPosts(postsResult.value);
+      else {
+        setPosts([]);
+        setPostsError("Failed to load posts.");
       }
-    })();
+
+      if (partnersResult.status === "fulfilled") setPartners(partnersResult.value);
+      else setPartnersError("Partners could not be loaded.");
+
+      if (momentsResult.status === "fulfilled") setPhotos(momentsResult.value.photos);
+      else setMomentsError("Moments could not be loaded. Refresh the page to retry.");
+
+      setPostsLoading(false);
+      setMomentsLoading(false);
+      setLoading(false);
+    };
+
+    void load();
+    return () => { active = false; };
   }, []);
 
   const listed = events.filter((e) => e.status !== "cancelled");
@@ -130,7 +127,7 @@ export default function Home() {
       <main className="mx-auto max-w-[1280px]">
         {error && (
           <section className="border-b-[3px] border-ink bg-red p-4 text-sm text-white">
-            Events and writeups could not be loaded: {error}
+            Some homepage content could not be loaded: {error}
           </section>
         )}
 
