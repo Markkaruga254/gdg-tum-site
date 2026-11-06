@@ -40,7 +40,12 @@ export default function EventsPage() {
   }, []);
 
   const visible = events.filter((event) => event.status !== "cancelled");
-  const tracks = [...new Set(visible.map((event) => event.trackId))];
+  const tracks = [
+    { id: "cloud", label: "Cloud" },
+    { id: "cybersecurity", label: "Cybersecurity" },
+    { id: "web", label: "Web" },
+    { id: "women-in-tech", label: "Women in Tech" },
+  ];
   const filtered = visible.filter((event) => track === "all" || event.trackId === track);
   const upcoming = filtered
     .filter((event) => event.status === "upcoming" || event.status === "live")
@@ -83,7 +88,7 @@ export default function EventsPage() {
         </header>
 
         <nav className="flex flex-wrap border-b-[3px] border-ink" aria-label="Filter events by track">
-          {[{ id: "all", label: "All" }, ...tracks.map((value) => ({ id: value, label: trackLabel(value) }))].map((item) => (
+          {[{ id: "all", label: "All" }, ...tracks].map((item) => (
             <button
               key={item.id}
               type="button"
