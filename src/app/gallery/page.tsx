@@ -111,6 +111,7 @@ export default function Gallery() {
                 key={photo.mediaId}
                 url={photo.url}
                 caption={photo.caption}
+                altText={photo.altText}
                 trackId={photo.trackId}
                 writeupId={photo.writeupId}
                 tagColor={trackTagColor(photo.trackId as TrackSlug)}
