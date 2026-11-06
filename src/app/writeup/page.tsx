@@ -75,49 +75,38 @@ function View() {
           </p>
         </header>
         <section className="border-b-[3px] border-ink bg-yellow px-[26px] py-[24px]">
-          <p className="max-w-[860px] text-[17px] leading-[1.55]">{writeup.summary}</p>
+          <p className="max-w-[860px] text-[19px] font-medium leading-[1.5]">{writeup.summary}</p>
         </section>
 
         {error && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[16px] font-bold">{error}</p>}
 
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_280px]">
-          <article className="min-w-0 border-b-[3px] border-ink px-[26px] py-[30px] lg:border-b-0 lg:border-r-[3px]">
-            <h2 className="mb-[18px] font-display text-[38px] uppercase">What we covered</h2>
-            <div className="space-y-[16px] text-[15px] leading-[1.75] [&_h1]:mb-3 [&_h1]:mt-8 [&_h1]:font-display [&_h1]:text-4xl [&_h1]:uppercase [&_h2]:mb-3 [&_h2]:mt-8 [&_h2]:font-display [&_h2]:text-3xl [&_h2]:uppercase [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:font-bold [&_li]:ml-6 [&_li]:list-disc [&_ol_li]:list-decimal [&_a]:underline [&_blockquote]:border-l-[3px] [&_blockquote]:border-ink [&_blockquote]:pl-4 [&_pre]:overflow-x-auto [&_pre]:border-[3px] [&_pre]:border-ink [&_pre]:bg-[#f5f5f5] [&_pre]:p-4 [&_code]:font-mono [&_hr]:my-6 [&_hr]:border-ink">
-              <ReactMarkdown>{writeup.body}</ReactMarkdown>
-            </div>
-            {writeup.tags?.topics?.length ? (
-              <section className="mt-[34px] border-t-[3px] border-ink pt-[20px]">
-                <h2 className="text-[12px] font-bold uppercase">Topics covered</h2>
-                <div className="mt-[12px] flex flex-wrap gap-[8px]">
-                  {writeup.tags.topics.map((topic) => <span key={topic} className="border-[2px] border-ink px-[10px] py-[6px] text-[11px] font-bold uppercase">{topic}</span>)}
-                </div>
-              </section>
-            ) : null}
-          </article>
-
-          <aside className="px-[26px] py-[30px]">
-            <h2 className="font-display text-[30px] uppercase">Resources</h2>
-            {writeup.links?.length ? (
-              <ul className="mt-[12px]">
-                {writeup.links.map((link) => (
-                  <li key={link.url} className="border-b-[2px] border-ink py-[12px]">
-                    <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-[13px] font-bold underline underline-offset-4">{link.title || link.url} ↗</a>
-                  </li>
-                ))}
-              </ul>
-            ) : <p className="mt-[12px] text-[13px]">No resources were attached to this writeup.</p>}
-          </aside>
-        </div>
+        <section className="max-w-[872px] px-[26px] py-[34px]">
+          <h2 className="mb-[10px] font-display text-[34px] uppercase">What we covered</h2>
+          <div className="space-y-[16px] text-[17px] leading-[1.7] [&_h1]:mb-3 [&_h1]:mt-8 [&_h1]:font-display [&_h1]:text-4xl [&_h1]:uppercase [&_h2]:mb-3 [&_h2]:mt-8 [&_h2]:font-display [&_h2]:text-[34px] [&_h2]:uppercase [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:font-bold [&_li]:ml-6 [&_li]:list-disc [&_ol_li]:list-decimal [&_a]:underline [&_blockquote]:border-l-[3px] [&_blockquote]:border-ink [&_blockquote]:pl-4 [&_pre]:overflow-x-auto [&_pre]:border-[3px] [&_pre]:border-ink [&_pre]:bg-[#f5f5f5] [&_pre]:p-4 [&_code]:font-mono [&_hr]:my-6 [&_hr]:border-ink">
+            <ReactMarkdown>{writeup.body}</ReactMarkdown>
+          </div>
+          <h2 className="mb-[10px] mt-[28px] font-display text-[34px] uppercase">Resources</h2>
+          {writeup.links?.length ? (
+            <ul className="space-y-[10px] text-[17px] leading-[1.7]">
+              {writeup.links.map((link) => (
+                <li key={link.url}>
+                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{link.title || link.url} ↗</a>
+                </li>
+              ))}
+            </ul>
+          ) : <p className="text-[15px]">No resources were attached to this writeup.</p>}
+        </section>
 
         {media.length > 0 && (
           <section className="border-t-[3px] border-ink">
-            <div className="px-[26px] py-[20px]"><h2 className="font-display text-[42px] uppercase">Photos</h2></div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="border-b-[3px] border-ink px-[26px] py-[18px]">
+              <h2 className="text-[14px] font-bold uppercase">Photos</h2>
+            </div>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-[16px] p-[20px]">
               {media.map((item) => (
-                <figure key={item.id} className="border-t-[3px] border-r-[3px] border-ink">
-                  <img src={item.url} alt={item.altText || item.caption || writeup.title} className="aspect-[4/3] w-full object-cover" />
-                  {item.caption && <figcaption className="border-t-[3px] border-ink px-[14px] py-[12px] text-[13px] font-bold">{item.caption}</figcaption>}
+                <figure key={item.id} className="border-[3px] border-ink bg-white">
+                  <img src={item.url} alt={item.altText || item.caption || writeup.title} className="h-[200px] w-full border-b-[3px] border-ink object-cover" />
+                  {item.caption && <figcaption className="px-[12px] py-[10px] text-[13px] font-bold">{item.caption}</figcaption>}
                 </figure>
               ))}
             </div>
@@ -126,14 +115,16 @@ function View() {
 
         {related.length > 0 && (
           <section className="border-t-[3px] border-ink">
-            <div className="px-[26px] py-[20px]"><h2 className="font-display text-[42px] uppercase">More from this track</h2></div>
-            <div className="grid grid-cols-1 border-t-[3px] border-ink sm:grid-cols-3">
-              {related.map((item, index) => (
-                <article key={item.id} className={`border-b-[3px] border-r-[3px] border-ink p-[20px] ${index === 1 ? "bg-yellow" : "bg-white"}`}>
-                  <Tag label={item.trackId} color={trackTagColor(item.trackId)} />
-                  <h3 className="mt-[14px] text-[18px] font-bold">{item.title}</h3>
-                  <p className="mt-[8px] text-[13px] leading-[1.5]">{item.summary}</p>
-                  <a href={`/writeup?id=${item.id}`} className="mt-[16px] inline-block text-[12px] font-bold uppercase underline">Read ↗</a>
+            <div className="border-b-[3px] border-ink px-[26px] py-[18px]">
+              <h2 className="text-[14px] font-bold uppercase">More from this track</h2>
+            </div>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-[16px] p-[20px]">
+              {related.map((item) => (
+                <article key={item.id} className="border-[3px] border-ink bg-white p-[22px]">
+                  <Tag label={trackLabel(item.trackId)} color={trackTagColor(item.trackId)} />
+                  <h3 className="mt-[14px] text-[20px] font-bold leading-[1.25]">{item.title}</h3>
+                  <p className="mt-[8px] text-[14px] leading-[1.5] text-[#333]">{item.summary}</p>
+                  <a href={`/writeup?id=${item.id}`} className="mt-[14px] inline-block text-[12px] font-bold uppercase underline underline-offset-4">Read ↗</a>
                 </article>
               ))}
             </div>
