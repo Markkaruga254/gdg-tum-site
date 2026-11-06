@@ -89,7 +89,7 @@ export default function AdminPage() {
         {err && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[12px] text-[13px] font-bold">{err}</p>}
 
         <div className="hidden grid-cols-[1.4fr_1fr_1fr_auto] gap-[14px] border-b-[3px] border-ink bg-ink px-[26px] py-[14px] text-[11px] font-bold uppercase text-white sm:grid">
-          <span>Name</span><span>Role</span><span>Track</span><span className="w-[86px]">Action</span>
+          <span>Name</span><span>Role</span><span>Track</span><span aria-hidden="true" className="w-[86px]" />
         </div>
 
         {users.length === 0 ? (
