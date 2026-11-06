@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import TickerBar from "@/components/TickerBar";
-import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 import SectionHeader from "@/components/SectionHeader";
 import StatBlock from "@/components/StatBlock";
@@ -424,7 +423,6 @@ export default function Home() {
           <span>GitHub &middot; LinkedIn &middot; Instagram &middot; X</span>
         </div>
       </main>
-      <Footer />
     </>
   );
 }
