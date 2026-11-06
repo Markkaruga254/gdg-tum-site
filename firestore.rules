@@ -45,8 +45,8 @@ service cloud.firestore {
     }
     match /ticker/{id} {
       allow read: if true;
-      // Only the entry's creator may create/update/remove it, and only for an
-      // event in their own track; admins manage any ticker row. Messages are
+      // Creators can create rows; track leads manage rows for their own track,
+      // and admins manage any ticker row. Messages are
       // capped at 140 characters.
       allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid && canManageTicker(request.resource.data.eventId) && request.resource.data.message is string && request.resource.data.message.size() >= 1 && request.resource.data.message.size() <= 140;
       allow update: if isAdmin() || (
