@@ -32,7 +32,7 @@ export default function BlogPage() {
     })();
   }, []);
 
-  const filtered = posts.filter((post) => (post as PostWithId & { hidden?: boolean }).hidden !== true && categoryMatch(post, category));
+  const filtered = posts.filter((post) => post.hidden !== true && categoryMatch(post, category));
   const visible = filtered.slice(0, visibleCount);
 
   return (
