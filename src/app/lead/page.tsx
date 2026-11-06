@@ -1,145 +1,149 @@
 "use client";
-import { Suspense } from "react";
+
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
-import SectionHeader from "@/components/SectionHeader";
-import StatBlock from "@/components/StatBlock";
-import { doc, getDoc, collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { useEffect, useState } from "react";
-import type { AppUser, Event, Writeup } from "@/lib/types";
+import { getUserById, getEvents, getWriteups, type AppUserWithId, type EventWithId, type WriteupWithId } from "@/lib/data";
 import { trackTagColor } from "@/lib/tracks";
 
-function formatDateTime(date: unknown): string {
-  if (!date || typeof (date as { toDate: () => Date }).toDate !== "function") return "";
-  const d = (date as { toDate: () => Date }).toDate();
-  return `${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })} · ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
+function trackLabel(track: string) {
+  return track === "women-in-tech" ? "Women in Tech" : track[0].toUpperCase() + track.slice(1);
 }
 
-function trackLabel(track: string) {
-  return `${track[0].toUpperCase() + track.slice(1)} Track Lead · 2026/27`;
+function dateLabel(value: EventWithId["date"]) {
+  const date = value.toDate();
+  return `${date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} · ${date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
 }
 
 function View() {
   const params = useSearchParams();
   const id = params.get("id");
-  const [user, setUser] = useState<AppUser | null>(null);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [writeups, setWriteups] = useState<Writeup[]>([]);
+  const [user, setUser] = useState<AppUserWithId | null>(null);
+  const [events, setEvents] = useState<EventWithId[]>([]);
+  const [writeups, setWriteups] = useState<WriteupWithId[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    if (!id) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setLoading(false);
-      return;
-    }
+    let active = true;
     (async () => {
-      const snap = await getDoc(doc(db, "users", id));
-      if (snap.exists()) {
-        const u = { id: snap.id, ...snap.data() } as AppUser;
-        setUser(u);
-        const evSnap = await getDocs(query(collection(db, "events"), where("trackId", "==", u.track)));
-        setEvents(evSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Event)));
-        const wSnap = await getDocs(query(collection(db, "writeups"), where("status", "==", "published"), where("authorId", "==", id)));
-        setWriteups(wSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Writeup)));
+      if (!id) {
+        setLoading(false);
+        return;
       }
-      setLoading(false);
+      try {
+        const profile = await getUserById(id);
+        if (!active) return;
+        setUser(profile);
+        if (!profile) return;
+        const [eventResults, writeupResults] = await Promise.all([
+          getEvents({ trackId: profile.track }).catch(() => []),
+          getWriteups({ status: "published", authorId: id }).catch(() => []),
+        ]);
+        if (!active) return;
+        setEvents(eventResults);
+        setWriteups(writeupResults);
+      } catch {
+        if (active) setError("The lead profile could not be loaded.");
+      } finally {
+        if (active) setLoading(false);
+      }
     })();
+    return () => { active = false; };
   }, [id]);
-  if (loading) return <><Nav /><main className="mx-auto max-w-[1280px] p-6">Loading…</main><Footer /></>;
-  if (!user) return <><Nav /><main className="mx-auto max-w-[1280px] p-6">Not found.</main><Footer /></>;
+
+  if (loading) return <><Nav /><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]">Loading profile…</main><Footer /></>;
+  if (!user) return <><Nav /><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]"><h1 className="font-display text-[56px] uppercase">Profile not found</h1><a href="/leads" className="mt-4 inline-block underline">Back to leads</a></main><Footer /></>;
+
+  const pastEvents = events.filter((event) => event.status === "past")
+    .sort((a, b) => b.date.toMillis() - a.date.toMillis());
+
   return (
     <>
       <Nav />
       <main className="mx-auto max-w-[1280px]">
-        <section className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] border-b-[3px] border-ink">
-          <div className="p-[40px] border-r-[3px] border-ink">
-            <Tag label={trackLabel(user.track)} color="blue" />
-            <h1 className="font-display font-normal text-[clamp(60px,8vw,112px)] leading-1 uppercase mt-[18px]">
-              {user.name}
-            </h1>
-            <p className="text-[17px] leading-[1.5] max-w-[480px]">{user.bio || "[Bio]"}</p>
-            <div className="mt-[22px] flex flex-wrap gap-[8px]">
-              {user.links?.map((l) => (
-                <a
-                  key={l.url}
-                  href={l.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="border-[3px] border-ink px-[16px] py-[10px] font-bold uppercase text-[13px]"
-                >
-                  {l.title || l.url} ↗
+        <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[minmax(0,1fr)_380px]">
+          <div className="px-[26px] py-[34px] md:px-[42px] md:py-[44px]">
+            <Tag label={`${trackLabel(user.track)} Track Lead · 2026/27`} color={trackTagColor(user.track)} />
+            <h1 className="mt-[22px] font-display text-[clamp(60px,9vw,112px)] uppercase leading-[.9]">{user.name}</h1>
+            <p className="mt-[20px] max-w-[620px] text-[17px] leading-[1.6]">{user.bio || "Building skills, sharing knowledge and helping students learn by doing."}</p>
+            <div className="mt-[24px] flex flex-wrap gap-[10px]">
+              {user.links?.map((link) => (
+                <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="border-[3px] border-ink px-[16px] py-[10px] text-[12px] font-bold uppercase underline underline-offset-4">
+                  {link.title || "Link"} ↗
                 </a>
               ))}
             </div>
           </div>
-          <div className="bg-blue text-white flex items-center justify-center min-h-[320px]">
+          <div className="flex min-h-[300px] items-center justify-center border-t-[3px] border-ink bg-blue md:border-l-[3px] md:border-t-0">
             {user.photoUrl ? (
-              <img src={user.photoUrl} alt={user.name} className="max-h-full max-w-full object-contain" />
+              <img src={user.photoUrl} alt={user.name} className="h-full max-h-[460px] w-full object-cover" />
             ) : (
-              <div className="font-display text-[44px] leading-1 uppercase">[Photo]</div>
+              <span className="font-bold text-[12px] uppercase text-white">Photo</span>
             )}
           </div>
         </section>
 
-        <section className="grid grid-cols-[repeat(auto-fit,minmax(160px,1fr))] border-b-[3px] border-ink">
-          <StatBlock value={events.length} label="Events held" />
-          <StatBlock value={writeups.length} label="Writeups" className="bg-yellow" />
-          <StatBlock value={0} label="Labs" />
-          <StatBlock value="000" label="Students reached" />
+        {error && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[16px] font-bold">{error}</p>}
+
+        <section className="grid grid-cols-2 border-b-[3px] border-ink sm:grid-cols-4">
+          <div className="border-b-[3px] border-r-[3px] border-ink px-[20px] py-[22px] sm:border-b-0">
+            <p className="font-display text-[52px] leading-none">{events.length.toString().padStart(2, "0")}</p>
+            <p className="mt-[8px] text-[11px] font-bold uppercase">Events held</p>
+          </div>
+          <div className="border-b-[3px] border-r-[3px] border-ink bg-yellow px-[20px] py-[22px] sm:border-b-0">
+            <p className="font-display text-[52px] leading-none">{writeups.length.toString().padStart(2, "0")}</p>
+            <p className="mt-[8px] text-[11px] font-bold uppercase">Writeups</p>
+          </div>
+          <div className="border-r-[3px] border-ink px-[20px] py-[22px]">
+            <p className="font-display text-[52px] leading-none">—</p>
+            <p className="mt-[8px] text-[11px] font-bold uppercase">Labs</p>
+          </div>
+          <div className="px-[20px] py-[22px]">
+            <p className="font-display text-[52px] leading-none">—</p>
+            <p className="mt-[8px] text-[11px] font-bold uppercase">Students reached</p>
+          </div>
         </section>
 
-        <section className="grid grid-cols-[minmax(140px,1fr)_4fr] border-b-[3px] border-ink">
-          <div className="p-[24px] border-r-[3px] border-ink">
-            <SectionHeader className="text-[13px]">Events held</SectionHeader>
+        <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[220px_minmax(0,1fr)]">
+          <div className="border-b-[3px] border-ink px-[26px] py-[22px] md:border-b-0 md:border-r-[3px]">
+            <h2 className="text-[13px] font-bold uppercase">Events held</h2>
           </div>
           <div>
-            {events.map((e, i) => (
-              <div key={e.id} className="grid grid-cols-[70px_1fr_auto] gap-[16px] p-[16px] p-[24px] align-center border-b-[3px] border-ink">
-                <span className="font-display text-[48px] leading-1">{String(i + 1).padStart(2, "0")}</span>
-                <div>
-                  <div className="font-bold text-[19px]"><a href={`/event?id=${e.id}`}>{e.title}</a></div>
-                  <div className="text-[13px] text-[#444]">
-                    {formatDateTime(e.date)} · {e.venue} · {e.attendance ?? 0} attended
-                  </div>
+            {pastEvents.length ? pastEvents.map((event, index) => (
+              <article key={event.id} className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-[14px] border-b-[3px] border-ink px-[18px] py-[16px] last:border-b-0">
+                <span className="font-display text-[40px] leading-none">{String(index + 1).padStart(2, "0")}</span>
+                <div className="min-w-0">
+                  <a href={`/event?id=${event.id}`} className="font-bold underline-offset-4 hover:underline">{event.title}</a>
+                  <p className="mt-[4px] text-[12px] leading-[1.5]">{dateLabel(event.date)} · {event.venue} · {event.attendance ?? 0} attended</p>
                 </div>
-                <a href={e.writeupId ? `/writeup?id=${e.writeupId}` : "#"} className="text-[13px] font-bold uppercase focus:outline focus:outline-2 focus:outline-ink">
-                  Writeup ↗
-                </a>
-              </div>
-            ))}
+                {event.writeupId ? <a href={`/writeup?id=${event.writeupId}`} className="text-[11px] font-bold uppercase underline">Writeup ↗</a> : <span className="text-[10px] font-bold uppercase">—</span>}
+              </article>
+            )) : <p className="px-[22px] py-[22px] text-[13px] uppercase">No completed events listed yet.</p>}
           </div>
         </section>
 
         <section className="border-b-[3px] border-ink">
-          <div className="p-[18px] p-[24px] border-b-[3px] border-ink">
-            <SectionHeader className="text-[13px]">Writeups</SectionHeader>
-          </div>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
-            {writeups.map((w) => (
-              <div key={w.id} className="p-[24px] border-r-[3px] border-ink">
-                <Tag label={w.trackId} color={trackTagColor(w.trackId)} />
-                <div className="font-bold text-[20px] mt-[14px] mb-[8px]">{w.title}</div>
-                <div className="text-[14px] leading-[1.5] text-[#333]">{w.summary}</div>
-              </div>
-            ))}
-          </div>
+          <div className="px-[26px] py-[22px]"><h2 className="font-display text-[42px] uppercase">Writeups</h2></div>
+          {writeups.length ? (
+            <div className="grid grid-cols-1 border-t-[3px] border-ink sm:grid-cols-2 lg:grid-cols-3">
+              {writeups.map((writeup, index) => (
+                <article key={writeup.id} className={`border-b-[3px] border-r-[3px] border-ink p-[20px] ${index % 3 === 1 ? "bg-yellow" : "bg-white"}`}>
+                  <Tag label={trackLabel(writeup.trackId)} color={trackTagColor(writeup.trackId)} />
+                  <h3 className="mt-[14px] text-[19px] font-bold">{writeup.title}</h3>
+                  <p className="mt-[8px] text-[13px] leading-[1.5]">{writeup.summary}</p>
+                  <a href={`/writeup?id=${writeup.id}`} className="mt-[16px] inline-block text-[12px] font-bold uppercase underline">Read ↗</a>
+                </article>
+              ))}
+            </div>
+          ) : <p className="px-[26px] py-[22px] text-[13px] uppercase">No published writeups yet.</p>}
         </section>
 
-        <section className="grid grid-cols-[minmax(140px,1fr)_4fr]">
-          <div className="p-[24px] border-r-[3px] border-ink">
-            <SectionHeader className="text-[13px]">Labs authored</SectionHeader>
-          </div>
-          <div className="p-[20px] p-[24px] flex flex-wrap gap-[12px]">
-            {writeups.slice(0, 2).map((w) => (
-              <span key={w.id} className="border-[3px] border-ink px-[16px] py-[10px] font-bold uppercase text-[13px]">
-                {w.title}
-              </span>
-            ))}
-            <span className="bg-ink text-white px-[16px] py-[13px]">More soon</span>
-          </div>
+        <section className="grid grid-cols-1 md:grid-cols-[220px_minmax(0,1fr)]">
+          <div className="border-b-[3px] border-ink px-[26px] py-[22px] md:border-b-0 md:border-r-[3px]"><h2 className="text-[13px] font-bold uppercase">Labs authored</h2></div>
+          <div className="flex items-center px-[22px] py-[22px]"><span className="bg-ink px-[14px] py-[10px] text-[12px] font-bold uppercase text-white">More soon</span></div>
         </section>
       </main>
       <Footer />
