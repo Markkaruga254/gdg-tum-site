@@ -36,7 +36,7 @@ export default function WriteupsPage() {
         const [writeups, fetchedTracks, fetchedAuthors] = await Promise.all([
           getWriteups({ status: "published" }),
           getTracks(),
-          getUsers("lead"),
+          getUsers(),
         ]);
         setItems(writeups);
         setTracks(fetchedTracks);
