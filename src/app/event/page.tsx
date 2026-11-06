@@ -1,11 +1,13 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { useSearchParams } from "next/navigation";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
-import { getEventById, getTicker, getWriteupById, getMediaByWriteup, type EventWithId, type TickerWithId, type WriteupWithId, type MediaWithId } from "@/lib/data";
+import { getEventById, getWriteupById, getMediaByWriteup, type EventWithId, type TickerWithId, type WriteupWithId, type MediaWithId } from "@/lib/data";
 import { trackTagColor } from "@/lib/tracks";
 
 function trackName(track: string) {
@@ -24,6 +26,7 @@ function EventDetail() {
 
   useEffect(() => {
     let active = true;
+    let unsubscribeTicker: (() => void) | undefined;
     (async () => {
       if (!id) {
         setLoading(false);
@@ -34,13 +37,22 @@ function EventDetail() {
         if (!active) return;
         setEvent(current);
         if (current) {
-          const [tickerItems, relatedWriteup] = await Promise.all([
-            getTicker(),
-            current.writeupId ? getWriteupById(current.writeupId) : Promise.resolve(null),
-          ]);
+          const relatedWriteup = current.writeupId ? await getWriteupById(current.writeupId) : null;
           if (!active) return;
-          setTicker(tickerItems.find((item) => item.eventId === current.id && item.status === "active") || null);
           setWriteup(relatedWriteup);
+          if (current.status === "live") {
+            const activeTickerQuery = query(collection(db, "ticker"), where("status", "==", "active"));
+            unsubscribeTicker = onSnapshot(activeTickerQuery, (snapshot) => {
+              if (!active) return;
+              const latest = snapshot.docs
+                .map((item) => ({ id: item.id, ...item.data() }) as TickerWithId)
+                .filter((item) => item.eventId === current.id)
+                .sort((a, b) => (b.updatedAt?.toMillis() ?? 0) - (a.updatedAt?.toMillis() ?? 0))[0] ?? null;
+              setTicker(latest);
+            }, () => {
+              if (active) setError("Live event updates could not be loaded.");
+            });
+          }
           if (relatedWriteup) {
             try {
               const photos = await getMediaByWriteup(relatedWriteup.id);
@@ -56,7 +68,7 @@ function EventDetail() {
         if (active) setLoading(false);
       }
     })();
-    return () => { active = false; };
+    return () => { active = false; unsubscribeTicker?.(); };
   }, [id]);
 
   if (loading) return <><Nav /><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]">Loading event…</main><Footer /></>;
