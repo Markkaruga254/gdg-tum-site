@@ -20,7 +20,7 @@ test("homepage navigates to tracks", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: /Explore tracks/ }).click();
   await expect(page).toHaveURL("/tracks");
-  await expect(page.locator("h1")).toContainText("Tracks");
+  await expect(page.locator("h1")).toHaveText("Four tracks. One club.");
 });
 
 test("homepage navigates to gallery", async ({ page }) => {
