@@ -415,9 +415,11 @@ export default function DashboardPage() {
               <h2 className="font-display text-2xl uppercase">Media</h2>
               <p className="mt-2 text-sm">Only upload photos where people have agreed to be shown.</p>
               <p className="mt-1 text-xs">Media is attached to the writeup currently selected in &quot;New writeup&quot;. Save a draft or select an existing writeup before uploading.</p>
-              <input type="file" accept="image/jpeg,image/png,image/webp" disabled={mediaUploading} onChange={async (e) => {
+              <label htmlFor="writeup-media-upload" className="mt-[16px] block text-[11px] font-bold uppercase">Upload photo (JPEG, PNG or WebP · max 5 MB)</label>
+              <input id="writeup-media-upload" type="file" accept="image/jpeg,image/png,image/webp" disabled={mediaUploading} onChange={async (e) => {
                 const f = e.target.files?.[0]; if (!f) return;
-                if (f.size > 5 * 1024 * 1024) { setErr("File too large (max 5MB)"); return; }
+                if (f.size > 5 * 1024 * 1024) { setErr("File too large (max 5MB)"); e.target.value = ""; return; }
+                if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) { setErr("Only JPEG, PNG or WebP images are allowed."); e.target.value = ""; return; }
                 if (!editingWriteup?.id) {
                   setErr("Save a draft or select a writeup before uploading media.");
                   e.target.value = "";
@@ -447,8 +449,10 @@ export default function DashboardPage() {
                 {mediaList.map((m) => (
                   <div key={m.id} className="border-[3px] border-ink p-3">
                     <img src={m.url} alt={m.altText || m.caption || ""} className="h-32 w-32 object-cover" />
-                    <input defaultValue={m.caption} onBlur={async (e) => { try { await updateDoc(doc(db, "media", m.id), { caption: e.target.value }); setMsg("Caption saved"); } catch (er: any) { setErr(er?.message || "Failed"); } }} placeholder="Caption" className="mt-2 border-[3px] border-ink px-2 py-1 w-full" />
-                    <input defaultValue={m.altText} onBlur={async (e) => { try { await updateDoc(doc(db, "media", m.id), { altText: e.target.value }); setMsg("Alt text saved"); } catch (er: any) { setErr(er?.message || "Failed"); } }} placeholder="Alt text" className="mt-2 border-[3px] border-ink px-2 py-1 w-full" />
+                    <label htmlFor={`media-caption-${m.id}`} className="mt-2 block text-[10px] font-bold uppercase">Caption</label>
+                    <input id={`media-caption-${m.id}`} defaultValue={m.caption} onBlur={async (e) => { try { await updateDoc(doc(db, "media", m.id), { caption: e.target.value }); setMsg("Caption saved"); } catch (er: any) { setErr(er?.message || "Failed"); } }} className="mt-1 w-full border-[3px] border-ink px-2 py-1" />
+                    <label htmlFor={`media-alt-${m.id}`} className="mt-2 block text-[10px] font-bold uppercase">Alt text</label>
+                    <input id={`media-alt-${m.id}`} defaultValue={m.altText} onBlur={async (e) => { try { await updateDoc(doc(db, "media", m.id), { altText: e.target.value }); setMsg("Alt text saved"); } catch (er: any) { setErr(er?.message || "Failed"); } }} className="mt-1 w-full border-[3px] border-ink px-2 py-1" />
                     {role === "admin" || (editingWriteup && (editingWriteup.authorId === uid || (role === "lead" && editingWriteup.trackId === track))) && (
                       <button onClick={async () => { if (!confirm("Remove this photo?")) return; try { await deleteDoc(doc(db, "media", m.id)); setMsg("Removed (file stays in Cloudinary)"); loadMedia(editingWriteup?.id); } catch (er: any) { setErr(er?.message || "Failed"); } }} className="mt-2 border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Remove</button>
                     )}
@@ -620,22 +624,32 @@ function ProfileTab({ uid, setMsg, setErr }: any) {
   const [photoUrl, setPhotoUrl] = useState("");
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [savingProfile, setSavingProfile] = useState(false);
   useEffect(() => {
     (async () => {
-      const userData = await getUserById(uid);
-      if (userData) {
-        const d = userData;
-        setName(d.name || ""); setBio(d.bio || ""); setLinks(d.links?.length ? d.links : [{ title: "", url: "" }]); setPhotoUrl(d.photoUrl || "");
+      try {
+        const userData = await getUserById(uid);
+        if (userData) {
+          const d = userData;
+          setName(d.name || "");
+          setBio(d.bio || "");
+          setLinks(d.links?.length ? d.links : [{ title: "", url: "" }]);
+          setPhotoUrl(d.photoUrl || "");
+        }
+      } catch (error: any) {
+        setErr(error?.message || "Profile could not be loaded.");
       }
     })();
   }, [uid]);
   async function save() {
     const bad = links.some((l) => l.url && !/^https?:\/\//.test(l.url));
     if (bad) { setErr("Links must start with http(s)://"); return; }
+    setSavingProfile(true);
     try {
       await updateDoc(doc(db, "users", uid), { name, bio, links: links.filter((l) => l.url), photoUrl });
       setMsg("Profile saved");
     } catch (er: any) { setErr(er?.message || "Failed"); }
+    finally { setSavingProfile(false); }
   }
   async function uploadPhoto(e: any) {
     const f = e.target.files?.[0]; if (!f) return;
@@ -652,20 +666,39 @@ function ProfileTab({ uid, setMsg, setErr }: any) {
     finally { setUploading(false); e.target.value = ""; }
   }
   return (
-    <div className="grid gap-2">
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" className="border-[3px] border-ink px-3 py-2" />
-      <textarea value={bio} onChange={(e) => setBio(e.target.value)} placeholder="Bio" className="border-[3px] border-ink px-3 py-2" />
-      {links.map((l, i) => (
-        <div key={i} className="flex gap-2">
-          <input value={l.title} onChange={(e) => { const x=[...links]; x[i].title=e.target.value; setLinks(x); }} placeholder="Title" className="border-[3px] border-ink px-2 py-1 flex-1" />
-          <input value={l.url} onChange={(e) => { const x=[...links]; x[i].url=e.target.value; setLinks(x); }} placeholder="URL" className="border-[3px] border-ink px-2 py-1 flex-1" />
-        </div>
-      ))}
-      <button type="button" onClick={() => setLinks([...links, { title: "", url: "" }])} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">+ Link</button>
-      <input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={uploadPhoto} />
+    <div className="grid max-w-[760px] gap-[14px]">
+      <div className="grid gap-[6px]">
+        <label htmlFor="profile-name" className="text-[11px] font-bold uppercase">Name</label>
+        <input id="profile-name" value={name} onChange={(e) => setName(e.target.value)} className="border-[3px] border-ink px-[12px] py-[10px]" />
+      </div>
+      <div className="grid gap-[6px]">
+        <label htmlFor="profile-bio" className="text-[11px] font-bold uppercase">Bio</label>
+        <textarea id="profile-bio" value={bio} onChange={(e) => setBio(e.target.value)} rows={4} className="border-[3px] border-ink px-[12px] py-[10px]" />
+      </div>
+      <fieldset className="grid gap-[10px] border-[3px] border-ink p-[14px]">
+        <legend className="px-[6px] text-[11px] font-bold uppercase">Profile links</legend>
+        {links.map((link, index) => (
+          <div key={index} className="grid grid-cols-1 gap-[8px] sm:grid-cols-[1fr_1.5fr_auto]">
+            <label className="grid gap-[5px] text-[10px] font-bold uppercase">
+              Link title
+              <input value={link.title} onChange={(e) => { const next = [...links]; next[index] = { ...next[index], title: e.target.value }; setLinks(next); }} className="min-w-0 border-[3px] border-ink px-[9px] py-[8px] text-[13px] font-normal normal-case" />
+            </label>
+            <label className="grid gap-[5px] text-[10px] font-bold uppercase">
+              URL
+              <input type="url" value={link.url} onChange={(e) => { const next = [...links]; next[index] = { ...next[index], url: e.target.value }; setLinks(next); }} className="min-w-0 border-[3px] border-ink px-[9px] py-[8px] text-[13px] font-normal normal-case" />
+            </label>
+            <button type="button" onClick={() => setLinks((current) => current.filter((_, itemIndex) => itemIndex !== index))} disabled={links.length === 1} className="self-end border-[3px] border-ink px-[10px] py-[8px] text-[10px] font-bold uppercase disabled:opacity-40">Remove</button>
+          </div>
+        ))}
+        <button type="button" onClick={() => setLinks([...links, { title: "", url: "" }])} className="w-fit border-[3px] border-ink px-[12px] py-[8px] text-[11px] font-bold uppercase">+ Add link</button>
+      </fieldset>
+      <div className="grid gap-[6px]">
+        <label htmlFor="profile-photo" className="text-[11px] font-bold uppercase">Profile photo (JPEG, PNG or WebP · max 5 MB)</label>
+        <input id="profile-photo" type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={uploadPhoto} />
+      </div>
       {uploading && <div aria-live="polite"><p className="text-[11px] font-bold uppercase">Uploading profile photo · {uploadProgress}%</p><div role="progressbar" aria-label="Profile photo upload progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={uploadProgress} className="mt-1 h-[10px] border-[2px] border-ink"><div className="h-full bg-green" style={{ width: `${uploadProgress}%` }} /></div></div>}
-      {photoUrl && <img src={photoUrl} alt="preview" className="h-24 w-24 object-cover border-[3px] border-ink" />}
-      <button onClick={save} className="border-[3px] border-ink bg-ink px-4 py-2 font-bold uppercase text-white">Save profile</button>
+      {photoUrl && <img src={photoUrl} alt={name ? `${name} profile photo` : "Profile photo preview"} className="h-24 w-24 border-[3px] border-ink object-cover" />}
+      <button type="button" onClick={() => void save()} disabled={savingProfile || uploading} className="w-fit border-[3px] border-ink bg-ink px-[18px] py-[12px] text-[12px] font-bold uppercase text-white disabled:opacity-50">{savingProfile ? "Saving…" : "Save profile"}</button>
     </div>
   );
 }
