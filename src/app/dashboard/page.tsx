@@ -25,7 +25,7 @@ export default function DashboardPage() {
   const [uid, setUid] = useState<string | null>(null);
   const [role, setRole] = useState<string>("");
   const [track, setTrack] = useState<string>("");
-  const [tab, setTab] = useState("Overview");
+  const [tab, setTab] = useState("New writeup");
   const [events, setEvents] = useState<any[]>([]);
   const [writeups, setWriteups] = useState<any[]>([]);
   const [msg, setMsg] = useState<string>("");
