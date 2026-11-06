@@ -45,6 +45,9 @@ export default function Home() {
   const [partners, setPartners] = useState<PartnerWithId[]>([]);
   const [tracks, setTracks] = useState<TrackWithId[]>([]);
   const [leads, setLeads] = useState<AppUserWithId[]>([]);
+  const [tracksError, setTracksError] = useState<string | null>(null);
+  const [partnersError, setPartnersError] = useState<string | null>(null);
+  const [momentsError, setMomentsError] = useState<string | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [momentsLoading, setMomentsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -58,11 +61,14 @@ export default function Home() {
         const fetchedWriteups = await getWriteups({ status: "published", limitCount: 3 });
         setWriteups(fetchedWriteups);
         try {
-          const fetchedTracks = await getTracks().catch(() => []);
-          setTracks(fetchedTracks);
-          setLeads(await getUsers("lead").catch(() => []));
+          setTracks(await getTracks());
         } catch {
-          // Tracks non-critical
+          setTracksError("Tracks could not be loaded. Open the tracks page to retry.");
+        }
+        try {
+          setLeads(await getUsers("lead"));
+        } catch {
+          setLeads([]);
         }
         try {
           setPostsLoading(true);
@@ -78,14 +84,14 @@ export default function Home() {
           const fetchedPartners = await getPartners();
           setPartners(fetchedPartners);
         } catch {
-          // Partners non-critical
+          setPartnersError("Partners could not be loaded.");
         }
         try {
           setMomentsLoading(true);
           const { photos: fetchedPhotos } = await getGalleryPage({ pageSize: 5 });
           setPhotos(fetchedPhotos);
         } catch {
-          // Photos non-critical
+          setMomentsError("Moments could not be loaded. Refresh the page to retry.");
         } finally {
           setMomentsLoading(false);
         }
@@ -211,6 +217,7 @@ export default function Home() {
             </p>
           </div>
           <div>
+            {tracksError && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[16px] text-[12px] font-bold uppercase">{tracksError}</p>}
             {tracks.length === 0 ? (
               <div className="px-[26px] py-[22px] border-b-[3px] border-ink">No tracks yet.</div>
             ) : (
@@ -294,7 +301,8 @@ export default function Home() {
 
         {/* Moments */}
         <section id="moments" className="border-b-[3px] border-ink">
-          <div className="flex justify-between items-center flex-wrap gap-[10px] p-[20px] p-[26px] border-b-[3px] border-ink">
+          {momentsError && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[14px] text-[12px] font-bold uppercase">{momentsError}</p>}
+          <div className="flex justify-between items-center flex-wrap gap-[10px] px-[26px] py-[20px] border-b-[3px] border-ink">
             <h2 className="font-display font-normal text-[56px] uppercase mt-0">Moments</h2>
             <a
               href="/gallery"
@@ -366,7 +374,7 @@ export default function Home() {
                 <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-[14px] inline-block text-[12px] font-bold uppercase underline">Source ↗</a>
               </article>
             ))}
-            {!postsLoading && posts.filter((post) => (post as PostWithId & { hidden?: boolean }).hidden !== true).length === 0 && (
+            {!postsLoading && posts.filter((post) => post.hidden !== true).length === 0 && (
               <p className="px-[24px] py-[22px] text-[12px] font-bold uppercase">No articles have been published yet.</p>
             )}
             {postsLoading && <p className="px-[24px] py-[22px] text-[12px] font-bold uppercase">Loading articles…</p>}
