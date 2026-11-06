@@ -9,7 +9,7 @@ import { trackTagColor } from "@/lib/tracks";
 function eventDate(value: EventWithId["date"]) {
   const date = value.toDate();
   return {
-    date: date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }),
+    date: date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }),
     time: date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }),
     value: date.getTime(),
   };
@@ -59,7 +59,7 @@ export default function EventsPage() {
     return (
       <article
         key={event.id}
-        className={`grid grid-cols-[64px_minmax(0,1fr)] sm:grid-cols-[90px_minmax(0,1fr)_auto] items-center gap-[18px] border-b-[3px] border-ink px-[26px] py-[16px] ${index === 1 ? "bg-red" : "bg-white"}`}
+        className={`grid grid-cols-[64px_minmax(0,1fr)] sm:grid-cols-[90px_minmax(0,1fr)_auto] items-center gap-[18px] border-b-[3px] border-ink px-[26px] py-[16px] ${!isPast && index === 1 ? "bg-red" : "bg-white"}`}
       >
         <span className="font-display text-[56px] leading-[1]">{String(index + 1).padStart(2, "0")}</span>
         <div className="min-w-0">
