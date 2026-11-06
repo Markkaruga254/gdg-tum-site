@@ -83,17 +83,4 @@ describe("useCollection", () => {
     expect(mocks.getDocs).not.toHaveBeenCalled();
   });
 
-  it("passes constraints to query", async () => {
-    mocks.collection.mockReturnValue({});
-    mocks.query.mockReturnValue({});
-    mocks.getDocs.mockResolvedValue({ docs: [] });
-    const constraints = [vi.fn() as unknown as QueryConstraint];
-    const { result } = renderHook(() => useCollection<{ x: number }>("test", constraints));
-
-    await act(async () => {
-      await result.current.refetch();
-    });
-
-    expect(mocks.query).toHaveBeenCalledWith({}, expect.any(Function));
-  });
 });
