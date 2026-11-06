@@ -162,7 +162,7 @@ export default function Home() {
                   <h2 className="font-display text-[44px] leading-[1.05] uppercase mt-[12px]">{nextEvent.title}</h2>
                   <p className="text-[15px] mt-[4px]">{formatDateTime(nextEvent.date)} · {nextEvent.venue}</p>
                   <button type="button" disabled className="mt-[18px] w-fit cursor-not-allowed border-[3px] border-ink bg-white px-[18px] py-[10px] text-[12px] font-bold uppercase opacity-60">
-                    RSVP · Coming soon
+                    RSVP (coming soon)
                   </button>
                 </>
               ) : (
