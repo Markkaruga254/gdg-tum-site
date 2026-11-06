@@ -48,6 +48,7 @@ for (const route of routes) {
         const menuWidth = await page.evaluate(() => document.documentElement.scrollWidth);
         expect(menuWidth).toBeLessThanOrEqual(width);
         await page.screenshot({ path: "test-results/mockup-review/home-menu-open-390.png", fullPage: true });
+        await page.getByRole("button", { name: "Close" }).click();
       }
     }
 
