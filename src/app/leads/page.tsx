@@ -1,57 +1,118 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
-import BorderCard from "@/components/BorderCard";
-import { getUsers, type AppUserWithId } from "@/lib/data";
+import { getEvents, getUsers, getWriteups, type AppUserWithId } from "@/lib/data";
 import { trackTagColor } from "@/lib/tracks";
+import type { TrackSlug } from "@/lib/types";
+
+const filters: { id: TrackSlug | "all"; label: string }[] = [
+  { id: "all", label: "All" },
+  { id: "cloud", label: "Cloud" },
+  { id: "cybersecurity", label: "Cybersecurity" },
+  { id: "web", label: "Web" },
+  { id: "women-in-tech", label: "Women in Tech" },
+];
+
+function trackName(track: TrackSlug) {
+  return track === "women-in-tech" ? "Women in Tech" : track[0].toUpperCase() + track.slice(1);
+}
 
 export default function LeadsPage() {
   const [leads, setLeads] = useState<AppUserWithId[]>([]);
+  const [eventCounts, setEventCounts] = useState<Record<string, number>>({});
+  const [writeupCounts, setWriteupCounts] = useState<Record<string, number>>({});
+  const [filter, setFilter] = useState<TrackSlug | "all">("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     (async () => {
       try {
-        const fetched = await getUsers("lead");
-        setLeads(fetched);
+        const [users, events, writeups] = await Promise.all([
+          getUsers("lead"),
+          getEvents(),
+          getWriteups({ status: "published" }),
+        ]);
+        setLeads(users);
+        setEventCounts(events.reduce<Record<string, number>>((counts, event) => {
+          counts[event.trackId] = (counts[event.trackId] || 0) + 1;
+          return counts;
+        }, {}));
+        setWriteupCounts(writeups.reduce<Record<string, number>>((counts, writeup) => {
+          counts[writeup.authorId] = (counts[writeup.authorId] || 0) + 1;
+          return counts;
+        }, {}));
       } catch {
-        setError("Failed to load leads");
+        setError("We could not load the track leads. Please try again later.");
       } finally {
         setLoading(false);
       }
     })();
   }, []);
+
+  const visibleLeads = leads.filter((lead) => filter === "all" || lead.track === filter);
+
   return (
     <>
       <Nav />
       <main className="mx-auto max-w-[1280px]">
-        <h1 className="font-display text-4xl uppercase">Leads</h1>
-        {loading && <p className="mt-4">Loading…</p>}
-        {error && <p className="mt-4">{error}</p>}
-        {!loading && leads.length === 0 && <p className="mt-4">No leads.</p>}
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-          {leads.map((l) => (
-            <BorderCard key={l.id} className="p-4">
-              <div className="flex items-center gap-2">
-                <span className="inline-block w-6 h-6" style={{ backgroundColor: l.track }}></span>
-                <div className="font-bold">{l.name}</div>
-              </div>
-              <Tag label={l.track} color={trackTagColor(l.track)} />
-              {l.bio && <p className="mt-2 text-sm">{l.bio}</p>}
-              {l.links?.map((ln) => (
-                <a key={ln.url} href={ln.url} target="_blank" rel="noopener noreferrer" className="block text-sm underline">
-                  {ln.title || ln.url}
-                </a>
-              ))}
-              <a href={`/lead?id=${l.id}`} className="mt-2 block text-sm underline">
-                View profile →
-              </a>
-            </BorderCard>
+        <header className="border-b-[3px] border-ink px-[26px] py-[34px]">
+          <h1 className="font-display text-[clamp(60px,9vw,120px)] uppercase leading-[.95]">Leads</h1>
+          <p className="mt-[14px] max-w-[600px] text-[17px] leading-[1.5]">
+            The students who run our tracks, teach sessions and publish writeups.
+          </p>
+        </header>
+
+        <nav className="flex flex-wrap border-b-[3px] border-ink" aria-label="Filter leads by track">
+          {filters.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setFilter(item.id)}
+              aria-pressed={filter === item.id}
+              className={`border-r-[3px] border-ink px-[22px] py-[16px] text-[12px] font-bold uppercase ${filter === item.id ? "bg-yellow" : "bg-white"}`}
+            >
+              {item.label}
+            </button>
           ))}
-        </div>
+        </nav>
+
+        {error && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[18px] font-bold">{error}</p>}
+        {loading ? (
+          <p className="px-[26px] py-[24px] text-[13px] font-bold uppercase">Loading leads…</p>
+        ) : visibleLeads.length === 0 ? (
+          <p className="border-b-[3px] border-ink px-[26px] py-[24px] text-[13px] font-bold uppercase">
+            {leads.length === 0 ? "No track leads have been added yet." : "No leads in this track yet."}
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2">
+            {visibleLeads.map((lead, index) => (
+              <article key={lead.id} className={`grid grid-cols-[112px_minmax(0,1fr)] border-b-[3px] border-r-[3px] border-ink ${index % 4 === 1 ? "bg-yellow" : "bg-white"}`}>
+                <div className="flex min-h-[190px] items-center justify-center border-r-[3px] border-ink bg-blue">
+                  {lead.photoUrl ? (
+                    <img src={lead.photoUrl} alt={lead.name} className="h-full min-h-[190px] w-full object-cover" />
+                  ) : (
+                    <span className="font-bold text-[11px] uppercase text-white">Photo</span>
+                  )}
+                </div>
+                <div className="flex min-w-0 flex-col p-[18px]">
+                  <Tag label={`${trackName(lead.track)} Track Lead`} color={trackTagColor(lead.track)} />
+                  <h2 className="mt-[12px] font-display text-[clamp(25px,3vw,38px)] uppercase leading-[1]">{lead.name}</h2>
+                  <p className="mt-[10px] text-[13px] leading-[1.5]">{lead.bio || "Helping students learn, build and share what they create."}</p>
+                  <p className="mt-auto pt-[16px] text-[11px] font-bold uppercase">
+                    {eventCounts[lead.track] || 0} events · {writeupCounts[lead.id] || 0} writeups
+                  </p>
+                  <a href={`/lead?id=${lead.id}`} className="mt-[12px] w-fit border-[3px] border-ink px-[12px] py-[8px] text-[11px] font-bold uppercase underline underline-offset-4">
+                    View profile ↗
+                  </a>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </main>
       <Footer />
     </>
