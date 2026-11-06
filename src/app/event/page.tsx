@@ -70,12 +70,9 @@ function EventDetail() {
       <Nav />
       <main className="mx-auto max-w-[1280px]">
         <header className="border-b-[3px] border-ink px-[26px] py-[34px]">
-          <div className="px-[26px] py-[38px]">
             <Tag label={trackName(event.trackId)} color={trackTagColor(event.trackId)} />
             <p className="mt-[18px] text-[12px] font-bold uppercase">{stateLabel}</p>
             <h1 className="mt-[12px] font-display text-[clamp(48px,8vw,104px)] uppercase leading-[.92]">{event.title}</h1>
-          </div>
-
         </header>
 
         {error && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[16px] font-bold">{error}</p>}
