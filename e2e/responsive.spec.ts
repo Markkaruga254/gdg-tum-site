@@ -27,7 +27,7 @@ for (const route of routes) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto(route.path, { waitUntil: "domcontentloaded" });
       await expect(page.locator("main")).toBeVisible();
-      await page.waitForTimeout(150);
+      await page.waitForTimeout(400);
 
       const dimensions = await page.evaluate(() => ({
         viewport: document.documentElement.clientWidth,
