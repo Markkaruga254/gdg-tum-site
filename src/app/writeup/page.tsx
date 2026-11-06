@@ -69,8 +69,10 @@ function View() {
             By {author ? <a href={`/lead?id=${author.id}`} className="underline">{author.name}</a> : "GDG TUM lead"} · {date}
             {event ? <> · <a href={`/event?id=${event.id}`} className="underline">{event.title}</a></> : null}
           </p>
-          <p className="mt-[24px] max-w-[760px] text-[18px] leading-[1.55]">{writeup.summary}</p>
         </header>
+        <section className="border-b-[3px] border-ink bg-yellow px-[26px] py-[24px]">
+          <p className="max-w-[860px] text-[17px] leading-[1.55]">{writeup.summary}</p>
+        </section>
 
         {error && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[16px] font-bold">{error}</p>}
 
