@@ -41,6 +41,14 @@ for (const route of routes) {
           fullPage: true,
         });
       }
+
+      if (route.name === "home" && width === 390) {
+        await page.getByRole("button", { name: "Menu" }).click();
+        await expect(page.locator("#mobile-site-menu")).toBeVisible();
+        const menuWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+        expect(menuWidth).toBeLessThanOrEqual(width);
+        await page.screenshot({ path: "test-results/mockup-review/home-menu-open-390.png", fullPage: true });
+      }
     }
 
     expect(pageErrors, `${route.name} raised browser errors`).toEqual([]);
