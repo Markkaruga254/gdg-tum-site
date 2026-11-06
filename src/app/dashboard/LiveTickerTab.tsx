@@ -140,7 +140,7 @@ export function TickerTab({ uid, role, events, track, setMsg, setErr }: any) {
             <article key={entry.id} className="border-[3px] border-ink p-3">
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div><p className="font-bold">{entry.message}</p><p className="mt-1 text-xs font-bold uppercase">{entry.status}</p></div>
-                <p className="text-xs">{events.find((event: any) => event.id === entry.eventId)?.title || "Event"}</p>
+                <p className="text-xs">{allEvents.find((event: any) => event.id === entry.eventId)?.title || "Event"}</p>
               </div>
               {canManage && (
                 <div className="mt-3 flex flex-wrap gap-2">
