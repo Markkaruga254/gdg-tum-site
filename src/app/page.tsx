@@ -169,7 +169,7 @@ export default function Home() {
                 <p className="mt-[12px] text-[15px]">No upcoming events.</p>
               )}
             </div>
-            <div className="grid grid-cols-3 gap-[18px] p-[18px] border-t-[3px] border-ink">
+            <div className="grid grid-cols-3">
               <StatBlock value={held} label="Events held" />
               <StatBlock value={writeups.length} label="Writeups" />
               <StatBlock value={tracks.length} label="Tracks" />
