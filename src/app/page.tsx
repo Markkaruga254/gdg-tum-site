@@ -116,7 +116,7 @@ export default function Home() {
 
         {/* Hero + next event + stats */}
         <section className="grid grid-cols-[repeat(auto-fit,minmax(340px,1fr))] border-b-[3px] border-ink">
-          <div className="p-[44px] p-[40px] border-r-[3px] border-ink">
+          <div className="px-[40px] py-[44px] border-r-[3px] border-ink">
             <h1 className="font-display font-normal text-[clamp(64px,9vw,128px)] leading-[.92] uppercase">
               Build.<br />
               Learn.<br />
