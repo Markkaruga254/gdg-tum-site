@@ -168,41 +168,42 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Latest writeups (numbered rows, row 2 red) */}
-        <section id="writeups" className="grid grid-cols-[minmax(160px,1fr)_3fr] border-b-[3px] border-ink">
-          <div className="px-[24px] py-[28px] border-r-[3px] border-ink flex flex-col justify-between gap-[20px]">
-            <div>
-              <SectionHeader className="text-[14px]">Latest writeups</SectionHeader>
-              <a href="/writeups" className="text-[12px] font-bold uppercase">
-                See all ↗
-              </a>
-            </div>
+        {/* Latest writeups */}
+        <section id="writeups" className="border-b-[3px] border-ink">
+          <div className="flex flex-wrap items-center justify-between gap-[10px] border-y-[3px] border-ink px-[22px] py-[16px]">
+            <SectionHeader className="text-[14px]">Latest writeups</SectionHeader>
+            <a href="/writeups" className="text-[12px] font-bold uppercase tracking-[.5px]">See all ↗</a>
           </div>
-          <div>
-            {writeups.length === 0 ? (
-              <div className="px-[24px] py-[18px]">No writeups yet.</div>
-            ) : (
-              writeups.slice(0, 3).map((w, i) => {
-                const num = String(i + 1).padStart(2, "0");
-                const isRed = i === 1;
-                return (
-                  <div
-                    key={w.id}
-                    className={`grid grid-cols-[90px_1fr_auto] gap-[18px] px-[24px] py-[18px] items-center border-b-[3px] border-ink ${isRed ? "bg-red" : ""}`}
-                  >
-                    <span className="font-display text-[64px] leading-1">{num}</span>
-                    <div>
-                      <a href={`/writeup?id=${w.id}`} className="font-bold text-[20px] underline-offset-4 hover:underline">{w.title}</a>
-                      <div className="text-[12px] mt-[4px] text-[#444]">
-                        {w.aiDrafted ? "Drafted with AI · reviewed by lead" : "Published by a track lead"}
-                      </div>
-                    </div>
-                    <Tag label={w.trackId === "women-in-tech" ? "Women in Tech" : w.trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())} color={isRed ? "ink" : trackTagColor(w.trackId)} />
+          {writeups.length === 0 ? (
+            <p className="px-[22px] py-[18px] text-[13px] font-bold uppercase">No writeups yet.</p>
+          ) : (
+            writeups.slice(0, 3).map((w, i) => {
+              const num = String(i + 1).padStart(2, "0");
+              const isRed = i === 1;
+              const trackLabel = w.trackId === "women-in-tech" ? "Women in Tech" : w.trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+              const publishedDate = w.publishedAt?.toDate
+                ? w.publishedAt.toDate().toLocaleDateString(undefined, { day: "numeric", month: "short" })
+                : "";
+              return (
+                <article
+                  key={w.id}
+                  className={"grid grid-cols-[64px_minmax(0,1fr)] items-center gap-[14px] border-b-[3px] border-ink px-[22px] py-[14px] sm:grid-cols-[90px_minmax(0,1fr)_auto] " + (isRed ? "bg-red" : "bg-white") + (i === 2 ? " border-b-0" : "")}
+                >
+                  <span className="font-display text-[56px] leading-none">{num}</span>
+                  <div className="min-w-0">
+                    <a href={"/writeup?id=" + w.id} className="text-[19px] font-bold underline-offset-4 hover:underline">{w.title}</a>
+                    <p className="mt-[4px] text-[12px]">
+                      {publishedDate}{publishedDate ? " · " : ""}
+                      {w.aiDrafted ? "Drafted with AI, reviewed by the lead" : trackLabel + " Track"}
+                    </p>
                   </div>
-                );
-              })
-            )}
-          </div>
+                  <div className="col-start-2 flex flex-wrap items-center gap-[10px] sm:col-start-auto">
+                    <Tag label={trackLabel} color={trackTagColor(w.trackId)} />
+                  </div>
+                </article>
+              );
+            })
+          )}
         </section>
 
         {/* Tracks block */}
