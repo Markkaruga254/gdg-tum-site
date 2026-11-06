@@ -107,32 +107,40 @@ function EventDetail() {
           </section>
         )}
 
-        <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[220px_minmax(0,1fr)]">
-          <div className="border-b-[3px] border-ink px-[26px] py-[22px] md:border-b-0 md:border-r-[3px]">
-            <h2 className="text-[13px] font-bold uppercase">About this event</h2>
-          </div>
-          <div className="px-[26px] py-[24px]">
-            <p className="max-w-[760px] text-[16px] leading-[1.6]">
-              {event.status === "past"
-                ? `This event has concluded. ${event.attendance ?? 0} people attended.`
-                : event.status === "cancelled"
-                  ? "This event has been cancelled."
-                  : "Join this session to learn, build and connect with the GDG on Campus TUM community."}
-            </p>
-          </div>
-        </section>
+        {event.status === "upcoming" && (
+          <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[220px_minmax(0,1fr)]">
+            <div className="border-b-[3px] border-ink px-[26px] py-[22px] md:border-b-0 md:border-r-[3px]">
+              <h2 className="text-[13px] font-bold uppercase">Upcoming event</h2>
+            </div>
+            <div className="grid grid-cols-1 gap-[18px] px-[26px] py-[24px] sm:grid-cols-2">
+              <div><p className="text-[11px] font-bold uppercase">Date & time</p><p className="mt-[6px] text-[15px]">{date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })} · {date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}</p></div>
+              <div><p className="text-[11px] font-bold uppercase">Venue</p><p className="mt-[6px] text-[15px]">{event.venue}</p></div>
+              <div><p className="text-[11px] font-bold uppercase">Track</p><p className="mt-[6px] text-[15px]">{trackName(event.trackId)}</p></div>
+              <div><p className="text-[11px] font-bold uppercase">RSVP</p><button type="button" disabled className="mt-[6px] border-[3px] border-ink bg-white px-[14px] py-[9px] text-[11px] font-bold uppercase opacity-60">Coming soon</button></div>
+            </div>
+          </section>
+        )}
+
+        {event.status === "live" && (
+          <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[220px_minmax(0,1fr)]">
+            <div className="border-b-[3px] border-ink px-[26px] py-[22px] md:border-b-0 md:border-r-[3px]"><h2 className="text-[13px] font-bold uppercase">Live now</h2></div>
+            <div className="bg-red px-[26px] py-[24px]"><p className="font-display text-[clamp(28px,4vw,48px)] uppercase leading-[1.05]">{ticker?.message || "This event is live. Updates will appear here."}</p></div>
+          </section>
+        )}
 
         {event.status === "past" && (
           <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[220px_minmax(0,1fr)]">
-            <div className="border-b-[3px] border-ink px-[26px] py-[22px] md:border-b-0 md:border-r-[3px]">
-              <h2 className="text-[13px] font-bold uppercase">What happened</h2>
-            </div>
+            <div className="border-b-[3px] border-ink px-[26px] py-[22px] md:border-b-0 md:border-r-[3px]"><h2 className="text-[13px] font-bold uppercase">Past event</h2></div>
             <div className="px-[26px] py-[24px]">
-              <p className="font-display text-[52px] uppercase leading-none">{event.attendance ?? 0}</p>
+              <p className="font-display text-[clamp(52px,7vw,76px)] uppercase leading-none">{(event.attendance ?? 0).toLocaleString()}</p>
               <p className="mt-[8px] text-[12px] font-bold uppercase">Attended</p>
-              {writeup && <a href={`/writeup?id=${writeup.id}`} className="mt-[20px] inline-block border-[3px] border-ink px-[16px] py-[12px] text-[12px] font-bold uppercase underline">Read event writeup ↗</a>}
+              {writeup && <a href={`/writeup?id=${writeup.id}`} className="mt-[20px] inline-block border-[3px] border-ink px-[16px] py-[12px] text-[12px] font-bold uppercase underline">Read the writeup ↗</a>}
             </div>
           </section>
+        )}
+
+        {event.status === "cancelled" && (
+          <p className="border-b-[3px] border-ink bg-red px-[26px] py-[22px] text-[13px] font-bold uppercase">This event has been cancelled.</p>
         )}
 
         {media.length > 0 && (
