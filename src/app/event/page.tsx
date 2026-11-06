@@ -105,7 +105,7 @@ function EventDetail() {
             <div className="bg-yellow px-[26px] py-[26px]">
               <h2 className="text-[12px] font-bold uppercase">About this event</h2>
               <p className="mt-[12px] text-[16px] leading-[1.6]">
-                {(event as EventWithId & { description?: string }).description || "The event description has not been added yet."}
+                {event.description || "The event description has not been added yet."}
               </p>
             </div>
           </section>
