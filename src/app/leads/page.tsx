@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import Tag from "@/components/Tag";
 import { getEvents, getUsers, getWriteups, type AppUserWithId } from "@/lib/data";
-import { TRACK_BG_COLORS, trackTagColor } from "@/lib/tracks";
+import { TRACK_BG_COLORS } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
 
 const filters: { id: TrackSlug | "all"; label: string }[] = [
