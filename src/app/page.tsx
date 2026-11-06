@@ -161,7 +161,7 @@ export default function Home() {
 
         {/* Latest writeups (numbered rows, row 2 red) */}
         <section id="events" className="grid grid-cols-[minmax(160px,1fr)_3fr] border-b-[3px] border-ink">
-          <div className="p-[28px] p-[24px] border-r-[3px] border-ink flex flex-col justify-between gap-[20px]">
+          <div className="px-[24px] py-[28px] border-r-[3px] border-ink flex flex-col justify-between gap-[20px]">
             <div>
               <SectionHeader className="text-[14px]">Latest writeups</SectionHeader>
               <a href="/writeups" className="text-[12px] font-bold uppercase">
@@ -171,7 +171,7 @@ export default function Home() {
           </div>
           <div>
             {writeups.length === 0 ? (
-              <div className="p-[18px] p-[24px]">No writeups yet.</div>
+              <div className="px-[24px] py-[18px]">No writeups yet.</div>
             ) : (
               writeups.slice(0, 3).map((w, i) => {
                 const num = String(i + 1).padStart(2, "0");
@@ -179,7 +179,7 @@ export default function Home() {
                 return (
                   <div
                     key={w.id}
-                    className={`grid grid-cols-[90px_1fr_auto] gap-[18px] p-[18px] p-[24px] align-center border-b-[3px] border-ink ${isRed ? "bg-red" : ""}`}
+                    className={`grid grid-cols-[90px_1fr_auto] gap-[18px] px-[24px] py-[18px] items-center border-b-[3px] border-ink ${isRed ? "bg-red" : ""}`}
                   >
                     <span className="font-display text-[64px] leading-1">{num}</span>
                     <div>
@@ -198,7 +198,7 @@ export default function Home() {
 
         {/* Tracks block */}
         <section id="tracks" className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] border-b-[3px] border-ink">
-          <div className="p-[36px] p-[32px] border-r-[3px] border-ink bg-yellow">
+          <div className="px-[32px] py-[36px] border-r-[3px] border-ink bg-yellow">
             <h2 className="font-display font-normal text-[72px] leading-[.95] uppercase">
               Four<br />
               tracks.<br />
@@ -211,7 +211,7 @@ export default function Home() {
           </div>
           <div>
             {tracks.length === 0 ? (
-              <div className="p-[22px] p-[26px] border-b-[3px] border-ink">No tracks yet.</div>
+              <div className="px-[26px] py-[22px] border-b-[3px] border-ink">No tracks yet.</div>
             ) : (
               tracks.map((t, i) => {
                 const last = i === tracks.length - 1;
@@ -237,7 +237,7 @@ export default function Home() {
 
         {/* Partners */}
         <section id="partners" className="border-b-[3px] border-ink">
-          <div className="flex justify-between items-center flex-wrap gap-[10px] p-[20px] p-[26px] border-b-[3px] border-ink">
+          <div className="flex justify-between items-center flex-wrap gap-[10px] px-[26px] py-[20px] border-b-[3px] border-ink">
             <SectionHeader className="text-[14px]">Who we work with</SectionHeader>
             {contactEmail ? (
               <a href={`mailto:${contactEmail}`} className="text-[12px] font-bold uppercase">
@@ -277,7 +277,7 @@ export default function Home() {
               )}
             </div>
           </div>
-          <div className="flex flex-wrap gap-[10px] p-[14px] p-[26px]">
+          <div className="flex flex-wrap gap-[10px] px-[26px] py-[14px]">
             {partnerTypes.map((t) => (
               <Tag
                 key={t}
@@ -340,7 +340,7 @@ export default function Home() {
               </>
             )}
           </div>
-          <div className="px-[0] py-[0_26px_20px] text-[12px] font-bold uppercase">
+          <div className="px-[26px] pt-0 pb-[20px] text-[12px] font-bold uppercase">
             Photos come from published writeups. Each links to its event.
           </div>
         </section>
@@ -390,12 +390,12 @@ export default function Home() {
 
         {/* Labs Soon + red digest */}
         <section id="labs" className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] border-b-[3px] border-ink">
-          <div className="p-[34px] p-[32px] border-r-[3px] border-ink bg-ink text-white flex flex-col gap-[12px]">
+          <div className="px-[32px] py-[34px] border-r-[3px] border-ink bg-ink text-white flex flex-col gap-[12px]">
             <Tag label="Soon" color="yellow" />
             <h2 className="font-display font-normal text-[64px] leading-[1.1] uppercase mb-[8px]">Labs</h2>
             <p className="text-[16px] leading-[1.6] mt-[8px]">Where students upskill with hands-on, guided practice.</p>
           </div>
-          <div id="join" className="p-[34px] p-[32px] bg-red flex flex-col gap-[22px]">
+          <div id="join" className="px-[32px] py-[34px] bg-red flex flex-col gap-[22px]">
             <h2 className="font-display font-normal text-[44px] leading-[1.1] uppercase mb-[14px]">
               Get the weekly digest
             </h2>
