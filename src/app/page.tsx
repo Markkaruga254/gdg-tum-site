@@ -11,11 +11,13 @@ import {
   getPosts,
   getPartners,
   getTracks,
+  getUsers,
   type EventWithId,
   type WriteupWithId,
   type PostWithId,
   type PartnerWithId,
   type TrackWithId,
+  type AppUserWithId,
 } from "@/lib/data";
 import { getGalleryPage, type Photo } from "@/lib/gallery";
 import { trackTagColor } from "@/lib/tracks";
@@ -42,6 +44,7 @@ export default function Home() {
   const [postsError, setPostsError] = useState<string | null>(null);
   const [partners, setPartners] = useState<PartnerWithId[]>([]);
   const [tracks, setTracks] = useState<TrackWithId[]>([]);
+  const [leads, setLeads] = useState<AppUserWithId[]>([]);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [momentsLoading, setMomentsLoading] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -55,8 +58,9 @@ export default function Home() {
         const fetchedWriteups = await getWriteups({ status: "published", limitCount: 3 });
         setWriteups(fetchedWriteups);
         try {
-          const fetchedTracks = await getTracks?.().catch(() => []);
+          const fetchedTracks = await getTracks().catch(() => []);
           setTracks(fetchedTracks);
+          setLeads(await getUsers("lead").catch(() => []));
         } catch {
           // Tracks non-critical
         }
@@ -96,8 +100,8 @@ export default function Home() {
   }, []);
 
   const listed = events.filter((e) => e.status !== "cancelled");
-  const nextEvent = listed.find((e) => e.status === "upcoming") || listed[0];
-  const held = listed.filter((e) => e.status !== "cancelled").length;
+  const nextEvent = listed.find((e) => e.status === "upcoming");
+  const held = listed.filter((e) => e.status === "past").length;
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
   const activeOrderedPartners = [...partners].filter((p) => p.active).sort((a, b) => a.order - b.order);
   const partnerTypes = [...new Set(activeOrderedPartners.map((p) => p.type))];
@@ -140,12 +144,9 @@ export default function Home() {
                 <>
                   <h2 className="font-display text-[44px] leading-[1.05] uppercase mt-[12px]">{nextEvent.title}</h2>
                   <p className="text-[15px] mt-[4px]">{formatDateTime(nextEvent.date)} · {nextEvent.venue}</p>
-                  <a
-                    href="#events"
-                    className="mt-[18px] inline-block border-[3px] border-ink bg-white px-[18px] py-[10px] font-bold text-[13px] uppercase opacity-60 pointer-events-none"
-                  >
-                    RSVP ↗
-                  </a>
+                  <button type="button" disabled className="mt-[18px] w-fit cursor-not-allowed border-[3px] border-ink bg-white px-[18px] py-[10px] text-[12px] font-bold uppercase opacity-60">
+                    RSVP · Coming soon
+                  </button>
                 </>
               ) : (
                 <p className="mt-[12px] text-[15px]">No upcoming events.</p>
@@ -154,13 +155,13 @@ export default function Home() {
             <div className="grid grid-cols-3 gap-[18px] p-[18px] border-t-[3px] border-ink">
               <StatBlock value={held} label="Events held" />
               <StatBlock value={writeups.length} label="Writeups" />
-              <StatBlock value={tracks.length || 4} label="Tracks" />
+              <StatBlock value={tracks.length} label="Tracks" />
             </div>
           </div>
         </section>
 
         {/* Latest writeups (numbered rows, row 2 red) */}
-        <section id="events" className="grid grid-cols-[minmax(160px,1fr)_3fr] border-b-[3px] border-ink">
+        <section id="writeups" className="grid grid-cols-[minmax(160px,1fr)_3fr] border-b-[3px] border-ink">
           <div className="px-[24px] py-[28px] border-r-[3px] border-ink flex flex-col justify-between gap-[20px]">
             <div>
               <SectionHeader className="text-[14px]">Latest writeups</SectionHeader>
@@ -183,9 +184,9 @@ export default function Home() {
                   >
                     <span className="font-display text-[64px] leading-1">{num}</span>
                     <div>
-                      <div className="font-bold text-[20px]">{w.title}</div>
+                      <a href={`/writeup?id=${w.id}`} className="font-bold text-[20px] underline-offset-4 hover:underline">{w.title}</a>
                       <div className="text-[12px] mt-[4px] text-[#444]">
-                        Drafted with AI · reviewed by Lead
+                        {w.aiDrafted ? "Drafted with AI · reviewed by lead" : "Published by a track lead"}
                       </div>
                     </div>
                     <Tag label={w.trackId} color={isRed ? "ink" : trackTagColor(w.trackId)} />
@@ -214,21 +215,24 @@ export default function Home() {
               <div className="px-[26px] py-[22px] border-b-[3px] border-ink">No tracks yet.</div>
             ) : (
               tracks.map((t, i) => {
+                const trackLeads = leads.filter((lead) => t.leadIds.includes(lead.id));
                 const last = i === tracks.length - 1;
                 const isYellow = t.color === "yellow";
                 return (
-                  <div
+                  <a
                     key={t.id}
-                    className={`flex justify-between items-center px-[26px] py-[22px] ${!last ? "border-b-[3px]" : "border-b-0"} border-ink`}
+                    href={`/track?slug=${t.slug}`}
+                    className={`flex items-center justify-between gap-[16px] border-ink px-[26px] py-[18px] hover:bg-yellow ${!last ? "border-b-[3px]" : ""}`}
                   >
-                    <span className="text-[22px] font-bold flex items-center gap-[12px]">
-                      <span
-                        className={`inline-block w-[14px] h-[14px] ${COLOR_CLASS[t.color]} ${isYellow ? "border-[2px] border-ink box-border" : ""}`}
-                      ></span>
-                      {String(i + 1).padStart(2, "0")} &nbsp; {t.name}
+                    <span className="flex min-w-0 items-center gap-[12px]">
+                      <span className={`inline-block h-[14px] w-[14px] shrink-0 ${COLOR_CLASS[t.color]} ${isYellow ? "border-[2px] border-ink" : ""}`}></span>
+                      <span className="min-w-0">
+                        <span className="block text-[19px] font-bold">{String(i + 1).padStart(2, "0")} · {t.name}</span>
+                        <span className="mt-[4px] block text-[11px] uppercase">{trackLeads.map((lead) => lead.name).join(", ") || "Lead to be announced"}</span>
+                      </span>
                     </span>
-                    <span className="text-[28px]">+</span>
-                  </div>
+                    <span className="shrink-0 text-[28px]">↗</span>
+                  </a>
                 );
               })
             )}
@@ -354,37 +358,19 @@ export default function Home() {
             </span>
           </div>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
-            {[
-              ...posts.slice(0, 3),
-              ...(posts.length < 3
-                ? [
-                    {
-                      id: "placeholder",
-                      title: "News headline",
-                      summary: "Two-line summary and why it matters for students.",
-                      tags: ["Cloud"],
-                      sourceUrl: "#",
-                    },
-                  ]
-                : []),
-            ].map((p, i) => {
-              const last = i === 2;
-              const tag = (p.tags?.[0] ?? "Cloud") as string;
-              return (
-                <div
-                  key={p.id}
-                  className={`p-[24px] border-r-[3px] border-ink border-b-[3px] border-ink ${!last ? "" : "border-r-0 border-b-0"}`}
-                >
-                  <Tag label={tag} color="green" />
-                  <div className="font-bold text-[20px] leading-[1.25] mt-[16px] mb-[8px]">{p.title}</div>
-                  <div className="text-[14px] leading-[1.5] text-[#333]">
-                    {p.summary} <a href={p.sourceUrl} className="font-bold">
-                      Source ↗
-                    </a>
-                  </div>
-                </div>
-              );
-            })}
+            {posts.filter((post) => (post as PostWithId & { hidden?: boolean }).hidden !== true).slice(0, 3).map((post, index) => (
+              <article key={post.id} className={`border-r-[3px] border-b-[3px] border-ink p-[24px] ${index === 1 ? "bg-yellow" : "bg-white"}`}>
+                <Tag label={post.tags?.[0] || "News"} color="green" />
+                <h3 className="mt-[16px] text-[20px] font-bold leading-[1.25]">{post.title}</h3>
+                <p className="mt-[8px] text-[14px] leading-[1.5] text-[#333]">{post.summary}</p>
+                <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-[14px] inline-block text-[12px] font-bold uppercase underline">Source ↗</a>
+              </article>
+            ))}
+            {!postsLoading && posts.filter((post) => (post as PostWithId & { hidden?: boolean }).hidden !== true).length === 0 && (
+              <p className="px-[24px] py-[22px] text-[12px] font-bold uppercase">No articles have been published yet.</p>
+            )}
+            {postsLoading && <p className="px-[24px] py-[22px] text-[12px] font-bold uppercase">Loading articles…</p>}
+            {postsError && <p role="alert" className="bg-red px-[24px] py-[22px] text-[12px] font-bold uppercase">{postsError}</p>}
           </div>
         </section>
 
