@@ -55,15 +55,31 @@ export default function DashboardPage() {
   const [productTags, setProductTags] = useState<string[]>([]);
 
   useEffect(() => {
+    let active = true;
     const unsub = onAuthStateChanged(auth, async (u) => {
-      if (!u) { setAllowed(false); return; }
-      const userData = await getUserById(u.uid);
-      const r = userData?.role ?? "member";
-      const ok = r === "lead" || r === "admin";
-      setAllowed(ok);
-      if (ok) { setUid(u.uid); setRole(r); setTrack(userData?.track ?? ""); }
+      if (!u) {
+        if (active) setAllowed(false);
+        return;
+      }
+      try {
+        const userData = await getUserById(u.uid);
+        if (!active) return;
+        const r = userData?.role ?? "member";
+        const ok = r === "lead" || r === "admin";
+        setAllowed(ok);
+        if (ok) {
+          setUid(u.uid);
+          setRole(r);
+          setTrack(userData?.track ?? "");
+        }
+      } catch {
+        if (active) {
+          setErr("Your staff profile could not be loaded.");
+          setAllowed(false);
+        }
+      }
     });
-    return () => unsub();
+    return () => { active = false; unsub(); };
   }, []);
 
   async function loadEvents() {
@@ -72,19 +88,30 @@ export default function DashboardPage() {
       setEvents(fetched as any[]);
     } catch {
       setEvents([]);
+      setErr("Events could not be loaded in the dashboard.");
     }
   }
   async function loadWriteups() {
     if (!uid) return;
-    const fetched = await getWriteups({ authorId: uid });
-    setWriteups(fetched as any[]);
+    try {
+      const fetched = await getWriteups({ authorId: uid });
+      setWriteups(fetched as any[]);
+    } catch {
+      setWriteups([]);
+      setErr("Your writeups could not be loaded.");
+    }
   }
   async function loadMedia(wid: string) {
-    const fetched = await getMediaByWriteup(wid);
-    setMediaList(fetched as any[]);
+    try {
+      const fetched = await getMediaByWriteup(wid);
+      setMediaList(fetched as any[]);
+    } catch {
+      setMediaList([]);
+      setErr("Media for this writeup could not be loaded.");
+    }
   }
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { if (allowed && uid) { loadEvents(); loadWriteups(); } }, [allowed, uid, role, track]);
+  useEffect(() => { if (allowed && uid) { void loadEvents(); void loadWriteups(); } }, [allowed, uid, role, track]);
 
   function validateEvent() {
     const errors = validateEventSchema(eventForm, role);
