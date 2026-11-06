@@ -24,6 +24,10 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
   }, []);
 
   const links = pageLinks;
+  const activePath = pathname === "/lead" ? "/leads"
+    : pathname === "/track" ? "/tracks"
+    : pathname === "/event" ? "/events"
+    : pathname;
 
   return (
     <nav className="flex flex-wrap border-b-[3px] border-ink" aria-label="Main navigation">
@@ -42,8 +46,8 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
         <Link
           key={link.href}
           href={link.href}
-          aria-current={pathname === link.href ? "page" : undefined}
-          className={`border-r-[3px] border-ink px-[20px] py-[22px] text-[13px] font-bold uppercase whitespace-nowrap ${pathname === link.href ? "bg-yellow" : ""}`}
+          aria-current={activePath === link.href ? "page" : undefined}
+          className={`border-r-[3px] border-ink px-[20px] py-[22px] text-[13px] font-bold uppercase whitespace-nowrap ${activePath === link.href ? "bg-yellow" : ""}`}
         >
           {link.label}
         </Link>
