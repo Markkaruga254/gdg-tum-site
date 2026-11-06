@@ -383,16 +383,16 @@ export default function Home() {
 
         {/* Labs Soon + red digest */}
         <section id="labs" className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] border-b-[3px] border-ink">
-          <div className="px-[32px] py-[34px] border-r-[3px] border-ink bg-ink text-white flex flex-col gap-[12px]">
+          <div className="flex flex-col gap-[12px] border-b-[3px] border-ink bg-ink px-[28px] py-[34px] text-white xl:border-b-0 xl:border-r-[3px] xl:px-[32px]">
             <Tag label="Soon" color="yellow" />
             <h2 className="font-display font-normal text-[64px] leading-[1.1] uppercase mb-[8px]">Labs</h2>
             <p className="text-[16px] leading-[1.6] mt-[8px]">Where students upskill with hands-on, guided practice.</p>
           </div>
-          <div id="join" className="px-[32px] py-[34px] bg-red flex flex-col gap-[22px]">
+          <div id="join" className="flex flex-col gap-[22px] bg-red px-[26px] py-[30px] xl:px-[32px] xl:py-[34px]">
             <h2 className="font-display font-normal text-[44px] leading-[1.1] uppercase mb-[14px]">
               Get the weekly digest
             </h2>
-            <div className="flex flex-wrap border-[3px] border-ink bg-white gap-[18px]">
+            <div className="flex flex-wrap border-[3px] border-ink bg-white">
               <label htmlFor="em" className="sr-only">
                 Email
               </label>
@@ -401,9 +401,9 @@ export default function Home() {
                 type="email"
                 placeholder="ENTER YOUR EMAIL"
                 disabled
-                className="flex-1 min-w-[160px] border-0 px-[16px] py-[16px] text-[14px] font-bold bg-transparent focus:outline-none"
+                className="min-w-[140px] flex-1 border-0 bg-transparent px-[14px] py-[14px] text-[13px] font-bold focus:outline-none"
               />
-              <button type="button" disabled className="bg-ink text-white border-0 px-[26px] py-[16px] text-[14px] font-bold uppercase">
+              <button type="button" disabled className="border-0 bg-ink px-[20px] py-[14px] text-[13px] font-bold uppercase text-white">
                 Coming soon
               </button>
             </div>
@@ -411,7 +411,7 @@ export default function Home() {
         </section>
 
         {/* Footer strip */}
-        <footer className="flex flex-wrap justify-between gap-[12px] px-[26px] py-[16px] text-[12px] font-bold uppercase">
+        <footer className="flex flex-wrap justify-between gap-[12px] px-[22px] py-[16px] text-[12px] font-bold uppercase">
           <span>&copy; 2026 GDG on Campus TUM</span>
           <span>GitHub &middot; LinkedIn &middot; Instagram &middot; X</span>
         </footer>
