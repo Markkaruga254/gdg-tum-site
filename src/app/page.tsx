@@ -332,11 +332,11 @@ export default function Home() {
                   </div>
                 </a>
                 <div className="flex-[3_1_340px] grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-[16px]">
-                  {photos.slice(1, 5).map((photo) => (
+                  {photos.slice(1, 5).map((photo, index) => (
                     <a
                       key={photo.mediaId}
                       href={`/writeup?id=${photo.writeupId}`}
-                      className="flex h-full min-h-[160px] flex-col border-[3px] border-ink xl:min-h-[240px]"
+                      className={`flex h-full min-h-[160px] flex-col border-[3px] border-ink xl:min-h-[240px] ${index > 1 ? "hidden xl:flex" : ""}`}
                     >
                       <div className="h-[110px] overflow-hidden border-b-[3px] border-ink xl:h-[150px]">
                         <img src={photo.url} alt={photo.altText} className="h-full w-full object-cover" />
@@ -365,8 +365,8 @@ export default function Home() {
             </span>
           </div>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-[14px] p-[16px] xl:gap-[16px] xl:p-[20px]">
-            {posts.filter((post) => post.hidden !== true).slice(0, 3).map((post) => (
-              <article key={post.id} className="border-[3px] border-ink bg-white p-[22px]">
+            {posts.filter((post) => post.hidden !== true).slice(0, 3).map((post, index) => (
+              <article key={post.id} className={`border-[3px] border-ink bg-white p-[22px] ${index > 1 ? "hidden xl:block" : ""}`}>
                 <Tag label={post.tags?.[0] || "News"} color={postTagColor(post.tags?.[0] || "News")} />
                 <h3 className="mt-[16px] text-[20px] font-bold leading-[1.25]">{post.title}</h3>
                 <p className="mt-[8px] text-[14px] leading-[1.5] text-[#333]">{post.summary}</p>
