@@ -65,10 +65,12 @@ function View() {
     <>
       <Nav />
       <main className="mx-auto max-w-[1280px]">
-        <header className="border-b-[3px] border-ink px-[26px] py-[36px]">
-          <Tag label={trackLabel(writeup.trackId)} color={trackTagColor(writeup.trackId)} />
-          {writeup.aiDrafted && <p className="mt-[16px] text-[11px] font-bold uppercase">Drafted with AI, reviewed by {author?.name || "the lead"}</p>}
-          <h1 className="mt-[18px] max-w-[1000px] font-display text-[clamp(48px,8vw,104px)] uppercase leading-[.94]">{writeup.title}</h1>
+        <header className="border-b-[3px] border-ink px-[26px] py-[34px]">
+          <div className="flex flex-wrap items-center gap-[10px]">
+            <Tag label={trackLabel(writeup.trackId)} color={trackTagColor(writeup.trackId)} />
+            {writeup.aiDrafted && <Tag label={`Drafted with AI, reviewed by ${author?.name || "the lead"}`} color="ink" />}
+          </div>
+          <h1 className="mt-[16px] max-w-[1000px] font-display text-[clamp(52px,7vw,96px)] uppercase leading-[.94]">{writeup.title}</h1>
           <p className="mt-[18px] text-[13px] font-bold uppercase">
             By {author ? <a href={`/lead?id=${author.id}`} className="underline">{author.name}</a> : "GDG TUM lead"} · {date}
             {event ? <> · <a href={`/event?id=${event.id}`} className="underline">{event.title}</a></> : null}
