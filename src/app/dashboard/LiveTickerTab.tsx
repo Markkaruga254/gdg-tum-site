@@ -1,6 +1,9 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { TickerTab } from "./TickerTab";
+import { useEffect, useState } from "react";
+import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { getTicker } from "@/lib/data";
 
 export default function LiveTickerTab({ uid, role, events, track, setMsg, setErr }: any) {
   return (
