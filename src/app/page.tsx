@@ -239,11 +239,13 @@ export default function Home() {
                     <span className="flex min-w-0 items-center gap-[12px]">
                       <span className={`inline-block h-[14px] w-[14px] shrink-0 ${COLOR_CLASS[t.color]} ${isYellow ? "border-[2px] border-ink" : ""}`}></span>
                       <span className="min-w-0">
-                        <span className="block text-[18px] font-bold xl:text-[22px]">{String(i + 1).padStart(2, "0")} · {t.name}</span>
-                        <span className="mt-[4px] block text-[11px] uppercase">{trackLeads.map((lead) => lead.name).join(", ") || "Lead to be announced"}</span>
+                        <span className="block text-[18px] font-bold xl:hidden">{t.name}</span>
+                        <span className="hidden text-[22px] font-bold xl:block">{String(i + 1).padStart(2, "0")} · {t.name}</span>
+                        <span className="mt-[4px] hidden text-[11px] uppercase xl:block">{trackLeads.map((lead) => lead.name).join(", ") || "Lead to be announced"}</span>
                       </span>
                     </span>
-                    <span className="shrink-0 text-[28px]">↗</span>
+                    <span className="shrink-0 text-[28px] xl:hidden">+</span>
+                    <span className="hidden shrink-0 text-[28px] xl:inline">↗</span>
                   </a>
                 );
               })
@@ -257,11 +259,11 @@ export default function Home() {
           <div className="flex justify-between items-center flex-wrap gap-[10px] px-[22px] py-[16px] border-b-[3px] border-ink">
             <SectionHeader className="text-[14px]">Who we work with</SectionHeader>
             {contactEmail ? (
-              <a href={`mailto:${contactEmail}`} className="text-[12px] font-bold uppercase">
+              <a href={`mailto:${contactEmail}`} className="hidden text-[12px] font-bold uppercase xl:inline">
                 Become a partner ↗
               </a>
             ) : (
-              <span className="text-[12px] font-bold uppercase">Become a partner ↗</span>
+              <span className="hidden text-[12px] font-bold uppercase xl:inline">Become a partner ↗</span>
             )}
           </div>
           <div className="grid grid-cols-2 xl:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
@@ -285,7 +287,7 @@ export default function Home() {
               <div key="placeholder" className="flex min-h-[110px] flex-col items-center justify-center border-b-[3px] border-ink bg-yellow p-[20px] text-center text-[13px] font-bold uppercase">Your organisation here ↗</div>
             )}
           </div>
-          <div className="flex flex-wrap gap-[10px] px-[26px] py-[14px]">
+          <div className="hidden flex-wrap gap-[10px] px-[26px] py-[14px] xl:flex">
             {partnerTypes.map((t) => (
               <Tag
                 key={t}
