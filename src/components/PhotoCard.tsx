@@ -11,6 +11,10 @@ type PhotoCardProps = {
   bg?: string;
 };
 
+function trackLabel(trackId: string) {
+  return trackId === "women-in-tech" ? "Women in Tech" : trackId.replaceAll("-", " ").replace(/\\b\\w/g, (letter) => letter.toUpperCase());
+}
+
 export default function PhotoCard({
   url,
   caption,
