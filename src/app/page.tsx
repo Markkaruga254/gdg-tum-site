@@ -133,31 +133,31 @@ export default function Home() {
 
         {/* Hero + next event + stats */}
         <section className="grid grid-cols-[repeat(auto-fit,minmax(340px,1fr))] border-b-[3px] border-ink">
-          <div className="px-[40px] py-[44px] border-r-[3px] border-ink">
-            <h1 className="font-display font-normal text-[clamp(64px,9vw,128px)] leading-[.92] uppercase">
+          <div className="border-b-[3px] border-ink px-[20px] py-[28px] xl:border-b-0 xl:border-r-[3px] xl:px-[40px] xl:py-[44px]">
+            <h1 className="font-display font-normal text-[72px] leading-[.92] uppercase xl:text-[clamp(64px,9vw,128px)]">
               Build.<br />
               Learn.<br />
               <span className="text-red">Ship.</span>
             </h1>
-            <p className="text-[18px] leading-[1.5] max-w-[460px] mt-[26px]">
+            <p className="mt-[18px] max-w-[460px] text-[16px] leading-[1.5] xl:mt-[26px] xl:text-[18px]">
               Student developers at the Technical University of Mombasa, learning Google technologies by building real things together.
             </p>
             <a
               href="/tracks"
-              className="mt-[26px] inline-block border-[3px] border-ink px-[22px] py-[12px] font-bold text-[13px] uppercase"
+              className="mt-[18px] inline-block border-[3px] border-ink px-[22px] py-[12px] text-[12px] font-bold uppercase xl:mt-[26px] xl:text-[13px]"
             >
               Explore tracks ↗
             </a>
           </div>
           <div className="flex flex-col">
-            <div className={`bg-blue text-white px-[32px] py-[30px] border-b-[3px] border-ink flex-1`}>
+            <div className={`bg-blue text-white px-[20px] py-[24px] border-b-[3px] border-ink flex-1 xl:px-[32px] xl:py-[30px]`}>
               <SectionHeader className="tracking-[1px]">Next event</SectionHeader>
               {loading ? (
                 <p className="mt-[12px] text-[15px]">Loading…</p>
               ) : nextEvent ? (
                 <>
-                  <h2 className="font-display text-[44px] leading-[1.05] uppercase mt-[12px]">{nextEvent.title}</h2>
-                  <p className="text-[15px] mt-[4px]">{formatDateTime(nextEvent.date)} · {nextEvent.venue}</p>
+                  <h2 className="font-display text-[38px] leading-[1.05] uppercase mt-[10px] xl:mt-[12px] xl:text-[44px]">{nextEvent.title}</h2>
+                  <p className="mt-[4px] text-[14px] xl:text-[15px]">{formatDateTime(nextEvent.date)} · {nextEvent.venue}</p>
                   <button type="button" disabled className="mt-[18px] w-fit cursor-not-allowed border-[3px] border-ink bg-white px-[18px] py-[10px] text-[12px] font-bold uppercase opacity-60">
                     RSVP (coming soon)
                   </button>
@@ -178,7 +178,7 @@ export default function Home() {
         <section id="writeups" className="border-b-[3px] border-ink">
           <div className="flex flex-wrap items-center justify-between gap-[10px] border-y-[3px] border-ink px-[22px] py-[16px]">
             <SectionHeader className="text-[14px]">Latest writeups</SectionHeader>
-            <a href="/writeups" className="text-[12px] font-bold uppercase tracking-[.5px]">See all ↗</a>
+            <a href="/writeups" className="hidden text-[12px] font-bold uppercase tracking-[.5px] xl:inline">See all ↗</a>
           </div>
           {writeups.length === 0 ? (
             <p className="px-[22px] py-[18px] text-[13px] font-bold uppercase">No writeups yet.</p>
@@ -193,17 +193,17 @@ export default function Home() {
               return (
                 <article
                   key={w.id}
-                  className={"grid grid-cols-[64px_minmax(0,1fr)] items-center gap-[14px] border-b-[3px] border-ink px-[22px] py-[14px] sm:grid-cols-[90px_minmax(0,1fr)_auto] " + (isRed ? "bg-red" : "bg-white") + (i === 2 ? " border-b-0" : "")}
+                  className={"grid grid-cols-[44px_minmax(0,1fr)] items-center gap-[12px] border-b-[3px] border-ink px-[20px] py-[16px] xl:grid-cols-[90px_minmax(0,1fr)_auto] xl:gap-[14px] xl:px-[22px] xl:py-[14px] " + (isRed ? "bg-red" : "bg-white") + (i === 2 ? " border-b-0" : "")}
                 >
-                  <span className="font-display text-[56px] leading-none">{num}</span>
+                  <span className="font-display text-[44px] leading-none xl:text-[56px]">{num}</span>
                   <div className="min-w-0">
-                    <a href={"/writeup?id=" + w.id} className="text-[19px] font-bold underline-offset-4 hover:underline">{w.title}</a>
-                    <p className="mt-[4px] text-[12px]">
+                    <a href={"/writeup?id=" + w.id} className="text-[17px] font-bold underline-offset-4 hover:underline xl:text-[19px]">{w.title}</a>
+                    <p className="mt-[4px] hidden text-[12px] xl:block">
                       {publishedDate}{publishedDate ? " · " : ""}
                       {w.aiDrafted ? "Drafted with AI, reviewed by the lead" : trackLabel + " Track"}
                     </p>
                   </div>
-                  <div className="col-start-2 flex flex-wrap items-center gap-[10px] sm:col-start-auto">
+                  <div className="col-start-2 flex flex-wrap items-center gap-[10px] xl:col-start-auto">
                     <Tag label={trackLabel} color={trackTagColor(w.trackId)} />
                   </div>
                 </article>
@@ -214,14 +214,10 @@ export default function Home() {
 
         {/* Tracks block */}
         <section id="tracks" className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] border-b-[3px] border-ink">
-          <div className="px-[32px] py-[36px] border-r-[3px] border-ink bg-yellow">
-            <h2 className="font-display font-normal text-[72px] leading-[.95] uppercase">
-              Four<br />
-              tracks.<br />
-              One<br />
-              club.
-            </h2>
-            <p className="text-[15px] leading-[1.5] mt-[18px]">
+          <div className="border-b-[3px] border-ink bg-yellow px-[20px] py-[26px] xl:border-b-0 xl:border-r-[3px] xl:px-[32px] xl:py-[36px]">
+            <h2 className="block font-display text-[56px] font-normal uppercase leading-[.95] xl:hidden">Four tracks. One club.</h2>
+            <h2 className="hidden font-display text-[72px] font-normal uppercase leading-[.95] xl:block">Four<br />tracks.<br />One<br />club.</h2>
+            <p className="mt-[18px] hidden text-[15px] leading-[1.5] xl:block">
               Each track is led by a student lead who runs sessions, posts writeups and builds a public portfolio.
             </p>
           </div>
@@ -238,12 +234,12 @@ export default function Home() {
                   <a
                     key={t.id}
                     href={`/track?slug=${t.slug}`}
-                    className={`flex items-center justify-between gap-[16px] border-ink px-[26px] py-[18px] hover:bg-yellow ${!last ? "border-b-[3px]" : ""}`}
+                    className={`flex items-center justify-between gap-[16px] border-t-[3px] border-ink px-[20px] py-[18px] hover:bg-yellow xl:border-t-0 xl:px-[26px] xl:py-[22px] ${!last ? "xl:border-b-[3px]" : ""}` }
                   >
                     <span className="flex min-w-0 items-center gap-[12px]">
                       <span className={`inline-block h-[14px] w-[14px] shrink-0 ${COLOR_CLASS[t.color]} ${isYellow ? "border-[2px] border-ink" : ""}`}></span>
                       <span className="min-w-0">
-                        <span className="block text-[19px] font-bold">{String(i + 1).padStart(2, "0")} · {t.name}</span>
+                        <span className="block text-[18px] font-bold xl:text-[22px]">{String(i + 1).padStart(2, "0")} · {t.name}</span>
                         <span className="mt-[4px] block text-[11px] uppercase">{trackLeads.map((lead) => lead.name).join(", ") || "Lead to be announced"}</span>
                       </span>
                     </span>
@@ -268,9 +264,9 @@ export default function Home() {
               <span className="text-[12px] font-bold uppercase">Become a partner ↗</span>
             )}
           </div>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+          <div className="grid grid-cols-2 xl:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
             {activeOrderedPartners.map((p) => (
-              <a key={p.id} href={p.link} target="_blank" rel="noopener noreferrer" className="flex min-h-[110px] flex-col items-center justify-center gap-[10px] border-r-[3px] border-b-[3px] border-ink p-[20px] text-center text-[13px] font-bold uppercase">
+              <a key={p.id} href={p.link} target="_blank" rel="noopener noreferrer" className="flex min-h-[96px] flex-col items-center justify-center gap-[10px] border-r-[3px] border-b-[3px] border-ink p-[20px] even:border-r-0 xl:min-h-[110px] xl:even:border-r-[3px] text-center text-[13px] font-bold uppercase">
                 {p.logoUrl ? (
                   <img src={p.logoUrl} alt={p.name} className="mb-[2px] max-h-[64px] object-contain" />
                 ) : (
@@ -284,7 +280,7 @@ export default function Home() {
               </a>
             ))}
             {contactEmail ? (
-              <a key="placeholder" href={"mailto:" + contactEmail} className="flex min-h-[110px] flex-col items-center justify-center border-b-[3px] border-ink bg-yellow p-[20px] text-center text-[13px] font-bold uppercase">Your organisation here ↗</a>
+              <a key="placeholder" href={"mailto:" + contactEmail} className="flex min-h-[96px] flex-col items-center justify-center border-b-[3px] border-ink bg-yellow p-[20px] xl:min-h-[110px] text-center text-[13px] font-bold uppercase">Your organisation here ↗</a>
             ) : (
               <div key="placeholder" className="flex min-h-[110px] flex-col items-center justify-center border-b-[3px] border-ink bg-yellow p-[20px] text-center text-[13px] font-bold uppercase">Your organisation here ↗</div>
             )}
@@ -304,15 +300,15 @@ export default function Home() {
         <section id="moments" className="border-b-[3px] border-ink">
           {momentsError && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[14px] text-[12px] font-bold uppercase">{momentsError}</p>}
           <div className="flex justify-between items-center flex-wrap gap-[10px] px-[22px] py-[16px] border-b-[3px] border-ink">
-            <h2 className="font-display font-normal text-[56px] uppercase mt-0">Moments</h2>
+            <h2 className="font-display font-normal text-[44px] uppercase mt-0 xl:text-[56px]">Moments</h2>
             <a
               href="/gallery"
-              className="border-[3px] border-ink px-[16px] py-[10px] font-bold text-[12px] uppercase"
+              className="hidden border-[3px] border-ink px-[16px] py-[10px] font-bold text-[12px] uppercase xl:inline-block"
             >
               Open the gallery ↗
             </a>
           </div>
-          <div className="flex flex-wrap gap-[16px] p-[20px]">
+          <div className="flex flex-wrap gap-[14px] p-[16px] xl:gap-[16px] xl:p-[20px]">
             {momentsLoading ? (
               <div className="border-[3px] border-ink text-center text-[12px] font-bold">Loading photos…</div>
             ) : photos.length === 0 ? (
@@ -323,9 +319,9 @@ export default function Home() {
               <>
                 <a
                   href={`/writeup?id=${photos[0].writeupId}`}
-                  className="flex h-full min-h-[440px] flex-[2_1_340px] flex-col border-[3px] border-ink"
+                  className="flex h-full min-h-[240px] flex-[2_1_340px] flex-col border-[3px] border-ink xl:min-h-[440px]"
                 >
-                  <div className="h-[380px] overflow-hidden border-b-[3px] border-ink">
+                  <div className="h-[200px] overflow-hidden border-b-[3px] border-ink xl:h-[380px]">
                     <img src={photos[0].url} alt={photos[0].altText} className="h-full w-full object-cover" />
                   </div>
                   <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
@@ -338,9 +334,9 @@ export default function Home() {
                     <a
                       key={photo.mediaId}
                       href={`/writeup?id=${photo.writeupId}`}
-                      className="flex h-full min-h-[240px] flex-col border-[3px] border-ink"
+                      className="flex h-full min-h-[160px] flex-col border-[3px] border-ink xl:min-h-[240px]"
                     >
-                      <div className="h-[150px] overflow-hidden border-b-[3px] border-ink">
+                      <div className="h-[110px] overflow-hidden border-b-[3px] border-ink xl:h-[150px]">
                         <img src={photo.url} alt={photo.altText} className="h-full w-full object-cover" />
                       </div>
                       <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
@@ -362,11 +358,11 @@ export default function Home() {
         <section id="blog" className="border-b-[3px] border-ink">
           <div className="flex justify-between items-center flex-wrap gap-[10px] px-[22px] py-[16px] border-b-[3px] border-ink">
             <SectionHeader className="text-[14px]">Tech blog</SectionHeader>
-            <span className="bg-ink text-white px-[10px] py-[4px] text-[12px] font-bold uppercase">
+            <span className="hidden bg-ink px-[10px] py-[4px] text-[12px] font-bold uppercase text-white xl:inline-block">
               Curated by GDG TUM Bot
             </span>
           </div>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-[16px] p-[20px]">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-[14px] p-[16px] xl:gap-[16px] xl:p-[20px]">
             {posts.filter((post) => post.hidden !== true).slice(0, 3).map((post) => (
               <article key={post.id} className="border-[3px] border-ink bg-white p-[22px]">
                 <Tag label={post.tags?.[0] || "News"} color={postTagColor(post.tags?.[0] || "News")} />
