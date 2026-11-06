@@ -14,26 +14,33 @@ export default function Gallery() {
   const [trackFilter, setTrackFilter] = useState<TrackSlug | undefined>(undefined);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [nextCursor, setNextCursor] = useState<GalleryPage["nextCursor"]>(null);
+  const [overflowPhotos, setOverflowPhotos] = useState<Photo[]>([]);
   const [loading, setLoading] = useState(true);
   const [moreLoading, setMoreLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const photosRef = useRef<Photo[]>([]);
-  const hasMore = !!nextCursor;
+  const hasMore = overflowPhotos.length > 0 || !!nextCursor;
 
   async function loadNextPage() {
-    if (!nextCursor) return;
+    if (overflowPhotos.length === 0 && !nextCursor) return;
     setMoreLoading(true);
     setError(null);
     try {
-      const page = await getGalleryPage({
-        trackId: trackFilter,
-        cursor: nextCursor,
-        pageSize: 6,
-      });
-      const newPhotos = [...photosRef.current, ...page.photos];
-      photosRef.current = newPhotos;
-      setPhotos(newPhotos);
-      setNextCursor(page.nextCursor);
+      if (overflowPhotos.length > 0) {
+        const nextPhotos = overflowPhotos.slice(0, 6);
+        const remaining = overflowPhotos.slice(6);
+        const newPhotos = [...photosRef.current, ...nextPhotos];
+        photosRef.current = newPhotos;
+        setPhotos(newPhotos);
+        setOverflowPhotos(remaining);
+      } else if (nextCursor) {
+        const page = await getGalleryPage({ trackId: trackFilter, cursor: nextCursor, pageSize: 6 });
+        const newPhotos = [...photosRef.current, ...page.photos];
+        photosRef.current = newPhotos;
+        setPhotos(newPhotos);
+        setOverflowPhotos(page.overflowPhotos);
+        setNextCursor(page.nextCursor);
+      }
     } catch {
       setError("More photos could not be loaded. Please try again.");
     } finally {
@@ -49,6 +56,7 @@ export default function Gallery() {
         if (!active) return;
         photosRef.current = page.photos;
         setPhotos(page.photos);
+        setOverflowPhotos(page.overflowPhotos);
         setNextCursor(page.nextCursor);
       } catch {
         if (active) setError("Photos could not be loaded. Please try again.");
@@ -80,7 +88,7 @@ export default function Gallery() {
               <button
                 key={filter.label}
                 type="button"
-                onClick={() => { if (filter.trackId === trackFilter) return; photosRef.current = []; setPhotos([]); setNextCursor(null); setError(null); setLoading(true); setTrackFilter(filter.trackId); }}
+                onClick={() => { if (filter.trackId === trackFilter) return; photosRef.current = []; setPhotos([]); setOverflowPhotos([]); setNextCursor(null); setError(null); setLoading(true); setTrackFilter(filter.trackId); }}
                 aria-pressed={active}
                 className={`whitespace-nowrap border-r-[3px] border-ink px-[22px] py-[16px] text-[12px] font-bold uppercase ${active ? "bg-yellow" : "bg-white"}`}
               >
