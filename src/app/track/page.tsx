@@ -11,7 +11,7 @@ import type { TrackSlug } from "@/lib/types";
 
 function dateLabel(value: EventWithId["date"]) {
   const date = value.toDate();
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
 function View() {
