@@ -80,7 +80,7 @@ export default function Gallery() {
               <button
                 key={filter.label}
                 type="button"
-                onClick={() => { photosRef.current = []; setPhotos([]); setNextCursor(null); setError(null); setLoading(true); setTrackFilter(filter.trackId); }}
+                onClick={() => { if (filter.trackId === trackFilter) return; photosRef.current = []; setPhotos([]); setNextCursor(null); setError(null); setLoading(true); setTrackFilter(filter.trackId); }}
                 aria-pressed={active}
                 className={`whitespace-nowrap border-r-[3px] border-ink px-[22px] py-[16px] text-[12px] font-bold uppercase ${active ? "bg-yellow" : "bg-white"}`}
               >
