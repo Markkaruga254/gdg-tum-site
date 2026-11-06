@@ -309,7 +309,7 @@ export default function DashboardPage() {
                   </FormField>
                   <FormField label="Summary (max 40 words)" id="ws" error={wfErrors.summary}>
                     <textarea id="ws" value={wf.summary} onChange={(e) => setWf({ ...wf, summary: e.target.value })} className="border-[3px] border-ink px-3 py-2" rows={3} />
-                    <p className="text-right text-[10px] font-bold uppercase">{wf.summary.trim() ? wf.summary.trim().split(/\\s+/).length : 0}/40 words</p>
+                    <p className="text-right text-[10px] font-bold uppercase">{wf.summary.trim() ? wf.summary.trim().split(/\s+/).length : 0}/40 words</p>
                   </FormField>
                   <FormField label="Attendance" id="wa" error={wfErrors.attendance}>
                     <input id="wa" type="number" min={0} value={wf.attendance} onChange={(e) => setWf({ ...wf, attendance: e.target.value })} className="border-[3px] border-ink px-3 py-2" />
