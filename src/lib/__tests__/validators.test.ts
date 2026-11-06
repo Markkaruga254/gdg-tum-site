@@ -5,7 +5,7 @@ describe("validateEvent", () => {
   it("accepts a complete member event", () => {
     expect(
       validateEvent(
-        { title: "Talk", date: "2026-11-05T10:00", venue: "Hall", status: "upcoming", attendance: "", trackId: "cloud" },
+        { title: "Talk", date: "2026-11-05T10:00", venue: "Hall", description: "", status: "upcoming", attendance: "", trackId: "cloud" },
         "member",
       ),
     ).toEqual({});
@@ -14,7 +14,7 @@ describe("validateEvent", () => {
   it("accepts a complete admin event", () => {
     expect(
       validateEvent(
-        { title: "Talk", date: "2026-11-05T10:00", venue: "Hall", status: "upcoming", attendance: "", trackId: "web" },
+        { title: "Talk", date: "2026-11-05T10:00", venue: "Hall", description: "", status: "upcoming", attendance: "", trackId: "web" },
         "admin",
       ),
     ).toEqual({});
@@ -22,7 +22,7 @@ describe("validateEvent", () => {
 
   it("rejects missing title, date, venue", () => {
     expect(
-      validateEvent({ title: "", date: "", venue: "", status: "upcoming", attendance: "", trackId: "cloud" }, "member"),
+      validateEvent({ title: "", date: "", venue: "", description: "", status: "upcoming", attendance: "", trackId: "cloud" }, "member"),
     ).toEqual({
       title: "Title required",
       date: "Date required",
@@ -32,13 +32,13 @@ describe("validateEvent", () => {
 
   it("requires trackId for admin but not member", () => {
     const member = validateEvent(
-      { title: "T", date: "d", venue: "v", status: "upcoming", attendance: "", trackId: "" },
+      { title: "T", date: "d", venue: "v", description: "", status: "upcoming", attendance: "", trackId: "" },
       "member",
     );
     expect(member.trackId).toBeUndefined();
 
     const admin = validateEvent(
-      { title: "T", date: "d", venue: "v", status: "upcoming", attendance: "", trackId: "" },
+      { title: "T", date: "d", venue: "v", description: "", status: "upcoming", attendance: "", trackId: "" },
       "admin",
     );
     expect(admin.trackId).toBe("Track required");
@@ -46,7 +46,7 @@ describe("validateEvent", () => {
 
   it("trims whitespace-only title", () => {
     expect(
-      validateEvent({ title: "   ", date: "d", venue: "v", status: "upcoming", attendance: "", trackId: "cloud" }, "member"),
+      validateEvent({ title: "   ", date: "d", venue: "v", description: "", status: "upcoming", attendance: "", trackId: "cloud" }, "member"),
     ).toEqual({ title: "Title required" });
   });
 });
