@@ -42,7 +42,7 @@ function postTagColor(tag: string): "blue" | "red" | "green" | "yellow" | "ink" 
 function formatDateTime(date: unknown): string {
   if (!date || typeof (date as { toDate: () => Date }).toDate !== "function") return "";
   const d = (date as { toDate: () => Date }).toDate();
-  return `${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })} · ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
+  return `${d.toLocaleDateString(undefined, { weekday: "short" })} ${d.getDate()} ${d.toLocaleDateString(undefined, { month: "short" })} · ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
 }
 
 export default function Home() {
