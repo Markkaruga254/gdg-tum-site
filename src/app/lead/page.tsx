@@ -59,6 +59,7 @@ function View() {
 
   const pastEvents = events.filter((event) => event.status === "past")
     .sort((a, b) => b.date.toMillis() - a.date.toMillis());
+  const studentsReached = pastEvents.reduce((total, event) => total + (event.attendance || 0), 0);
 
   return (
     <>
@@ -90,7 +91,7 @@ function View() {
 
         <section className="grid grid-cols-2 border-b-[3px] border-ink sm:grid-cols-4">
           <div className="border-b-[3px] border-r-[3px] border-ink px-[20px] py-[22px] sm:border-b-0">
-            <p className="font-display text-[52px] leading-none">{events.length.toString().padStart(2, "0")}</p>
+            <p className="font-display text-[52px] leading-none">{pastEvents.length.toString().padStart(2, "0")}</p>
             <p className="mt-[8px] text-[11px] font-bold uppercase">Events held</p>
           </div>
           <div className="border-b-[3px] border-r-[3px] border-ink bg-yellow px-[20px] py-[22px] sm:border-b-0">
@@ -98,11 +99,11 @@ function View() {
             <p className="mt-[8px] text-[11px] font-bold uppercase">Writeups</p>
           </div>
           <div className="border-r-[3px] border-ink px-[20px] py-[22px]">
-            <p className="font-display text-[52px] leading-none">—</p>
+            <p className="font-display text-[52px] leading-none">00</p>
             <p className="mt-[8px] text-[11px] font-bold uppercase">Labs</p>
           </div>
           <div className="px-[20px] py-[22px]">
-            <p className="font-display text-[52px] leading-none">—</p>
+            <p className="font-display text-[52px] leading-none">{studentsReached.toLocaleString()}</p>
             <p className="mt-[8px] text-[11px] font-bold uppercase">Students reached</p>
           </div>
         </section>
