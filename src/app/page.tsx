@@ -214,7 +214,7 @@ export default function Home() {
 
         {/* Tracks block */}
         <section id="tracks" className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] border-b-[3px] border-ink">
-          <div className="border-b-[3px] border-ink bg-yellow px-[20px] py-[26px] xl:border-b-0 xl:border-r-[3px] xl:px-[32px] xl:py-[36px]">
+          <div className="bg-yellow px-[20px] py-[26px] xl:border-r-[3px] xl:px-[32px] xl:py-[36px]">
             <h2 className="block font-display text-[56px] font-normal uppercase leading-[.95] xl:hidden">Four tracks. One club.</h2>
             <h2 className="hidden font-display text-[72px] font-normal uppercase leading-[.95] xl:block">Four<br />tracks.<br />One<br />club.</h2>
             <p className="mt-[18px] hidden text-[15px] leading-[1.5] xl:block">
