@@ -252,7 +252,7 @@ export default function Home() {
         {/* Partners */}
         <section id="partners" className="border-b-[3px] border-ink">
           {partnersError && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[14px] text-[12px] font-bold uppercase">{partnersError}</p>}
-          <div className="flex justify-between items-center flex-wrap gap-[10px] px-[26px] py-[20px] border-b-[3px] border-ink">
+          <div className="flex justify-between items-center flex-wrap gap-[10px] px-[22px] py-[16px] border-b-[3px] border-ink">
             <SectionHeader className="text-[14px]">Who we work with</SectionHeader>
             {contactEmail ? (
               <a href={`mailto:${contactEmail}`} className="text-[12px] font-bold uppercase">
@@ -264,33 +264,24 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
             {activeOrderedPartners.map((p) => (
-              <a key={p.id} href={p.link} target="_blank" rel="noopener noreferrer" className="block">
-                <div className="min-h-[120px] flex flex-col items-center justify-center border-r-[3px] border-ink border-b-[3px] border-ink p-[2px]">
-                  {p.logoUrl ? (
-                    <img src={p.logoUrl} alt={p.name} className="object-contain max-h-[64px] mb-[2px]" />
-                  ) : (
-                    <span className="font-bold text-[13px] text-ink uppercase">{p.name}</span>
-                  )}
-                  {p.type === "company" ? (
-                    <span className="mt-[2px] inline-block border-[3px] border-ink px-[2px] py-[0.5px] text-[10px] font-bold uppercase bg-white text-ink">
-                      Company
-                    </span>
-                  ) : (
-                    <Tag
-                      label={p.type[0].toUpperCase() + p.type.slice(1)}
-                      color={p.type === "university" ? "blue" : p.type === "community" ? "green" : "red"}
-                    />
-                  )}
-                </div>
+              <a key={p.id} href={p.link} target="_blank" rel="noopener noreferrer" className="flex min-h-[110px] flex-col items-center justify-center gap-[10px] border-r-[3px] border-b-[3px] border-ink p-[20px] text-center text-[13px] font-bold uppercase">
+                {p.logoUrl ? (
+                  <img src={p.logoUrl} alt={p.name} className="mb-[2px] max-h-[64px] object-contain" />
+                ) : (
+                  <span>{p.name}</span>
+                )}
+                {p.type === "company" ? (
+                  <span className="inline-block border-[3px] border-ink bg-white px-[10px] py-[4px] text-[11px] font-bold uppercase text-ink">Company</span>
+                ) : (
+                  <Tag label={p.type[0].toUpperCase() + p.type.slice(1)} color={p.type === "university" ? "blue" : p.type === "community" ? "green" : "red"} />
+                )}
               </a>
             ))}
-            <div key="placeholder" className="min-h-[120px] flex flex-col items-center justify-center border-[3px] border-ink bg-[#FBBC04] p-[2px]">
-              {contactEmail ? (
-                <a href={`mailto:${contactEmail}`} className="font-bold text-[13px] text-ink uppercase">Your organisation here ↗</a>
-              ) : (
-                <span className="font-bold text-[13px] text-ink uppercase">Your organisation here ↗</span>
-              )}
-            </div>
+            {contactEmail ? (
+              <a key="placeholder" href={"mailto:" + contactEmail} className="flex min-h-[110px] flex-col items-center justify-center border-b-[3px] border-ink bg-yellow p-[20px] text-center text-[13px] font-bold uppercase">Your organisation here ↗</a>
+            ) : (
+              <div key="placeholder" className="flex min-h-[110px] flex-col items-center justify-center border-b-[3px] border-ink bg-yellow p-[20px] text-center text-[13px] font-bold uppercase">Your organisation here ↗</div>
+            )}
           </div>
           <div className="flex flex-wrap gap-[10px] px-[26px] py-[14px]">
             {partnerTypes.map((t) => (
