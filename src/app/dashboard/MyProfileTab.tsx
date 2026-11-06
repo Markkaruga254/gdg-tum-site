@@ -1,6 +1,10 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ProfileTab } from "./ProfileTab";
+import { useEffect, useState } from "react";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { uploadToCloudinary } from "@/lib/cloudinary";
+import { getUserById } from "@/lib/data";
 
 export default function MyProfileTab({ uid, setMsg, setErr }: any) {
   return (
