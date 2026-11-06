@@ -5,6 +5,7 @@ import type { TrackSlug } from "@/lib/types";
 type PhotoCardProps = {
   url: string;
   caption: string;
+  altText?: string;
   trackId: TrackSlug;
   writeupId: string;
   href?: string;
@@ -20,6 +21,7 @@ function trackLabel(trackId: string) {
 export default function PhotoCard({
   url,
   caption,
+  altText,
   trackId,
   writeupId,
   href = `/writeup?id=${writeupId}`,
@@ -35,7 +37,7 @@ export default function PhotoCard({
       <div className="flex-1 relative overflow-hidden">
         <img
           src={url}
-          alt={caption}
+          alt={altText || caption}
           className="w-full h-full object-cover"
           onError={(e) => {
             const el = e.target as HTMLImageElement;
