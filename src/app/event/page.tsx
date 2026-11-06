@@ -122,7 +122,7 @@ function EventDetail() {
           <p className="border-b-[3px] border-ink bg-red px-[26px] py-[22px] text-[13px] font-bold uppercase">This event has been cancelled.</p>
         )}
 
-        {media.length > 0 && (
+        {event.status === "past" && media.length > 0 && (
           <section>
             <div className="border-b-[3px] border-ink px-[26px] py-[22px]"><h2 className="font-display text-[42px] uppercase">Photos</h2></div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
