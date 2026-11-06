@@ -1,4 +1,5 @@
 "use client";
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 export default function OverviewTab({ events, writeups, setTab }: any) {
   return (
