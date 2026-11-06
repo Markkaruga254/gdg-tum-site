@@ -126,10 +126,12 @@ function UserRow({ user, self, onSave }: any) {
       <div className="font-bold">{user.name || "Unnamed user"} {self && <span className="ml-[6px] text-[11px] font-bold uppercase">(you)</span>}</div>
       <label className="grid gap-[5px] text-[10px] font-bold uppercase sm:block">
         <span className="sm:hidden">Role</span>
-        <select value={role} onChange={(event) => setRole(event.target.value)} className="w-full border-[3px] border-ink bg-white px-[9px] py-[8px] text-[13px]">
-          <option value="member">Member</option>
-          <option value="lead">Lead</option>
-          <option value="admin">Admin</option>
+        <select value={role} disabled={self} onChange={(event) => setRole(event.target.value)} className="w-full border-[3px] border-ink bg-white px-[9px] py-[8px] text-[13px] disabled:bg-[#f5f5f5]">
+          {self ? <option value="admin">Admin</option> : <>
+            <option value="member">Member</option>
+            <option value="lead">Lead</option>
+            <option value="admin">Admin</option>
+          </>}
         </select>
       </label>
       <label className="grid gap-[5px] text-[10px] font-bold uppercase sm:block">
