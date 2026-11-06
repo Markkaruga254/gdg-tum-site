@@ -30,26 +30,19 @@ export default function PhotoCard({
   bg = "#111",
 }: PhotoCardProps) {
   return (
-    <a
-      href={href}
-      className={`border-[3px] border-ink flex flex-col ${featured ? "flex-[2_1_340px] min-h-[440px]" : "flex-[3_1_340px] min-h-[240px]"}`}
-    >
-      <div className="flex-1 relative overflow-hidden">
+    <a href={href} className={`flex h-full flex-col border-[3px] border-ink bg-white ${featured ? "min-h-[440px]" : "min-h-[300px]"}`}>
+      <div className={`relative flex-1 overflow-hidden ${featured ? "min-h-[380px]" : "min-h-[240px]"}`} style={{ backgroundColor: bg }}>
+        <span className="absolute inset-0 flex items-center justify-center text-[12px] font-bold uppercase">{caption || "Event photo"}</span>
         <img
           src={url}
           alt={altText || caption}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            const el = e.target as HTMLImageElement;
-            el.style.display = "none";
-            const wrapper = el.closest(".flex-1") as HTMLElement | null;
-            if (wrapper) {
-              wrapper.style.backgroundColor = bg;
-            }
+          className="absolute inset-0 h-full w-full object-cover"
+          onError={(event) => {
+            event.currentTarget.style.display = "none";
           }}
         />
       </div>
-      <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
+      <div className="flex flex-col gap-1 border-t-[3px] border-ink bg-white px-[12px] py-[10px] text-[13px] font-bold">
         {caption}
         <Tag label={trackLabel(trackId)} color={tagColor ?? trackTagColor(trackId)} />
       </div>
