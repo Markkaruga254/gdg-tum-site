@@ -27,7 +27,6 @@ vi.mock("@/lib/firebase", () => ({
   db: {},
 }));
 
-import type { QueryConstraint } from "firebase/firestore";
 import { useCollection } from "../data";
 
 function makeDoc(id: string, data: unknown): { id: string; data(): unknown; exists(): boolean } {
