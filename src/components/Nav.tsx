@@ -3,7 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth, signInGoogle, signOut } from "@/lib/auth";
+import { auth, signOut } from "@/lib/auth";
 
 const pageLinks = [
   { href: "/events", label: "Events" },
@@ -48,13 +48,15 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
           {link.label}
         </Link>
       ))}
-      <button
-        type="button"
-        onClick={() => (userName ? signOut() : signInGoogle())}
-        className="border-r-[3px] border-ink px-[20px] py-[22px] text-[12px] font-bold uppercase whitespace-nowrap"
-      >
-        {userName ? `${userName} · Sign out` : "Sign in"}
-      </button>
+      {userName ? (
+        <button type="button" onClick={() => void signOut()} className="border-r-[3px] border-ink px-[20px] py-[22px] text-[12px] font-bold uppercase whitespace-nowrap">
+          {userName} · Sign out
+        </button>
+      ) : (
+        <Link href="/login" className={`border-r-[3px] border-ink px-[20px] py-[22px] text-[12px] font-bold uppercase whitespace-nowrap ${pathname === "/login" ? "bg-yellow" : ""}`}>
+          Sign in
+        </Link>
+      )}
       <Link
         href="/tracks"
         className="ml-auto border-l-[3px] border-ink bg-yellow px-[24px] py-[22px] text-[13px] font-bold uppercase whitespace-nowrap"
