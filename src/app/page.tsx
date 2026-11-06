@@ -30,6 +30,15 @@ const COLOR_CLASS: Record<string, string> = {
   ink: "bg-ink",
 };
 
+function postTagColor(tag: string): "blue" | "red" | "green" | "yellow" | "ink" {
+  const value = tag.toLowerCase();
+  if (value.includes("cloud")) return "blue";
+  if (value.includes("cyber") || value.includes("security")) return "red";
+  if (value.includes("ai") || value.includes("ml")) return "yellow";
+  if (value.includes("devops")) return "ink";
+  return "green";
+}
+
 function formatDateTime(date: unknown): string {
   if (!date || typeof (date as { toDate: () => Date }).toDate !== "function") return "";
   const d = (date as { toDate: () => Date }).toDate();
@@ -363,7 +372,7 @@ export default function Home() {
           <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-[16px] p-[20px]">
             {posts.filter((post) => post.hidden !== true).slice(0, 3).map((post) => (
               <article key={post.id} className="border-[3px] border-ink bg-white p-[22px]">
-                <Tag label={post.tags?.[0] || "News"} color="green" />
+                <Tag label={post.tags?.[0] || "News"} color={postTagColor(post.tags?.[0] || "News")} />
                 <h3 className="mt-[16px] text-[20px] font-bold leading-[1.25]">{post.title}</h3>
                 <p className="mt-[8px] text-[14px] leading-[1.5] text-[#333]">{post.summary}</p>
                 <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-[14px] inline-block text-[12px] font-bold uppercase underline">Source ↗</a>
