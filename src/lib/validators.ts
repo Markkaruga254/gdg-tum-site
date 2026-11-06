@@ -5,6 +5,7 @@ export interface EventForm {
   title: string;
   date: string;
   venue: string;
+  description: string;
   status: "upcoming" | "live" | "past" | "cancelled";
   attendance: string;
   trackId: string;
