@@ -86,20 +86,21 @@ export default function WriteupsPage() {
         ) : (
           <div>
             {filtered.map((writeup, index) => (
-              <article key={writeup.id} className={`grid grid-cols-[62px_minmax(0,1fr)] sm:grid-cols-[96px_minmax(0,1fr)_auto] items-center gap-[16px] border-b-[3px] border-ink px-[20px] py-[20px] ${index % 4 === 1 ? "bg-yellow" : "bg-white"}`}>
-                <span className="font-display text-[48px] leading-none sm:text-[58px]">{String(index + 1).padStart(2, "0")}</span>
+              <article key={writeup.id} className={"grid grid-cols-[62px_minmax(0,1fr)] items-center gap-[16px] border-b-[3px] border-ink px-[20px] py-[16px] sm:grid-cols-[90px_minmax(0,1fr)_auto] sm:gap-[18px] sm:px-[26px] " + (index === 1 ? "bg-red" : "bg-white")}>
+                <span className="font-display text-[48px] leading-none sm:text-[56px]">{String(index + 1).padStart(2, "0")}</span>
                 <div className="min-w-0">
-                  <h2 className="text-[18px] font-bold leading-[1.2] sm:text-[21px]">
+                  <h2 className="text-[18px] font-bold leading-[1.2] sm:text-[20px]">
                     <a href={`/writeup?id=${writeup.id}`} className="underline-offset-4 hover:underline">{writeup.title}</a>
                   </h2>
-                  <p className="mt-[7px] text-[12px] leading-[1.5]">
+                  <p className="mt-[4px] text-[13px] leading-[1.5]">
                     {publishedDate(writeup)} · By {authorNames.get(writeup.authorId) || "GDG TUM lead"}
                     {writeup.aiDrafted ? " · Drafted with AI, reviewed by lead" : ""}
                   </p>
-                  <p className="mt-[9px] text-[13px] leading-[1.5]">{writeup.summary}</p>
-                  <div className="mt-[10px]"><Tag label={trackNames.get(writeup.trackId) || writeup.trackId} color={trackTagColor(writeup.trackId)} /></div>
                 </div>
-                <a href={`/writeup?id=${writeup.id}`} className="col-start-2 mt-[2px] w-fit text-[12px] font-bold uppercase underline underline-offset-4 sm:col-start-auto sm:mt-0">Read ↗</a>
+                <div className="col-start-2 flex flex-wrap items-center gap-[12px] sm:col-start-auto">
+                  <Tag label={trackNames.get(writeup.trackId) || writeup.trackId} color={trackTagColor(writeup.trackId)} />
+                  <a href={`/writeup?id=${writeup.id}`} className="text-[12px] font-bold uppercase underline underline-offset-4">Read ↗</a>
+                </div>
               </article>
             ))}
           </div>
