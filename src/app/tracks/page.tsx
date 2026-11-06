@@ -34,11 +34,9 @@ export default function TracksPage() {
     <>
       <Nav />
       <main className="mx-auto max-w-[1280px]">
-        <header className="border-b-[3px] border-ink px-[26px] py-[34px]">
-          <h1 className="font-display text-[clamp(60px,9vw,120px)] uppercase leading-[.95]">Tracks</h1>
-          <p className="mt-[14px] max-w-[620px] text-[17px] leading-[1.5]">
-            Four tracks. One club. Pick a track, learn with others and build in public.
-          </p>
+        <header className="border-b-[3px] border-ink bg-yellow px-[26px] py-[34px] text-ink">
+          <h1 className="font-display text-[clamp(60px,9vw,120px)] uppercase leading-none">Four tracks. One club.</h1>
+          <p className="mt-[14px] max-w-[600px] text-[17px] leading-[1.5]">Pick a track, learn with others and build in public.</p>
         </header>
 
         {error && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[18px] font-bold">{error}</p>}
@@ -47,26 +45,17 @@ export default function TracksPage() {
         ) : sortedTracks.length === 0 ? (
           <p className="border-b-[3px] border-ink px-[26px] py-[24px] text-[13px] font-bold uppercase">No tracks have been added yet.</p>
         ) : (
-          <div>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-[16px] p-[20px]">
             {sortedTracks.map((track, index) => {
               const trackLeads = leads.filter((lead) => track.leadIds.includes(lead.id));
+              const textColor = track.color === "blue" ? "#fff" : "#111";
               return (
-                <article key={track.id} style={{ backgroundColor: TRACK_BG_COLORS[track.slug], color: track.color === "blue" ? "#fff" : "#111" }} className="grid grid-cols-[76px_minmax(0,1fr)] border-b-[3px] border-ink sm:grid-cols-[120px_minmax(0,1fr)_180px]">
-                  <div className="flex items-center justify-center border-r-[3px] border-ink px-2">
-                    <span className="font-display text-[48px] leading-none sm:text-[64px]">{String(index + 1).padStart(2, "0")}</span>
-                  </div>
-                  <div className="min-w-0 p-[22px] sm:p-[28px]">
-                    <h2 className="font-display text-[clamp(34px,5vw,64px)] uppercase leading-[.95]">{track.name}</h2>
-                    <p className="mt-[12px] max-w-[620px] text-[14px] leading-[1.5]">{track.description}</p>
-                    <p className="mt-[14px] text-[12px] font-bold uppercase">
-                      Lead: {trackLeads.length ? trackLeads.map((lead) => lead.name).join(", ") : "To be announced"}
-                    </p>
-                  </div>
-                  <div className="col-start-2 flex items-center px-[22px] pb-[22px] sm:col-start-auto sm:justify-center sm:border-l-[3px] sm:border-ink sm:p-[18px]">
-                    <a href={`/track?slug=${track.slug}`} className="border-[3px] border-ink bg-white px-[18px] py-[12px] text-[12px] font-bold uppercase text-ink underline underline-offset-4">
-                      Open track ↗
-                    </a>
-                  </div>
+                <article key={track.id} style={{ backgroundColor: TRACK_BG_COLORS[track.slug], color: textColor }} className="border-[3px] border-ink p-[26px]">
+                  <p className="font-display text-[72px] leading-none">{String(index + 1).padStart(2, "0")}</p>
+                  <h2 className="my-[8px] font-display text-[44px] uppercase leading-none">{track.name}</h2>
+                  <p className="mb-[16px] text-[15px] leading-[1.5]">{track.description}</p>
+                  <p className="mb-[16px] text-[12px] font-bold uppercase">Lead: {trackLeads.length ? trackLeads.map((lead) => lead.name).join(", ") : "To be announced"}</p>
+                  <a href={`/track?slug=${track.slug}`} className="inline-block border-[3px] border-ink bg-white px-[20px] py-[12px] text-[12px] font-bold uppercase text-ink">Open track ↗</a>
                 </article>
               );
             })}
