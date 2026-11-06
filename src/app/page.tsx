@@ -197,7 +197,7 @@ export default function Home() {
                         {w.aiDrafted ? "Drafted with AI · reviewed by lead" : "Published by a track lead"}
                       </div>
                     </div>
-                    <Tag label={w.trackId === "women-in-tech" ? "Women in Tech" : w.trackId.replaceAll("-", " ").replace(/\\b\\w/g, (letter) => letter.toUpperCase())} color={isRed ? "ink" : trackTagColor(w.trackId)} />
+                    <Tag label={w.trackId === "women-in-tech" ? "Women in Tech" : w.trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())} color={isRed ? "ink" : trackTagColor(w.trackId)} />
                   </div>
                 );
               })
@@ -332,7 +332,7 @@ export default function Home() {
                   </div>
                   <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                     {photos[0].caption} &middot;{" "}
-                    <Tag label={photos[0].trackId === "women-in-tech" ? "Women in Tech" : photos[0].trackId.replaceAll("-", " ").replace(/\\b\\w/g, (letter) => letter.toUpperCase())} color={trackTagColor(photos[0].trackId)} />
+                    <Tag label={photos[0].trackId === "women-in-tech" ? "Women in Tech" : photos[0].trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())} color={trackTagColor(photos[0].trackId)} />
                   </div>
                 </a>
                 <div className="flex-[3_1_340px] grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-[16px]">
@@ -347,7 +347,7 @@ export default function Home() {
                       </div>
                       <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                         {photo.caption}
-                        <Tag label={photo.trackId === "women-in-tech" ? "Women in Tech" : photo.trackId.replaceAll("-", " ").replace(/\\b\\w/g, (letter) => letter.toUpperCase())} color={trackTagColor(photo.trackId)} />
+                        <Tag label={photo.trackId === "women-in-tech" ? "Women in Tech" : photo.trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())} color={trackTagColor(photo.trackId)} />
                       </div>
                     </a>
                   ))}
