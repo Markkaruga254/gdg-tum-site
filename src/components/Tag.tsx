@@ -14,7 +14,7 @@ export default function Tag({
   return (
     <span
       className={`inline-block px-[6px] py-[4px] text-[11px] font-bold uppercase ${map[color]} ${
-        bordered ? "border-[3px] border-ink" : ""
+        (bordered || (color === "yellow" && /women in tech/i.test(label))) ? "border-[3px] border-ink" : ""
       }`}
     >
       {label}
