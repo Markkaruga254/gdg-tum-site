@@ -2,8 +2,24 @@
 import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import Button from "@/components/Button";
+import Tag from "@/components/Tag";
 import { getEvents, type EventWithId } from "@/lib/data";
+import { trackTagColor } from "@/lib/tracks";
+
+function eventDate(value: EventWithId["date"]) {
+  const date = value.toDate();
+  return {
+    date: date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }),
+    time: date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }),
+    value: date.getTime(),
+  };
+}
+
+function trackLabel(value: string) {
+  return value === "women-in-tech"
+    ? "Women in Tech"
+    : value.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
 
 export default function EventsPage() {
   const [events, setEvents] = useState<EventWithId[]>([]);
@@ -12,57 +28,93 @@ export default function EventsPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     (async () => {
       try {
-        const fetched = await getEvents();
-        setEvents(fetched);
+        setEvents(await getEvents());
       } catch {
-        setError("Failed to load events");
+        setError("Failed to load events.");
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  const visible = events.filter((e) => e.status !== "cancelled");
-  const filtered = track === "all" ? visible : visible.filter((e) => e.trackId === track);
+  const visible = events.filter((event) => event.status !== "cancelled");
+  const tracks = [...new Set(visible.map((event) => event.trackId))];
+  const filtered = visible.filter((event) => track === "all" || event.trackId === track);
+  const upcoming = filtered
+    .filter((event) => event.status === "upcoming" || event.status === "live")
+    .sort((a, b) => eventDate(a.date).value - eventDate(b.date).value);
+  const past = filtered
+    .filter((event) => event.status === "past")
+    .sort((a, b) => eventDate(b.date).value - eventDate(a.date).value);
+
+  const renderEvent = (event: EventWithId, index: number, isPast: boolean) => {
+    const date = eventDate(event.date);
+    return (
+      <article
+        key={event.id}
+        className={`grid grid-cols-[64px_minmax(0,1fr)] sm:grid-cols-[90px_minmax(0,1fr)_auto] items-center gap-[18px] border-b-[3px] border-ink px-[26px] py-[16px] ${index === 1 ? "bg-red" : "bg-white"}`}
+      >
+        <span className="font-display text-[56px] leading-[1]">{String(index + 1).padStart(2, "0")}</span>
+        <div className="min-w-0">
+          <h2 className="font-bold text-[20px] leading-[1.2]">{event.title}</h2>
+          <p className="mt-[4px] text-[13px]">{date.date} · {date.time} · {event.venue}</p>
+        </div>
+        <div className="col-start-2 sm:col-start-auto flex flex-wrap items-center gap-[12px]">
+          <Tag label={trackLabel(event.trackId)} color={trackTagColor(event.trackId)} />
+          <a href={isPast && event.writeupId ? `/writeup?id=${event.writeupId}` : `/event?id=${event.id}`} className="text-[12px] font-bold uppercase underline underline-offset-4">
+            {isPast ? (event.writeupId ? "Writeup ↗" : "No writeup yet") : "RSVP ↗"}
+          </a>
+        </div>
+      </article>
+    );
+  };
 
   return (
     <>
       <Nav />
       <main className="mx-auto max-w-[1280px]">
-        <h1 className="font-display text-4xl uppercase">Events</h1>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setTrack("all")}
-            className={`text-[12px] px-3 py-1 ${track === "all" ? "bg-yellow" : ""}`}
-          >
-            All
-          </Button>
-          {[...new Set(visible.map((e) => e.trackId))].map((t) => (
-            <Button
-              key={t}
-              variant="outline"
-              onClick={() => setTrack(t)}
-              className={`text-[12px] px-3 py-1 ${track === t ? "bg-yellow" : ""}`}
+        <header className="border-b-[3px] border-ink px-[26px] py-[34px]">
+          <h1 className="font-display text-[clamp(60px,9vw,120px)] uppercase leading-[.95]">Events</h1>
+          <p className="mt-[14px] max-w-[600px] text-[17px] leading-[1.5]">
+            Sessions, hackathons and meetups across all tracks.
+          </p>
+        </header>
+
+        <nav className="flex flex-wrap border-b-[3px] border-ink" aria-label="Filter events by track">
+          {[{ id: "all", label: "All" }, ...tracks.map((value) => ({ id: value, label: trackLabel(value) }))].map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setTrack(item.id)}
+              aria-pressed={track === item.id}
+              className={`border-r-[3px] border-ink px-[22px] py-[16px] text-[12px] font-bold uppercase ${track === item.id ? "bg-yellow" : "bg-white"}`}
             >
-              {t}
-            </Button>
+              {item.label}
+            </button>
           ))}
-        </div>
-        {loading && <p className="mt-4">Loading…</p>}
-        {error && <p className="mt-4">{error}</p>}
-        {!loading && filtered.length === 0 && <p className="mt-4">No events.</p>}
-        <div className="mt-4 grid gap-4">
-          {filtered.map((e) => (
-            <a key={e.id} href={e.writeupId ? `/writeup?id=${e.writeupId}` : `/event?id=${e.id}`} className="block border-[3px] border-ink p-4">
-              <div className="font-bold">{e.title}</div>
-              <div className="text-sm">{e.status} · {e.venue}</div>
-            </a>
-          ))}
-        </div>
+        </nav>
+
+        {error && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[16px] text-[13px] font-bold">{error}</p>}
+        {loading ? (
+          <p className="px-[26px] py-[24px] text-[13px] font-bold uppercase">Loading events…</p>
+        ) : (
+          <>
+            <section aria-labelledby="upcoming-heading">
+              <h2 id="upcoming-heading" className="border-y-[3px] border-ink px-[26px] py-[18px] text-[14px] font-bold uppercase">Upcoming</h2>
+              {upcoming.length ? upcoming.map((event, index) => renderEvent(event, index, false)) : (
+                <p className="border-b-[3px] border-ink px-[26px] py-[22px] text-[13px] font-bold uppercase">No upcoming events.</p>
+              )}
+            </section>
+            <section aria-labelledby="past-heading">
+              <h2 id="past-heading" className="border-y-[3px] border-ink px-[26px] py-[18px] text-[14px] font-bold uppercase">Past</h2>
+              {past.length ? past.map((event, index) => renderEvent(event, index, true)) : (
+                <p className="border-b-[3px] border-ink px-[26px] py-[22px] text-[13px] font-bold uppercase">No past events.</p>
+              )}
+            </section>
+          </>
+        )}
       </main>
       <Footer />
     </>
