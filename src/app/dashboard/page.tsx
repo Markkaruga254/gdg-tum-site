@@ -20,6 +20,8 @@ import { getUserById, getEvents, getWriteups, getMediaByWriteup, getTicker } fro
 import type { TrackSlug } from "@/lib/types";
 
 const TABS = ["Overview","New writeup","My events","Media","Live ticker","My profile","Partners"];
+const TOPIC_TAGS = ["cloud", "cybersecurity", "web", "mobile", "ai-ml", "data", "devops", "open-source", "careers"];
+const PRODUCT_TAGS = ["android", "firebase", "flutter", "gemini", "chrome", "google-cloud"];
 
 export default function DashboardPage() {
   const [allowed, setAllowed] = useState<boolean | null>(null);
@@ -48,6 +50,8 @@ export default function DashboardPage() {
   const [preview, setPreview] = useState(true);
   const [aiConsent, setAiConsent] = useState(false);
   const [aiPhotoIds, setAiPhotoIds] = useState<string[]>([]);
+  const [topicTags, setTopicTags] = useState<string[]>([]);
+  const [productTags, setProductTags] = useState<string[]>([]);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -147,7 +151,7 @@ export default function DashboardPage() {
         title: wf.title, summary: wf.summary, body: wf.body,
         attendance: wf.attendance ? Number(wf.attendance) : null,
         links: wf.links.filter((l: any) => l.url),
-        tags: { topics: [], products: [] },
+        tags: { topics: topicTags, products: productTags },
         aiDrafted: false,
       };
       if (publish) { data.status = "published"; data.publishedAt = serverTimestamp(); }
@@ -187,6 +191,8 @@ export default function DashboardPage() {
     setWf({ eventId: w.eventId, title: w.title, summary: w.summary || "", body: w.body || "", attendance: w.attendance ?? "", links: w.links?.length ? w.links : [{ title: "", url: "" }] });
     setAiConsent(false);
     setAiPhotoIds([]);
+    setTopicTags(w.tags?.topics || []);
+    setProductTags(w.tags?.products || []);
     loadMedia(w.id);
   }
 
@@ -283,7 +289,7 @@ export default function DashboardPage() {
             <section>
               <div className="flex flex-wrap items-center justify-between gap-[12px]">
                 <h2 className="font-display text-[clamp(42px,6vw,56px)] uppercase leading-none">{editingWriteup ? "Edit writeup" : "New writeup"}</h2>
-                {editingWriteup && <button type="button" onClick={() => { setEditingWriteup(null); setWf({ eventId: "", title: "", summary: "", body: "", attendance: "", links: [{ title: "", url: "" }] }); setMediaList([]); setAiConsent(false); setAiPhotoIds([]); }} className="border-[3px] border-ink px-[12px] py-[9px] text-[11px] font-bold uppercase">Start new writeup</button>}
+                {editingWriteup && <button type="button" onClick={() => { setEditingWriteup(null); setWf({ eventId: "", title: "", summary: "", body: "", attendance: "", links: [{ title: "", url: "" }] }); setMediaList([]); setAiConsent(false); setAiPhotoIds([]); setTopicTags([]); setProductTags([]); }} className="border-[3px] border-ink px-[12px] py-[9px] text-[11px] font-bold uppercase">Start new writeup</button>}
               </div>
               <div className="mt-[20px] grid grid-cols-1 border-[3px] border-ink sm:grid-cols-3">
                 <div className="border-b-[3px] border-ink bg-ink px-[14px] py-[13px] text-[11px] font-bold uppercase text-white sm:border-b-0 sm:border-r-[3px]">1&nbsp; Add your notes</div>
@@ -301,8 +307,9 @@ export default function DashboardPage() {
                   <FormField label="Title" id="wt" error={wfErrors.title}>
                     <input id="wt" value={wf.title} onChange={(e) => setWf({ ...wf, title: e.target.value })} className="border-[3px] border-ink px-3 py-2" />
                   </FormField>
-                  <FormField label="Summary" id="ws">
-                    <textarea id="ws" value={wf.summary} onChange={(e) => setWf({ ...wf, summary: e.target.value })} className="border-[3px] border-ink px-3 py-2" />
+                  <FormField label="Summary (max 40 words)" id="ws" error={wfErrors.summary}>
+                    <textarea id="ws" value={wf.summary} onChange={(e) => setWf({ ...wf, summary: e.target.value })} className="border-[3px] border-ink px-3 py-2" rows={3} />
+                    <p className="text-right text-[10px] font-bold uppercase">{wf.summary.trim() ? wf.summary.trim().split(/\\s+/).length : 0}/40 words</p>
                   </FormField>
                   <FormField label="Attendance" id="wa" error={wfErrors.attendance}>
                     <input id="wa" type="number" min={0} value={wf.attendance} onChange={(e) => setWf({ ...wf, attendance: e.target.value })} className="border-[3px] border-ink px-3 py-2" />
@@ -318,6 +325,16 @@ export default function DashboardPage() {
                       <button type="button" onClick={() => setWf({ ...wf, links: [...wf.links, { title: "", url: "" }] })} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">+ Link</button>
                     </div>
                   </FormField>
+                  <section className="border-[3px] border-ink p-[14px]">
+                    <h3 className="text-[11px] font-bold uppercase">Topics</h3>
+                    <div className="mt-[10px] grid grid-cols-2 gap-[8px] sm:grid-cols-3">
+                      {TOPIC_TAGS.map((tag) => <label key={tag} className="flex items-center gap-[7px] text-[10px] font-bold uppercase"><input type="checkbox" checked={topicTags.includes(tag)} onChange={(event) => setTopicTags((current) => event.target.checked ? [...current, tag] : current.filter((item) => item !== tag))} />{tag}</label>)}
+                    </div>
+                    <h3 className="mt-[16px] text-[11px] font-bold uppercase">Products</h3>
+                    <div className="mt-[10px] grid grid-cols-2 gap-[8px] sm:grid-cols-3">
+                      {PRODUCT_TAGS.map((tag) => <label key={tag} className="flex items-center gap-[7px] text-[10px] font-bold uppercase"><input type="checkbox" checked={productTags.includes(tag)} onChange={(event) => setProductTags((current) => event.target.checked ? [...current, tag] : current.filter((item) => item !== tag))} />{tag}</label>)}
+                    </div>
+                  </section>
                   <FormField label="Rough notes / writeup body (Markdown)" id="wb" error={wfErrors.body}>
                     <textarea id="wb" value={wf.body} onChange={(e) => setWf({ ...wf, body: e.target.value })} className="border-[3px] border-ink px-3 py-2" rows={10} />
                   </FormField>
