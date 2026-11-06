@@ -153,7 +153,7 @@ export function useCollection<T>(
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [collectionName, constraints, options.enabled]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
