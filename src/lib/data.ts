@@ -124,9 +124,11 @@ export async function getTicker(): Promise<TickerWithId[]> {
   return getCollection<Ticker>("ticker");
 }
 
+const EMPTY_QUERY_CONSTRAINTS: QueryConstraint[] = [];
+
 export function useCollection<T>(
   collectionName: string,
-  constraints: QueryConstraint[] = [],
+  constraints: QueryConstraint[] = EMPTY_QUERY_CONSTRAINTS,
   options: { enabled?: boolean } = {},
 ): {
   data: (T & { id: string })[];
