@@ -5,7 +5,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 import { getEvents, getUsers, getWriteups, type AppUserWithId } from "@/lib/data";
-import { trackTagColor } from "@/lib/tracks";
+import { TRACK_BG_COLORS, trackTagColor } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
 
 const filters: { id: TrackSlug | "all"; label: string }[] = [
@@ -53,7 +53,10 @@ export default function LeadsPage() {
     })();
   }, []);
 
-  const visibleLeads = leads.filter((lead) => filter === "all" || lead.track === filter);
+  const trackOrder: TrackSlug[] = ["cloud", "cybersecurity", "web", "women-in-tech"];
+  const visibleLeads = leads
+    .filter((lead) => filter === "all" || lead.track === filter)
+    .sort((a, b) => trackOrder.indexOf(a.track) - trackOrder.indexOf(b.track));
 
   return (
     <>
@@ -88,38 +91,34 @@ export default function LeadsPage() {
             {leads.length === 0 ? "No track leads have been added yet." : "No leads in this track yet."}
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2">
-            {visibleLeads.map((lead, index) => (
-              <article key={lead.id} className={`grid grid-cols-[112px_minmax(0,1fr)] border-b-[3px] border-r-[3px] border-ink ${index % 4 === 1 ? "bg-yellow" : "bg-white"}`}>
-                <div className="flex min-h-[190px] items-center justify-center border-r-[3px] border-ink bg-blue">
-                  {lead.photoUrl ? (
-                    <img src={lead.photoUrl} alt={lead.name} className="h-full min-h-[190px] w-full object-cover" />
-                  ) : (
-                    <span className="font-bold text-[11px] uppercase text-white">Photo</span>
-                  )}
-                </div>
-                <div className="flex min-w-0 flex-col p-[18px]">
-                  <Tag label={`${trackName(lead.track)} Track Lead`} color={trackTagColor(lead.track)} />
-                  <h2 className="mt-[12px] font-display text-[clamp(25px,3vw,38px)] uppercase leading-[1]">{lead.name}</h2>
-                  <p className="mt-[10px] text-[13px] leading-[1.5]">{lead.bio || "Helping students learn, build and share what they create."}</p>
-                  <p className="mt-auto pt-[16px] text-[11px] font-bold uppercase">
-                    {eventCounts[lead.track] || 0} events · {writeupCounts[lead.id] || 0} writeups
-                  </p>
-                  <a href={`/lead?id=${lead.id}`} className="mt-[12px] w-fit border-[3px] border-ink px-[12px] py-[8px] text-[11px] font-bold uppercase underline underline-offset-4">
-                    View profile ↗
-                  </a>
-                </div>
-              </article>
-            ))}
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-[16px] p-[20px]">
+            {visibleLeads.map((lead) => {
+              const textColor = lead.track === "cloud" ? "#fff" : "#111";
+              return (
+                <article key={lead.id} className="border-[3px] border-ink bg-white">
+                  <div className="flex min-h-[170px] items-center justify-center border-b-[3px] border-ink" style={{ backgroundColor: TRACK_BG_COLORS[lead.track], color: textColor }}>
+                    {lead.photoUrl ? (
+                      <img src={lead.photoUrl} alt={lead.name} className="h-[170px] w-full object-cover" />
+                    ) : (
+                      <span className="font-display text-[44px] uppercase">{lead.name.split(" ").map((part) => part[0]).join("").slice(0, 2)}</span>
+                    )}
+                  </div>
+                  <div className="p-[16px]">
+                    <h2 className="text-[20px] font-bold">{lead.name}</h2>
+                    <p className="my-[4px] text-[12px] font-bold uppercase">{trackName(lead.track)} Track Lead</p>
+                    <p className="mb-[14px] text-[14px] leading-[1.5]">{lead.bio || "Helping students learn, build and share what they create."}</p>
+                    <p className="mb-[14px] text-[12px] font-bold uppercase">{eventCounts[lead.track] || 0} events · {writeupCounts[lead.id] || 0} writeups</p>
+                    <a href={`/lead?id=${lead.id}`} className="inline-block border-[3px] border-ink px-[20px] py-[12px] text-[12px] font-bold uppercase">View profile ↗</a>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
 
-        <section className="grid grid-cols-1 border-t-[3px] border-ink bg-yellow sm:grid-cols-[1fr_auto]">
-          <div className="px-[26px] py-[24px]">
-            <h2 className="font-display text-[clamp(32px,5vw,54px)] uppercase leading-none">Want to lead a track?</h2>
-            <p className="mt-[10px] text-[13px] leading-[1.5]">Learn with the community, run sessions and help other students build.</p>
-          </div>
-          <a href="/tracks" className="flex items-center border-t-[3px] border-ink px-[26px] py-[20px] text-[12px] font-bold uppercase underline underline-offset-4 sm:border-l-[3px] sm:border-t-0">Explore the tracks ↗</a>
+        <section className="flex flex-wrap items-center justify-between gap-[12px] border-t-[3px] border-ink bg-yellow px-[26px] py-[22px]">
+          <h2 className="font-display text-[32px] uppercase">Want to lead a track?</h2>
+          <a href="/tracks" className="inline-block border-[3px] border-ink bg-white px-[20px] py-[12px] text-[12px] font-bold uppercase">Get in touch ↗</a>
         </section>
       </main>
       <Footer />
