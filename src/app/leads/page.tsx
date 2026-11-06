@@ -113,6 +113,14 @@ export default function LeadsPage() {
             ))}
           </div>
         )}
+
+        <section className="grid grid-cols-1 border-t-[3px] border-ink bg-yellow sm:grid-cols-[1fr_auto]">
+          <div className="px-[26px] py-[24px]">
+            <h2 className="font-display text-[clamp(32px,5vw,54px)] uppercase leading-none">Want to lead a track?</h2>
+            <p className="mt-[10px] text-[13px] leading-[1.5]">Learn with the community, run sessions and help other students build.</p>
+          </div>
+          <a href="/tracks" className="flex items-center border-t-[3px] border-ink px-[26px] py-[20px] text-[12px] font-bold uppercase underline underline-offset-4 sm:border-l-[3px] sm:border-t-0">Explore the tracks ↗</a>
+        </section>
       </main>
       <Footer />
     </>
