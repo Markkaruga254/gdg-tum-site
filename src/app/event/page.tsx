@@ -26,7 +26,6 @@ function EventDetail() {
     let active = true;
     (async () => {
       if (!id) {
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setLoading(false);
         return;
       }
