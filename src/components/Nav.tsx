@@ -77,7 +77,7 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
         {menuOpen ? "Close" : "Menu"}
       </button>
 
-      <Link href="/tracks" className="border-l-[3px] border-ink bg-yellow px-[14px] py-[22px] text-[12px] font-bold uppercase whitespace-nowrap xl:ml-auto xl:px-[24px] xl:text-[13px]">
+      <Link href="/tracks" className="bg-yellow px-[14px] py-[22px] text-[12px] font-bold uppercase whitespace-nowrap xl:ml-auto xl:px-[24px] xl:text-[13px]">
         <span className="xl:hidden">Join ↗</span>
         <span className="hidden xl:inline">Join a track ↗</span>
       </Link>
