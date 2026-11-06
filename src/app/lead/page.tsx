@@ -40,7 +40,7 @@ function View() {
         if (!profile) return;
         const [eventResults, writeupResults] = await Promise.all([
           getEvents({ trackId: profile.track }).catch(() => []),
-          getWriteups({ status: "published", authorId: id }).catch(() => []),
+          getWriteups({ status: "published" }).then((items) => items.filter((item) => item.authorId === id)).catch(() => []),
         ]);
         if (!active) return;
         setEvents(eventResults);
