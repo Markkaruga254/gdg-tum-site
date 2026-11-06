@@ -149,11 +149,18 @@ export default function DashboardPage() {
       };
       if (publish) { data.status = "published"; data.publishedAt = serverTimestamp(); }
       else { data.status = "draft"; }
-      if (editingWriteup) await updateDoc(doc(db, "writeups", editingWriteup.id), data);
-      else await addDoc(collection(db, "writeups"), data);
+      let savedId = editingWriteup?.id;
+      if (editingWriteup) {
+        await updateDoc(doc(db, "writeups", editingWriteup.id), data);
+      } else {
+        const created = await addDoc(collection(db, "writeups"), data);
+        savedId = created.id;
+      }
       setMsg(publish ? "Published" : "Draft saved");
-      setEditingWriteup(null);
-      setWf({ eventId: "", title: "", summary: "", body: "", attendance: "", links: [{ title: "", url: "" }] });
+      if (savedId) {
+        setEditingWriteup({ id: savedId, authorId: uid, trackId: data.trackId });
+        await loadMedia(savedId);
+      }
       await loadWriteups();
     } catch (e: any) { setErr(e?.message || "Save failed"); }
     finally { setSaving(false); }
@@ -271,7 +278,10 @@ export default function DashboardPage() {
 
           {tab === "New writeup" && (
             <section>
-              <h2 className="font-display text-[clamp(42px,6vw,56px)] uppercase leading-none">{editingWriteup ? "Edit writeup" : "New writeup"}</h2>
+              <div className="flex flex-wrap items-center justify-between gap-[12px]">
+                <h2 className="font-display text-[clamp(42px,6vw,56px)] uppercase leading-none">{editingWriteup ? "Edit writeup" : "New writeup"}</h2>
+                {editingWriteup && <button type="button" onClick={() => { setEditingWriteup(null); setWf({ eventId: "", title: "", summary: "", body: "", attendance: "", links: [{ title: "", url: "" }] }); setMediaList([]); setAiConsent(false); setAiPhotoIds([]); }} className="border-[3px] border-ink px-[12px] py-[9px] text-[11px] font-bold uppercase">Start new writeup</button>}
+              </div>
               <div className="mt-[20px] grid grid-cols-1 border-[3px] border-ink sm:grid-cols-3">
                 <div className="border-b-[3px] border-ink bg-ink px-[14px] py-[13px] text-[11px] font-bold uppercase text-white sm:border-b-0 sm:border-r-[3px]">1&nbsp; Add your notes</div>
                 <div className="border-b-[3px] border-ink bg-yellow px-[14px] py-[13px] text-[11px] font-bold uppercase sm:border-b-0 sm:border-r-[3px]">2&nbsp; AI draft</div>
@@ -384,20 +394,21 @@ export default function DashboardPage() {
             <section>
               <h2 className="font-display text-2xl uppercase">Media</h2>
               <p className="mt-2 text-sm">Only upload photos where people have agreed to be shown.</p>
-              <p className="mt-1 text-xs">Media is attached to the writeup currently being edited. Select a writeup in &quot;New writeup&quot; first, or a draft will be created.</p>
+              <p className="mt-1 text-xs">Media is attached to the writeup currently selected in &quot;New writeup&quot;. Save a draft or select an existing writeup before uploading.</p>
               <input type="file" accept="image/jpeg,image/png,image/webp" onChange={async (e) => {
                 const f = e.target.files?.[0]; if (!f) return;
                 if (f.size > 5 * 1024 * 1024) { setErr("File too large (max 5MB)"); return; }
+                if (!editingWriteup?.id) {
+                  setErr("Save a draft or select a writeup before uploading media.");
+                  e.target.value = "";
+                  return;
+                }
                 try {
                   const { url, publicId } = await uploadToCloudinary(f);
-                  let wid = editingWriteup?.id;
-                  if (!wid) {
-                    const ref = await addDoc(collection(db, "writeups"), { title: "[Draft]", trackId: track, authorId: uid, body: "", status: "draft", aiDrafted: false, tags: { topics: [], products: [] } });
-                    wid = ref.id;
-                    setEditingWriteup({ id: wid });
-                  }
+                  const wid = editingWriteup.id;
                   await addDoc(collection(db, "media"), { writeupId: wid, url, publicId, caption: "", altText: "", captionSource: "lead", createdBy: uid });
-                  setMsg("Uploaded"); loadMedia(wid);
+                  setMsg("Uploaded");
+                  await loadMedia(wid);
                 } catch (er: any) { setErr(er?.message || "Upload failed"); }
               }} className="mt-4" />
               <div className="mt-4 grid gap-3">
@@ -419,7 +430,7 @@ export default function DashboardPage() {
           {tab === "Live ticker" && (
             <section>
               <h2 className="font-display text-2xl uppercase">Live ticker</h2>
-              <TickerTab uid={uid} events={events} track={track} setMsg={setMsg} setErr={setErr} />
+              <TickerTab uid={uid} role={role} events={events} track={track} setMsg={setMsg} setErr={setErr} />
             </section>
           )}
 
@@ -439,70 +450,131 @@ export default function DashboardPage() {
 }
 
 
-function TickerTab({ uid, events, track, setMsg, setErr }: any) {
+function TickerTab({ uid, role, events, track, setMsg, setErr }: any) {
   const [entries, setEntries] = useState<any[]>([]);
   const [form, setForm] = useState({ eventId: "", message: "" });
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   async function load() {
-    const fetched = await getTicker();
-    setEntries(fetched as any[]);
-  }
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { load(); }, [uid, track]);
-  async function goLive(id: string, evTrack: string) {
     try {
-      // end others for same track
-      const ev = events.find((e: any) => e.id === entries.find((x) => x.id === id)?.eventId);
-      const t = ev?.trackId || track;
-      for (const e of entries) {
-        if (e.id !== id && e.status === "active") {
-          const ev2 = events.find((x: any) => x.id === e.eventId);
-          if ((ev2?.trackId || track) === t) await updateDoc(doc(db, "ticker", e.id), { status: "inactive", updatedAt: serverTimestamp() });
+      const fetched = await getTicker();
+      setEntries(fetched as any[]);
+    } catch (error: any) {
+      setErr(error?.message || "Ticker entries could not be loaded.");
+    }
+  }
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { void load(); }, [uid, track]);
+
+  async function goLive(id: string) {
+    try {
+      const ev = events.find((event: any) => event.id === entries.find((item) => item.id === id)?.eventId);
+      const currentTrack = ev?.trackId || track;
+      for (const entry of entries) {
+        if (entry.id !== id && entry.status === "active") {
+          const otherEvent = events.find((event: any) => event.id === entry.eventId);
+          if ((otherEvent?.trackId || track) === currentTrack) {
+            await updateDoc(doc(db, "ticker", entry.id), { status: "inactive", updatedAt: serverTimestamp() });
+          }
         }
       }
       await updateDoc(doc(db, "ticker", id), { status: "active", updatedAt: serverTimestamp() });
-      setMsg("Live"); load();
-    } catch (er: any) { setErr(er?.message || "Failed"); }
+      setMsg("Ticker is live.");
+      await load();
+    } catch (error: any) {
+      setErr(error?.message || "Ticker could not be made live.");
+    }
   }
+
   async function end(id: string) {
-    try { await updateDoc(doc(db, "ticker", id), { status: "inactive", updatedAt: serverTimestamp() }); setMsg("Ended"); load(); }
-    catch (er: any) { setErr(er?.message || "Failed"); }
-  }
-  async function remove(id: string) {
-    if (!confirm("Delete?")) return;
-    try { await deleteDoc(doc(db, "ticker", id)); setMsg("Deleted"); load(); }
-    catch (er: any) { setErr(er?.message || "Failed"); }
-  }
-  async function create(e: any) {
-    e.preventDefault();
-    if (!form.eventId || !form.message.trim()) { setErr("Event and message required"); return; }
-    if (form.message.length > 140) { setErr("Message must be 140 characters or fewer"); return; }
     try {
-      await addDoc(collection(db, "ticker"), { eventId: form.eventId, message: form.message, status: "inactive", createdBy: uid, updatedAt: serverTimestamp() });
-      setMsg("Created"); setForm({ eventId: "", message: "" }); load();
-    } catch (er: any) { setErr(er?.message || "Failed"); }
+      await updateDoc(doc(db, "ticker", id), { status: "inactive", updatedAt: serverTimestamp() });
+      setMsg("Ticker entry ended.");
+      await load();
+    } catch (error: any) {
+      setErr(error?.message || "Ticker entry could not be ended.");
+    }
   }
+
+  async function remove(id: string) {
+    if (!confirm("Delete this ticker entry?")) return;
+    try {
+      await deleteDoc(doc(db, "ticker", id));
+      setMsg("Ticker entry deleted.");
+      await load();
+    } catch (error: any) {
+      setErr(error?.message || "Ticker entry could not be deleted.");
+    }
+  }
+
+  function startEdit(entry: any) {
+    setEditingId(entry.id);
+    setForm({ eventId: entry.eventId, message: entry.message });
+  }
+
+  async function save(e: any) {
+    e.preventDefault();
+    if (!form.eventId || !form.message.trim()) {
+      setErr("Event and message are required.");
+      return;
+    }
+    if (form.message.length > 140) {
+      setErr("Message must be 140 characters or fewer.");
+      return;
+    }
+    try {
+      if (editingId) {
+        await updateDoc(doc(db, "ticker", editingId), { message: form.message.trim(), updatedAt: serverTimestamp() });
+        setMsg("Ticker entry updated.");
+      } else {
+        await addDoc(collection(db, "ticker"), { eventId: form.eventId, message: form.message.trim(), status: "inactive", createdBy: uid, updatedAt: serverTimestamp() });
+        setMsg("Ticker entry created.");
+      }
+      setEditingId(null);
+      setForm({ eventId: "", message: "" });
+      await load();
+    } catch (error: any) {
+      setErr(error?.message || "Ticker entry could not be saved.");
+    }
+  }
+
   return (
     <div>
-      <form onSubmit={create} className="grid gap-2">
-        <select value={form.eventId} onChange={(e) => setForm({ ...form, eventId: e.target.value })} className="border-[3px] border-ink px-3 py-2">
-          <option value="">select event</option>
-          {events.map((ev: any) => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
+      <form onSubmit={save} className="grid gap-2 border-[3px] border-ink p-[16px]">
+        <label htmlFor="ticker-event" className="text-[11px] font-bold uppercase">Event</label>
+        <select id="ticker-event" value={form.eventId} disabled={Boolean(editingId)} onChange={(event) => setForm({ ...form, eventId: event.target.value })} className="border-[3px] border-ink px-3 py-2 disabled:bg-[#f5f5f5]">
+          <option value="">Select event</option>
+          {events.map((event: any) => <option key={event.id} value={event.id}>{event.title}</option>)}
         </select>
-        <input value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="Message" className="border-[3px] border-ink px-3 py-2" />
-        <p className="mt-0.5 mb-0 text-xs text-ink">{form.message.length}/140</p>
-        <button className="border-[3px] border-ink bg-ink px-4 py-2 font-bold uppercase text-white">Create entry</button>
+        <label htmlFor="ticker-message" className="text-[11px] font-bold uppercase">Message</label>
+        <input id="ticker-message" value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} maxLength={140} placeholder="Live update" className="border-[3px] border-ink px-3 py-2" />
+        <p className="text-xs">{form.message.length}/140</p>
+        <div className="flex flex-wrap gap-2">
+          <button type="submit" className="border-[3px] border-ink bg-ink px-4 py-2 font-bold uppercase text-white">{editingId ? "Save changes" : "Create entry"}</button>
+          {editingId && <button type="button" onClick={() => { setEditingId(null); setForm({ eventId: "", message: "" }); }} className="border-[3px] border-ink px-4 py-2 font-bold uppercase">Cancel edit</button>}
+        </div>
       </form>
       <div className="mt-4 grid gap-2">
-        {entries.map((t: any) => (
-          <div key={t.id} className="border-[3px] border-ink p-3">
-            <div className="font-bold">{t.message} — {t.status}</div>
-            <div className="mt-2 flex gap-2">
-              <button onClick={() => goLive(t.id, "")} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Go live</button>
-              <button onClick={() => end(t.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">End</button>
-              <button onClick={() => remove(t.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Delete</button>
-            </div>
-          </div>
-        ))}
+        {entries.map((entry: any) => {
+          const canManage = role === "admin" || entry.createdBy === uid;
+          return (
+            <article key={entry.id} className="border-[3px] border-ink p-3">
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div><p className="font-bold">{entry.message}</p><p className="mt-1 text-xs font-bold uppercase">{entry.status}</p></div>
+                <p className="text-xs">{events.find((event: any) => event.id === entry.eventId)?.title || "Event"}</p>
+              </div>
+              {canManage && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {entry.status !== "active" && <button type="button" onClick={() => void goLive(entry.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Go live</button>}
+                  {entry.status === "active" && <button type="button" onClick={() => void end(entry.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">End</button>}
+                  <button type="button" onClick={() => startEdit(entry)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Edit</button>
+                  <button type="button" onClick={() => void remove(entry.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Delete</button>
+                </div>
+              )}
+            </article>
+          );
+        })}
       </div>
     </div>
   );
