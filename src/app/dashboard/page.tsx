@@ -1,11 +1,10 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import FormField from "@/components/form/FormField";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/auth";
+import { auth, signOut } from "@/lib/auth";
 import { db } from "@/lib/firebase";
 import { doc, collection, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import { uploadToCloudinary } from "@/lib/cloudinary";
@@ -43,7 +42,7 @@ export default function DashboardPage() {
   const [wf, setWf] = useState({ eventId: "", title: "", summary: "", body: "", attendance: "", links: [{ title: "", url: "" }] });
   const [wfErrors, setWfErrors] = useState<any>({});
   const [mediaList, setMediaList] = useState<any[]>([]);
-  const [preview, setPreview] = useState(false);
+  const [preview, setPreview] = useState(true);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -177,27 +176,46 @@ export default function DashboardPage() {
     loadMedia(w.id);
   }
 
-  if (allowed === null) return <><Nav /><main className="p-6">Loading…</main><Footer /></>;
-  if (!allowed) return <><Nav /><main className="p-6">Not allowed.</main><Footer /></>;
+  if (allowed === null) return <><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]">Loading dashboard…</main></>;
+  if (!allowed) return <><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]"><h1 className="font-display text-[48px] uppercase">Not allowed</h1><p className="mt-2 text-sm">This dashboard is available to track leads and admins.</p></main></>;
 
   return (
     <>
-      <Nav />
-      <div className="mx-auto grid max-w-[1280px] grid-cols-1 md:grid-cols-[200px_1fr]">
-        <aside className="border-r-[3px] border-ink p-4">
+      <header className="mx-auto flex max-w-[1280px] flex-wrap items-center border-b-[3px] border-ink">
+        <a href="/" className="border-r-[3px] border-ink px-[22px] py-[14px] font-display text-[30px] uppercase tracking-[1px]">GDG<span className="text-blue">.</span>TUM</a>
+        <span className="px-[20px] py-[16px] text-[12px] font-bold uppercase">Lead dashboard</span>
+        <span className="ml-auto border-l-[3px] border-ink bg-blue px-[20px] py-[20px] text-[12px] font-bold uppercase text-white">{role === "admin" ? "Admin" : `${track.replaceAll("-", " ")} Track`}</span>
+        <button type="button" onClick={() => void signOut()} className="border-l-[3px] border-ink px-[16px] py-[20px] text-[11px] font-bold uppercase">Sign out</button>
+      </header>
+      <div className="mx-auto grid max-w-[1280px] grid-cols-1 border-x-[3px] border-ink md:grid-cols-[230px_minmax(0,1fr)]">
+        <aside className="border-b-[3px] border-ink md:border-b-0 md:border-r-[3px]">
           {(TABS.filter((t) => {
             if (t === "Partners") return role === "admin";
             if (t === "Live ticker") return role === "admin" || role === "lead";
             return true;
           })).map((t) => (
-            <button key={t} onClick={() => setTab(t)} className={`mb-2 block w-full border-[3px] border-ink px-3 py-2 text-left text-sm font-bold uppercase ${tab === t ? "bg-ink text-white" : ""}`}>{t}</button>
+            <button key={t} type="button" onClick={() => setTab(t)} aria-current={tab === t ? "page" : undefined} className={`block w-full border-b-[3px] border-ink px-[18px] py-[17px] text-left text-[11px] font-bold uppercase ${tab === t ? "bg-yellow" : "bg-white"}`}>{t}</button>
           ))}
         </aside>
-        <main className="p-6">
+        <main className="min-w-0 p-[20px] sm:p-[28px]">
           {msg && <p className="mb-2 text-sm text-green">{msg}</p>}
           {err && <p className="mb-2 text-sm text-red">{err}</p>}
 
-          {tab === "Overview" && <p>Overview</p>}
+          {tab === "Overview" && (
+            <section>
+              <h1 className="font-display text-[clamp(42px,6vw,64px)] uppercase leading-none">Overview</h1>
+              <p className="mt-[12px] text-[14px] leading-[1.5]">Your track workspace. Manage events, publish writeups and keep your community updated.</p>
+              <div className="mt-[24px] grid grid-cols-2 border-l-[3px] border-t-[3px] border-ink sm:grid-cols-3">
+                <div className="border-b-[3px] border-r-[3px] border-ink p-[18px]"><p className="font-display text-[48px] leading-none">{events.length}</p><p className="mt-[8px] text-[11px] font-bold uppercase">Events</p></div>
+                <div className="border-b-[3px] border-r-[3px] border-ink bg-yellow p-[18px]"><p className="font-display text-[48px] leading-none">{writeups.length}</p><p className="mt-[8px] text-[11px] font-bold uppercase">Your writeups</p></div>
+                <div className="border-b-[3px] border-r-[3px] border-ink p-[18px]"><p className="font-display text-[48px] leading-none">{writeups.filter((item) => item.status === "published").length}</p><p className="mt-[8px] text-[11px] font-bold uppercase">Published</p></div>
+              </div>
+              <div className="mt-[22px] flex flex-wrap gap-[10px]">
+                <button type="button" onClick={() => setTab("New writeup")} className="border-[3px] border-ink bg-yellow px-[18px] py-[12px] text-[12px] font-bold uppercase">New writeup ↗</button>
+                <button type="button" onClick={() => setTab("My events")} className="border-[3px] border-ink px-[18px] py-[12px] text-[12px] font-bold uppercase">Manage events ↗</button>
+              </div>
+            </section>
+          )}
 
           {tab === "My events" && (
             <section>
@@ -249,9 +267,14 @@ export default function DashboardPage() {
 
           {tab === "New writeup" && (
             <section>
-              <h2 className="font-display text-2xl uppercase">{editingWriteup ? "Edit writeup" : "New writeup"}</h2>
-              <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                <form onSubmit={(e) => { e.preventDefault(); saveWriteup(false); }} className="grid gap-2">
+              <h2 className="font-display text-[clamp(42px,6vw,56px)] uppercase leading-none">{editingWriteup ? "Edit writeup" : "New writeup"}</h2>
+              <div className="mt-[20px] grid grid-cols-1 border-[3px] border-ink sm:grid-cols-3">
+                <div className="border-b-[3px] border-ink bg-ink px-[14px] py-[13px] text-[11px] font-bold uppercase text-white sm:border-b-0 sm:border-r-[3px]">1&nbsp; Add your notes</div>
+                <div className="border-b-[3px] border-ink bg-yellow px-[14px] py-[13px] text-[11px] font-bold uppercase sm:border-b-0 sm:border-r-[3px]">2&nbsp; AI draft</div>
+                <div className="px-[14px] py-[13px] text-[11px] font-bold uppercase">3&nbsp; Review &amp; publish</div>
+              </div>
+              <div className="mt-[20px] grid grid-cols-1 gap-0 border-[3px] border-ink lg:grid-cols-2">
+                <form onSubmit={(e) => { e.preventDefault(); saveWriteup(false); }} className="grid content-start gap-[12px] p-[18px] sm:p-[24px]">
                   <FormField label="Event" id="we" error={wfErrors.eventId}>
                     <select id="we" value={wf.eventId} onChange={(e) => setWf({ ...wf, eventId: e.target.value })} className="border-[3px] border-ink px-3 py-2">
                       <option value="">select</option>
@@ -289,9 +312,21 @@ export default function DashboardPage() {
                   </div>
                 </form>
                 {preview && (
-                  <div className="border-[3px] border-ink p-4">
-                    <ReactMarkdown>{wf.body}</ReactMarkdown>
-                  </div>
+                  <aside className="border-t-[3px] border-ink bg-[#fafafa] p-[18px] sm:p-[24px] lg:border-l-[3px] lg:border-t-0">
+                    <div className="flex flex-wrap items-center justify-between gap-[8px]">
+                      <span className="bg-ink px-[10px] py-[5px] text-[10px] font-bold uppercase text-white">Draft preview</span>
+                      <span className="text-[11px] font-bold uppercase">Editable in the form</span>
+                    </div>
+                    <h3 className="mt-[18px] font-display text-[34px] uppercase leading-[1]">{wf.title || "Your writeup title"}</h3>
+                    <div className="mt-[16px] border-[3px] border-ink bg-white p-[18px] text-[13px] leading-[1.65]">
+                      {wf.summary && <p className="mb-[16px]"><strong>Summary.</strong> {wf.summary}</p>}
+                      {wf.body ? <ReactMarkdown>{wf.body}</ReactMarkdown> : <p className="text-[#666]">Your notes and writeup content will appear here as you draft.</p>}
+                      {!wf.summary && !wf.body && <p className="mt-[14px]"><strong>Resources.</strong> Links you add will be included with your published writeup.</p>}
+                    </div>
+                    <div className="mt-[16px] border-[3px] border-ink bg-red p-[13px] text-[12px] font-bold leading-[1.5]">
+                      Review names, numbers and links before publishing. You are responsible for the accuracy of your writeup.
+                    </div>
+                  </aside>
                 )}
               </div>
               <h3 className="font-display text-xl uppercase mt-6">My writeups</h3>
