@@ -1,9 +1,9 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useState } from "react";
-import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc } from "firebase/firestore";
+import { useCallback, useEffect, useState } from "react";
+import { addDoc, collection, deleteDoc, doc, serverTimestamp, updateDoc, writeBatch } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { getTicker } from "@/lib/data";
+import { getEvents, getTicker } from "@/lib/data";
 
 export default function LiveTickerTab({ uid, role, events, track, setMsg, setErr }: any) {
   return (
@@ -16,34 +16,45 @@ export default function LiveTickerTab({ uid, role, events, track, setMsg, setErr
 
 export function TickerTab({ uid, role, events, track, setMsg, setErr }: any) {
   const [entries, setEntries] = useState<any[]>([]);
+  const [allEvents, setAllEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ eventId: "", message: "" });
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  async function load() {
+  const load = useCallback(async () => {
     try {
-      const fetched = await getTicker();
-      setEntries(fetched as any[]);
+      const [fetchedEntries, fetchedEvents] = await Promise.all([getTicker(), getEvents()]);
+      setEntries(fetchedEntries as any[]);
+      setAllEvents(fetchedEvents as any[]);
     } catch (error: any) {
       setErr(error?.message || "Ticker entries could not be loaded.");
+    } finally {
+      setLoading(false);
     }
-  }
+  }, [setErr]);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { void load(); }, [uid, track]);
+  useEffect(() => { void load(); }, [load, uid, track]);
 
   async function goLive(id: string) {
     try {
-      const ev = events.find((event: any) => event.id === entries.find((item) => item.id === id)?.eventId);
-      const currentTrack = ev?.trackId || track;
+      const target = entries.find((entry) => entry.id === id);
+      const targetEvent = allEvents.find((event) => event.id === target?.eventId);
+      if (!targetEvent) {
+        setErr("The event linked to this ticker entry could not be found.");
+        return;
+      }
+
+      const batch = writeBatch(db);
       for (const entry of entries) {
-        if (entry.id !== id && entry.status === "active") {
-          const otherEvent = events.find((event: any) => event.id === entry.eventId);
-          if ((otherEvent?.trackId || track) === currentTrack) {
-            await updateDoc(doc(db, "ticker", entry.id), { status: "inactive", updatedAt: serverTimestamp() });
-          }
+        if (entry.id === id || entry.status !== "active") continue;
+        const otherEvent = allEvents.find((event) => event.id === entry.eventId);
+        if (otherEvent?.trackId === targetEvent.trackId) {
+          batch.update(doc(db, "ticker", entry.id), { status: "inactive", updatedAt: serverTimestamp() });
         }
       }
-      await updateDoc(doc(db, "ticker", id), { status: "active", updatedAt: serverTimestamp() });
+      batch.update(doc(db, "ticker", id), { status: "active", updatedAt: serverTimestamp() });
+      await batch.commit();
       setMsg("Ticker is live.");
       await load();
     } catch (error: any) {
@@ -120,8 +131,11 @@ export function TickerTab({ uid, role, events, track, setMsg, setErr }: any) {
         </div>
       </form>
       <div className="mt-4 grid gap-2">
+        {loading && <p className="text-xs font-bold uppercase">Loading ticker entries…</p>}
+        {!loading && entries.length === 0 && <p className="text-xs font-bold uppercase">No ticker entries yet.</p>}
         {entries.map((entry: any) => {
-          const canManage = role === "admin" || entry.createdBy === uid;
+          const entryTrack = allEvents.find((event: any) => event.id === entry.eventId)?.trackId;
+          const canManage = role === "admin" || (role === "lead" && entryTrack === track);
           return (
             <article key={entry.id} className="border-[3px] border-ink p-3">
               <div className="flex flex-wrap items-start justify-between gap-2">
