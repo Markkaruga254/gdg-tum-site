@@ -43,6 +43,8 @@ export default function DashboardPage() {
   const [wfErrors, setWfErrors] = useState<any>({});
   const [mediaList, setMediaList] = useState<any[]>([]);
   const [preview, setPreview] = useState(true);
+  const [aiConsent, setAiConsent] = useState(false);
+  const [aiPhotoIds, setAiPhotoIds] = useState<string[]>([]);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
@@ -173,6 +175,8 @@ export default function DashboardPage() {
   function startEditWriteup(w: any) {
     setEditingWriteup(w);
     setWf({ eventId: w.eventId, title: w.title, summary: w.summary || "", body: w.body || "", attendance: w.attendance ?? "", links: w.links?.length ? w.links : [{ title: "", url: "" }] });
+    setAiConsent(false);
+    setAiPhotoIds([]);
     loadMedia(w.id);
   }
 
@@ -301,13 +305,40 @@ export default function DashboardPage() {
                       <button type="button" onClick={() => setWf({ ...wf, links: [...wf.links, { title: "", url: "" }] })} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">+ Link</button>
                     </div>
                   </FormField>
-                  <FormField label="Body (Markdown)" id="wb" error={wfErrors.body}>
+                  <FormField label="Rough notes / writeup body (Markdown)" id="wb" error={wfErrors.body}>
                     <textarea id="wb" value={wf.body} onChange={(e) => setWf({ ...wf, body: e.target.value })} className="border-[3px] border-ink px-3 py-2" rows={10} />
                   </FormField>
+                  <section className="border-[3px] border-ink p-[14px]">
+                    <h3 className="text-[12px] font-bold uppercase">Photos, slides &amp; links</h3>
+                    {mediaList.length ? (
+                      <div className="mt-[12px] grid grid-cols-2 gap-[10px] sm:grid-cols-3">
+                        {mediaList.map((media) => (
+                          <label key={media.id} className="border-[2px] border-ink p-[7px]">
+                            <img src={media.url} alt={media.altText || media.caption || "Uploaded event media"} className="aspect-[4/3] w-full object-cover" />
+                            <span className="mt-[7px] flex items-start gap-[7px] text-[10px] font-bold uppercase leading-[1.4]">
+                              <input
+                                type="checkbox"
+                                checked={aiPhotoIds.includes(media.id)}
+                                onChange={(event) => setAiPhotoIds((current) => event.target.checked ? [...current, media.id] : current.filter((id) => id !== media.id))}
+                              />
+                              Send for AI caption
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mt-[8px] text-[12px] leading-[1.5]">Save a draft, then use the Media tab to upload event photos. Each photo stays opted out of AI processing unless you select it here.</p>
+                    )}
+                    <button type="button" onClick={() => setTab("Media")} className="mt-[12px] border-[3px] border-ink px-[12px] py-[8px] text-[11px] font-bold uppercase">Manage media ↗</button>
+                  </section>
+                  <label className="flex items-start gap-[10px] border-[3px] border-ink bg-yellow p-[12px] text-[12px] leading-[1.5]">
+                    <input type="checkbox" checked={aiConsent} onChange={(event) => setAiConsent(event.target.checked)} className="mt-[2px]" />
+                    <span>I confirm I have permission to submit these notes and only the photos I select for AI processing. AI-generated content must be reviewed before publishing.</span>
+                  </label>
                   <div className="flex flex-wrap gap-2">
                     <button type="button" onClick={() => saveWriteup(false)} disabled={saving} className="border-[3px] border-ink px-4 py-2 font-bold uppercase">{saving ? "Saving..." : "Save draft"}</button>
                     <button type="button" onClick={() => saveWriteup(true)} disabled={saving} className="border-[3px] border-ink bg-ink px-4 py-2 font-bold uppercase text-white">{saving ? "Saving..." : "Publish"}</button>
-                    <button type="button" disabled className="border-[3px] border-ink px-4 py-2 font-bold uppercase opacity-60">Generate draft with AI (coming soon)</button>
+                    <button type="button" disabled title="AI draft generation will be enabled when the approved AI service is deployed." className="border-[3px] border-ink bg-ink px-4 py-2 font-bold uppercase text-white opacity-50">Generate draft · Coming soon</button>
                     <button type="button" onClick={() => setPreview((p) => !p)} className="border-[3px] border-ink px-4 py-2 font-bold uppercase">Toggle preview</button>
                   </div>
                 </form>
