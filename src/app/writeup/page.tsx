@@ -9,6 +9,10 @@ import Tag from "@/components/Tag";
 import { getWriteupById, getUserById, getWriteups, getMediaByWriteup, getEventById, type WriteupWithId, type AppUserWithId, type MediaWithId, type EventWithId } from "@/lib/data";
 import { trackTagColor } from "@/lib/tracks";
 
+function trackLabel(track: string) {
+  return track === "women-in-tech" ? "Women in Tech" : track[0].toUpperCase() + track.slice(1);
+}
+
 function View() {
   const params = useSearchParams();
   const id = params.get("id");
@@ -62,7 +66,7 @@ function View() {
       <Nav />
       <main className="mx-auto max-w-[1280px]">
         <header className="border-b-[3px] border-ink px-[26px] py-[36px]">
-          <Tag label={writeup.trackId === "women-in-tech" ? "Women in Tech" : writeup.trackId} color={trackTagColor(writeup.trackId)} />
+          <Tag label={trackLabel(writeup.trackId)} color={trackTagColor(writeup.trackId)} />
           {writeup.aiDrafted && <p className="mt-[16px] text-[11px] font-bold uppercase">Drafted with AI, reviewed by {author?.name || "the lead"}</p>}
           <h1 className="mt-[18px] max-w-[1000px] font-display text-[clamp(48px,8vw,104px)] uppercase leading-[.94]">{writeup.title}</h1>
           <p className="mt-[18px] text-[13px] font-bold uppercase">
