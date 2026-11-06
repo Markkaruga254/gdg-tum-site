@@ -82,9 +82,11 @@ function EventDetail() {
       <Nav />
       <main className="mx-auto max-w-[1280px]">
         <header className="border-b-[3px] border-ink px-[26px] py-[34px]">
+          <div className="flex flex-wrap items-center gap-[10px]">
             <Tag label={trackName(event.trackId)} color={trackTagColor(event.trackId)} />
-            <p className="mt-[18px] text-[12px] font-bold uppercase">{stateLabel}</p>
-            <h1 className="mt-[12px] font-display text-[clamp(48px,8vw,104px)] uppercase leading-[.92]">{event.title}</h1>
+            <Tag label={stateLabel} color={event.status === "live" ? "green" : event.status === "cancelled" ? "red" : "ink"} />
+          </div>
+          <h1 className="mt-[16px] font-display text-[clamp(56px,8vw,104px)] uppercase leading-[.92]">{event.title}</h1>
         </header>
 
         {error && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[16px] font-bold">{error}</p>}
@@ -122,7 +124,7 @@ function EventDetail() {
             <div className="px-[26px] py-[24px]">
               <p className="font-display text-[clamp(52px,7vw,76px)] uppercase leading-none">{(event.attendance ?? 0).toLocaleString()}</p>
               <p className="mt-[8px] text-[12px] font-bold uppercase">Attended</p>
-              {writeup && <a href={`/writeup?id=${writeup.id}`} className="mt-[20px] inline-block border-[3px] border-ink px-[16px] py-[12px] text-[12px] font-bold uppercase underline">Read the writeup ↗</a>}
+              {writeup && <a href={`/writeup?id=${writeup.id}`} className="mt-[20px] inline-block text-[12px] font-bold uppercase underline underline-offset-4">Read the writeup ↗</a>}
             </div>
           </section>
         )}
@@ -133,12 +135,12 @@ function EventDetail() {
 
         {event.status === "past" && media.length > 0 && (
           <section>
-            <div className="border-b-[3px] border-ink px-[26px] py-[22px]"><h2 className="font-display text-[42px] uppercase">Photos</h2></div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="border-y-[3px] border-ink px-[26px] py-[18px]"><h2 className="text-[14px] font-bold uppercase">Photos</h2></div>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-[16px] p-[20px]">
               {media.map((item) => (
-                <figure key={item.id} className="border-b-[3px] border-r-[3px] border-ink">
-                  <img src={item.url} alt={item.altText || item.caption || event.title} className="aspect-[4/3] w-full object-cover" />
-                  {item.caption && <figcaption className="border-t-[3px] border-ink px-[14px] py-[12px] text-[13px] font-bold">{item.caption}</figcaption>}
+                <figure key={item.id} className="border-[3px] border-ink bg-white">
+                  <img src={item.url} alt={item.altText || item.caption || event.title} className="h-[200px] w-full border-b-[3px] border-ink object-cover" />
+                  {item.caption && <figcaption className="px-[12px] py-[10px] text-[13px] font-bold">{item.caption}</figcaption>}
                 </figure>
               ))}
             </div>
