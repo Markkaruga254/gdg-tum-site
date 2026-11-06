@@ -13,23 +13,17 @@ const pageLinks = [
   { href: "/leads", label: "Leads" },
   { href: "/labs", label: "Labs" },
 ];
-const homeLinks = [
-  { href: "/events", label: "Events" },
-  { href: "/tracks", label: "Tracks" },
-  { href: "/blog", label: "Blog" },
-  { href: "/labs", label: "Labs" },
-];
 
 export default function Nav({ home = false }: { home?: boolean } = {}) {
   const pathname = usePathname();
-  const [signedIn, setSignedIn] = useState(false);
+  const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => setSignedIn(Boolean(user)));
+    const unsub = onAuthStateChanged(auth, (user) => setUserName(user ? (user.displayName || "Account") : null));
     return () => unsub();
   }, []);
 
-  const links = home ? homeLinks : pageLinks;
+  const links = pageLinks;
 
   return (
     <nav className="flex flex-wrap border-b-[3px] border-ink" aria-label="Main navigation">
@@ -54,15 +48,13 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
           {link.label}
         </Link>
       ))}
-      {!home && (
-        <button
-          type="button"
-          onClick={() => (signedIn ? signOut() : signInGoogle())}
-          className="border-r-[3px] border-ink px-[20px] py-[22px] text-[13px] font-bold uppercase whitespace-nowrap"
-        >
-          {signedIn ? "Sign out" : "Sign in"}
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={() => (userName ? signOut() : signInGoogle())}
+        className="border-r-[3px] border-ink px-[20px] py-[22px] text-[12px] font-bold uppercase whitespace-nowrap"
+      >
+        {userName ? `${userName} · Sign out` : "Sign in"}
+      </button>
       <Link
         href="/tracks"
         className="ml-auto border-l-[3px] border-ink bg-yellow px-[24px] py-[22px] text-[13px] font-bold uppercase whitespace-nowrap"
