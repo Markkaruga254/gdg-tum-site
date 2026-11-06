@@ -62,6 +62,7 @@ export interface Post {
   sourceUrl: string;
   tags: string[];
   fetchedAt: Timestamp;
+  hidden?: boolean;
 }
 
 export interface Ticker {
