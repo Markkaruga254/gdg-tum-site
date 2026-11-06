@@ -38,7 +38,7 @@ export default function DashboardPage() {
 
   // event form state
   const [editingEvent, setEditingEvent] = useState<any | null>(null);
-  const [eventForm, setEventForm] = useState<EventForm>({ title: "", date: "", venue: "", status: "upcoming", attendance: "", trackId: "" });
+  const [eventForm, setEventForm] = useState<EventForm>({ title: "", date: "", venue: "", description: "", status: "upcoming", attendance: "", trackId: "" });
   const [eventErrors, setEventErrors] = useState<any>({});
 
   // writeup form state
@@ -125,7 +125,7 @@ export default function DashboardPage() {
     setSaving(true);
     try {
       const data: any = {
-        title: eventForm.title, venue: eventForm.venue, status: eventForm.status,
+        title: eventForm.title, venue: eventForm.venue, description: eventForm.description.trim(), status: eventForm.status,
         trackId: role === "admin" ? eventForm.trackId : track,
         date: Timestamp.fromDate(new Date(eventForm.date)),
         attendance: eventForm.attendance ? Number(eventForm.attendance) : null,
@@ -134,7 +134,7 @@ export default function DashboardPage() {
       else await addDoc(collection(db, "events"), data);
       setMsg(editingEvent ? "Event updated" : "Event created");
       setEditingEvent(null);
-      setEventForm({ title: "", date: "", venue: "", status: "upcoming", attendance: "", trackId: "" });
+      setEventForm({ title: "", date: "", venue: "", description: "", status: "upcoming", attendance: "", trackId: "" });
       await loadEvents();
     } catch (e: any) { setErr(e?.message || "Save failed"); }
     finally { setSaving(false); }
@@ -159,7 +159,7 @@ export default function DashboardPage() {
     setEditingEvent(ev);
     const d = ev.date?.toDate ? ev.date.toDate() : new Date(ev.date);
     const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-    setEventForm({ title: ev.title, date: local, venue: ev.venue, status: ev.status, attendance: ev.attendance ?? "", trackId: ev.trackId });
+    setEventForm({ title: ev.title, date: local, venue: ev.venue, description: ev.description ?? "", status: ev.status, attendance: ev.attendance ?? "", trackId: ev.trackId });
   }
 
   function validateWriteup(publish: boolean) {
