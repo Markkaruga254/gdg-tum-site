@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { getTracks, getUsers, type AppUserWithId, type TrackWithId } from "@/lib/data";
-import { trackTagColor } from "@/lib/tracks";
+import { TRACK_BG_COLORS } from "@/lib/tracks";
 
 const order = ["cloud", "cybersecurity", "web", "women-in-tech"];
 
@@ -51,7 +51,7 @@ export default function TracksPage() {
             {sortedTracks.map((track, index) => {
               const trackLeads = leads.filter((lead) => track.leadIds.includes(lead.id));
               return (
-                <article key={track.id} className={`grid grid-cols-[76px_minmax(0,1fr)] sm:grid-cols-[120px_minmax(0,1fr)_180px] border-b-[3px] border-ink ${index % 4 === 0 ? "bg-blue text-white" : index % 4 === 1 ? "bg-red" : index % 4 === 2 ? "bg-green" : "bg-yellow"}`}>
+                <article key={track.id} style={{ backgroundColor: TRACK_BG_COLORS[track.slug], color: track.color === "blue" ? "#fff" : "#111" }} className="grid grid-cols-[76px_minmax(0,1fr)] border-b-[3px] border-ink sm:grid-cols-[120px_minmax(0,1fr)_180px]">
                   <div className="flex items-center justify-center border-r-[3px] border-ink px-2">
                     <span className="font-display text-[48px] leading-none sm:text-[64px]">{String(index + 1).padStart(2, "0")}</span>
                   </div>
