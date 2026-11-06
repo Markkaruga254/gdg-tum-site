@@ -43,6 +43,8 @@ export default function DashboardPage() {
   const [wf, setWf] = useState({ eventId: "", title: "", summary: "", body: "", attendance: "", links: [{ title: "", url: "" }] });
   const [wfErrors, setWfErrors] = useState<any>({});
   const [mediaList, setMediaList] = useState<any[]>([]);
+  const [mediaUploading, setMediaUploading] = useState(false);
+  const [mediaUploadProgress, setMediaUploadProgress] = useState(0);
   const [preview, setPreview] = useState(true);
   const [aiConsent, setAiConsent] = useState(false);
   const [aiPhotoIds, setAiPhotoIds] = useState<string[]>([]);
@@ -396,7 +398,7 @@ export default function DashboardPage() {
               <h2 className="font-display text-2xl uppercase">Media</h2>
               <p className="mt-2 text-sm">Only upload photos where people have agreed to be shown.</p>
               <p className="mt-1 text-xs">Media is attached to the writeup currently selected in &quot;New writeup&quot;. Save a draft or select an existing writeup before uploading.</p>
-              <input type="file" accept="image/jpeg,image/png,image/webp" onChange={async (e) => {
+              <input type="file" accept="image/jpeg,image/png,image/webp" disabled={mediaUploading} onChange={async (e) => {
                 const f = e.target.files?.[0]; if (!f) return;
                 if (f.size > 5 * 1024 * 1024) { setErr("File too large (max 5MB)"); return; }
                 if (!editingWriteup?.id) {
@@ -404,14 +406,26 @@ export default function DashboardPage() {
                   e.target.value = "";
                   return;
                 }
+                setMediaUploading(true);
+                setMediaUploadProgress(0);
                 try {
-                  const { url, publicId } = await uploadToCloudinary(f);
+                  const { url, publicId } = await uploadToCloudinary(f, setMediaUploadProgress);
                   const wid = editingWriteup.id;
                   await addDoc(collection(db, "media"), { writeupId: wid, url, publicId, caption: "", altText: "", captionSource: "lead", createdBy: uid });
+                  setMediaUploadProgress(100);
                   setMsg("Uploaded");
                   await loadMedia(wid);
                 } catch (er: any) { setErr(er?.message || "Upload failed"); }
-              }} className="mt-4" />
+                finally { setMediaUploading(false); e.target.value = ""; }
+              }} className="mt-4 disabled:opacity-50" />
+              {mediaUploading && (
+                <div className="mt-[12px]" aria-live="polite">
+                  <div className="mb-[6px] flex justify-between text-[11px] font-bold uppercase"><span>Uploading photo</span><span>{mediaUploadProgress}%</span></div>
+                  <div role="progressbar" aria-label="Photo upload progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={mediaUploadProgress} className="h-[12px] border-[2px] border-ink">
+                    <div className="h-full bg-green" style={{ width: `${mediaUploadProgress}%` }} />
+                  </div>
+                </div>
+              )}
               <div className="mt-4 grid gap-3">
                 {mediaList.map((m) => (
                   <div key={m.id} className="border-[3px] border-ink p-3">
@@ -587,6 +601,8 @@ function ProfileTab({ uid, setMsg, setErr }: any) {
   const [bio, setBio] = useState("");
   const [links, setLinks] = useState<any[]>([{ title: "", url: "" }]);
   const [photoUrl, setPhotoUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   useEffect(() => {
     (async () => {
       const userData = await getUserById(uid);
@@ -608,11 +624,15 @@ function ProfileTab({ uid, setMsg, setErr }: any) {
     const f = e.target.files?.[0]; if (!f) return;
     if (f.size > 5 * 1024 * 1024) { setErr("File too large"); return; }
     if (!["image/jpeg","image/png","image/webp"].includes(f.type)) { setErr("Invalid type"); return; }
+    setUploading(true);
+    setUploadProgress(0);
     try {
-      const { url } = await uploadToCloudinary(f);
+      const { url } = await uploadToCloudinary(f, setUploadProgress);
       setPhotoUrl(url);
+      setUploadProgress(100);
       setMsg("Photo uploaded");
     } catch (er: any) { setErr(er?.message || "Upload failed"); }
+    finally { setUploading(false); e.target.value = ""; }
   }
   return (
     <div className="grid gap-2">
@@ -625,7 +645,8 @@ function ProfileTab({ uid, setMsg, setErr }: any) {
         </div>
       ))}
       <button type="button" onClick={() => setLinks([...links, { title: "", url: "" }])} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">+ Link</button>
-      <input type="file" accept="image/jpeg,image/png,image/webp" onChange={uploadPhoto} />
+      <input type="file" accept="image/jpeg,image/png,image/webp" disabled={uploading} onChange={uploadPhoto} />
+      {uploading && <div aria-live="polite"><p className="text-[11px] font-bold uppercase">Uploading profile photo · {uploadProgress}%</p><div role="progressbar" aria-label="Profile photo upload progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={uploadProgress} className="mt-1 h-[10px] border-[2px] border-ink"><div className="h-full bg-green" style={{ width: `${uploadProgress}%` }} /></div></div>}
       {photoUrl && <img src={photoUrl} alt="preview" className="h-24 w-24 object-cover border-[3px] border-ink" />}
       <button onClick={save} className="border-[3px] border-ink bg-ink px-4 py-2 font-bold uppercase text-white">Save profile</button>
     </div>
