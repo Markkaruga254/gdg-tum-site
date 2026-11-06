@@ -74,13 +74,11 @@ function View() {
         <header className="border-b-[3px] border-ink px-[26px] py-[34px]" style={{ backgroundColor: TRACK_BG_COLORS[track.slug], color: darkText ? "#111" : "#fff" }}>
           <h1 className="font-display text-[clamp(60px,9vw,120px)] uppercase leading-none">{track.name}</h1>
           <p className="mt-[14px] max-w-[600px] text-[17px] leading-[1.5]">{track.description}</p>
-          {leads.length > 0 && (
-            <div className="mt-[18px] flex flex-wrap gap-[10px]">
-              {leads.map((lead) => (
-                <a key={lead.id} href={`/lead?id=${lead.id}`} className="border-[3px] border-ink bg-white px-[20px] py-[12px] text-[12px] font-bold uppercase text-ink">{lead.name} ↗</a>
-              ))}
-            </div>
-          )}
+          <div className="mt-[18px] flex flex-wrap gap-[10px]">
+            {leads.length > 0 ? leads.map((lead) => (
+              <a key={lead.id} href={`/lead?id=${lead.id}`} className="border-[3px] border-ink bg-white px-[20px] py-[12px] text-[12px] font-bold uppercase text-ink">{lead.name} ↗</a>
+            )) : <span className="text-[12px] font-bold uppercase">Lead: To be announced</span>}
+          </div>
         </header>
 
         {error && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[16px] font-bold">{error}</p>}
