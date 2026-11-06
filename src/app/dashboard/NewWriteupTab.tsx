@@ -3,7 +3,10 @@
 import FormField from "@/components/form/FormField";
 import ReactMarkdown from "react-markdown";
 
-export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, preview, setPreview, writeups, startEditWriteup, unpublish, publishWriteup, deleteWriteup, role, topicTags, setTopicTags, productTags, setProductTags }: any) {
+const TOPIC_TAGS = ["cloud", "cybersecurity", "web", "mobile", "ai-ml", "data", "devops", "open-source", "careers"];
+const PRODUCT_TAGS = ["android", "firebase", "flutter", "gemini", "chrome", "google-cloud"];
+
+export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, setMediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, preview, setPreview, writeups, startEditWriteup, unpublish, publishWriteup, deleteWriteup, role, topicTags, setTopicTags, productTags, setProductTags }: any) {
   return (
     <section>
                   <div className="flex flex-wrap items-center justify-between gap-[12px]">
@@ -20,7 +23,7 @@ export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, s
                       <FormField label="Event" id="we" error={wfErrors.eventId}>
                         <select id="we" value={wf.eventId} onChange={(e) => setWf({ ...wf, eventId: e.target.value })} className="border-[3px] border-ink px-3 py-2">
                           <option value="">select</option>
-                          {events.map((ev) => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
+                          {events.map((ev: any) => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
                         </select>
                       </FormField>
                       <FormField label="Title" id="wt" error={wfErrors.title}>
@@ -47,11 +50,11 @@ export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, s
                       <section className="border-[3px] border-ink p-[14px]">
                         <h3 className="text-[11px] font-bold uppercase">Topics</h3>
                         <div className="mt-[10px] grid grid-cols-2 gap-[8px] sm:grid-cols-3">
-                          {TOPIC_TAGS.map((tag) => <label key={tag} className="flex items-center gap-[7px] text-[10px] font-bold uppercase"><input type="checkbox" checked={topicTags.includes(tag)} onChange={(event) => setTopicTags((current) => event.target.checked ? [...current, tag] : current.filter((item) => item !== tag))} />{tag}</label>)}
+                          {TOPIC_TAGS.map((tag) => <label key={tag} className="flex items-center gap-[7px] text-[10px] font-bold uppercase"><input type="checkbox" checked={topicTags.includes(tag)} onChange={(event) => setTopicTags((current: string[]) => event.target.checked ? [...current, tag] : current.filter((item) => item !== tag))} />{tag}</label>)}
                         </div>
                         <h3 className="mt-[16px] text-[11px] font-bold uppercase">Products</h3>
                         <div className="mt-[10px] grid grid-cols-2 gap-[8px] sm:grid-cols-3">
-                          {PRODUCT_TAGS.map((tag) => <label key={tag} className="flex items-center gap-[7px] text-[10px] font-bold uppercase"><input type="checkbox" checked={productTags.includes(tag)} onChange={(event) => setProductTags((current) => event.target.checked ? [...current, tag] : current.filter((item) => item !== tag))} />{tag}</label>)}
+                          {PRODUCT_TAGS.map((tag) => <label key={tag} className="flex items-center gap-[7px] text-[10px] font-bold uppercase"><input type="checkbox" checked={productTags.includes(tag)} onChange={(event) => setProductTags((current: string[]) => event.target.checked ? [...current, tag] : current.filter((item) => item !== tag))} />{tag}</label>)}
                         </div>
                       </section>
                       <FormField label="Rough notes / writeup body (Markdown)" id="wb" error={wfErrors.body}>
@@ -61,14 +64,14 @@ export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, s
                         <h3 className="text-[12px] font-bold uppercase">Photos, slides &amp; links</h3>
                         {mediaList.length ? (
                           <div className="mt-[12px] grid grid-cols-2 gap-[10px] sm:grid-cols-3">
-                            {mediaList.map((media) => (
+                            {mediaList.map((media: any) => (
                               <label key={media.id} className="border-[2px] border-ink p-[7px]">
                                 <img src={media.url} alt={media.altText || media.caption || "Uploaded event media"} className="aspect-[4/3] w-full object-cover" />
                                 <span className="mt-[7px] flex items-start gap-[7px] text-[10px] font-bold uppercase leading-[1.4]">
                                   <input
                                     type="checkbox"
                                     checked={aiPhotoIds.includes(media.id)}
-                                    onChange={(event) => setAiPhotoIds((current) => event.target.checked ? [...current, media.id] : current.filter((id) => id !== media.id))}
+                                    onChange={(event) => setAiPhotoIds((current: string[]) => event.target.checked ? [...current, media.id] : current.filter((id: string) => id !== media.id))}
                                   />
                                   Send for AI caption
                                 </span>
@@ -88,7 +91,7 @@ export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, s
                         <button type="button" onClick={() => saveWriteup(false)} disabled={saving} className="border-[3px] border-ink px-4 py-2 font-bold uppercase">{saving ? "Saving..." : "Save draft"}</button>
                         <button type="button" onClick={() => saveWriteup(true)} disabled={saving} className="border-[3px] border-ink bg-ink px-4 py-2 font-bold uppercase text-white">{saving ? "Saving..." : "Publish"}</button>
                         <button type="button" disabled title="AI draft generation will be enabled when the approved AI service is deployed." className="border-[3px] border-ink bg-ink px-4 py-2 font-bold uppercase text-white opacity-50">Generate draft · Coming soon</button>
-                        <button type="button" onClick={() => setPreview((p) => !p)} className="border-[3px] border-ink px-4 py-2 font-bold uppercase">Toggle preview</button>
+                        <button type="button" onClick={() => setPreview((p: boolean) => !p)} className="border-[3px] border-ink px-4 py-2 font-bold uppercase">Toggle preview</button>
                       </div>
                     </form>
                     {preview && (
@@ -111,7 +114,7 @@ export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, s
                   </div>
                   <h3 className="font-display text-xl uppercase mt-6">My writeups</h3>
                   <div className="mt-2 grid gap-2">
-                    {writeups.map((w) => (
+                    {writeups.map((w: any) => (
                       <div key={w.id} className="border-[3px] border-ink p-3">
                         <div className="font-bold">{w.title} — {w.status}</div>
                         <div className="mt-2 flex gap-2">
