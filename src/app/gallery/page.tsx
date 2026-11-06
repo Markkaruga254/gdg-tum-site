@@ -20,31 +20,43 @@ export default function Gallery() {
   const photosRef = useRef<Photo[]>([]);
   const hasMore = !!nextCursor;
 
-  async function loadPage(append: boolean) {
-    if (append) setMoreLoading(true);
-    else setLoading(true);
+  async function loadNextPage() {
+    if (!nextCursor) return;
+    setMoreLoading(true);
     setError(null);
     try {
       const page = await getGalleryPage({
         trackId: trackFilter,
-        cursor: append ? nextCursor : undefined,
+        cursor: nextCursor,
         pageSize: 6,
       });
-      const newPhotos = append ? [...photosRef.current, ...page.photos] : page.photos;
+      const newPhotos = [...photosRef.current, ...page.photos];
       photosRef.current = newPhotos;
       setPhotos(newPhotos);
       setNextCursor(page.nextCursor);
     } catch {
-      setError("Photos could not be loaded. Please try again.");
+      setError("More photos could not be loaded. Please try again.");
     } finally {
-      setLoading(false);
       setMoreLoading(false);
     }
   }
 
   useEffect(() => {
-    photosRef.current = [];
-    void loadPage(false);
+    let active = true;
+    (async () => {
+      try {
+        const page = await getGalleryPage({ trackId: trackFilter, pageSize: 6 });
+        if (!active) return;
+        photosRef.current = page.photos;
+        setPhotos(page.photos);
+        setNextCursor(page.nextCursor);
+      } catch {
+        if (active) setError("Photos could not be loaded. Please try again.");
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => { active = false; };
   }, [trackFilter]);
 
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
@@ -68,7 +80,7 @@ export default function Gallery() {
               <button
                 key={filter.label}
                 type="button"
-                onClick={() => setTrackFilter(filter.trackId)}
+                onClick={() => { photosRef.current = []; setPhotos([]); setNextCursor(null); setError(null); setLoading(true); setTrackFilter(filter.trackId); }}
                 aria-pressed={active}
                 className={`whitespace-nowrap border-r-[3px] border-ink px-[22px] py-[16px] text-[12px] font-bold uppercase ${active ? "bg-yellow" : "bg-white"}`}
               >
@@ -104,7 +116,7 @@ export default function Gallery() {
           <div className="border-t-[3px] border-ink px-[26px] py-[22px] text-center">
             <button
               type="button"
-              onClick={() => void loadPage(true)}
+              onClick={() => void loadNextPage()}
               disabled={moreLoading}
               className="border-[3px] border-ink px-[22px] py-[12px] text-[12px] font-bold uppercase disabled:opacity-50"
             >
