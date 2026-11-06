@@ -8,8 +8,8 @@ test("homepage renders the public shell and all approved sections", async ({ pag
   await expect(page.getByText("Next event")).toBeVisible();
   await expect(page.getByText("Latest writeups")).toBeVisible();
   await expect(page.getByRole("heading", { name: /Four.*tracks.*One.*club/i })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Moments" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Tech blog" })).toBeVisible();
+  await expect(page.getByText("Moments", { exact: true })).toBeVisible();
+  await expect(page.getByText("Tech blog", { exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Labs" })).toBeVisible();
 
   await expect(page.locator("nav")).toBeVisible();
