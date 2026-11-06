@@ -358,7 +358,7 @@ export default function Home() {
             </span>
           </div>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
-            {posts.filter((post) => (post as PostWithId & { hidden?: boolean }).hidden !== true).slice(0, 3).map((post, index) => (
+            {posts.filter((post) => post.hidden !== true).slice(0, 3).map((post, index) => (
               <article key={post.id} className={`border-r-[3px] border-b-[3px] border-ink p-[24px] ${index === 1 ? "bg-yellow" : "bg-white"}`}>
                 <Tag label={post.tags?.[0] || "News"} color="green" />
                 <h3 className="mt-[16px] text-[20px] font-bold leading-[1.25]">{post.title}</h3>
