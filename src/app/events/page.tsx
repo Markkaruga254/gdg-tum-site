@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
@@ -42,16 +42,12 @@ export default function EventsPage() {
   const visible = events.filter((event) => event.status !== "cancelled");
   const tracks = [...new Set(visible.map((event) => event.trackId))];
   const filtered = visible.filter((event) => track === "all" || event.trackId === track);
-  const upcoming = useMemo(
-    () => filtered.filter((event) => event.status === "upcoming" || event.status === "live")
-      .sort((a, b) => eventDate(a.date).value - eventDate(b.date).value),
-    [filtered],
-  );
-  const past = useMemo(
-    () => filtered.filter((event) => event.status === "past")
-      .sort((a, b) => eventDate(b.date).value - eventDate(a.date).value),
-    [filtered],
-  );
+  const upcoming = filtered
+    .filter((event) => event.status === "upcoming" || event.status === "live")
+    .sort((a, b) => eventDate(a.date).value - eventDate(b.date).value);
+  const past = filtered
+    .filter((event) => event.status === "past")
+    .sort((a, b) => eventDate(b.date).value - eventDate(a.date).value);
 
   const renderEvent = (event: EventWithId, index: number, isPast: boolean) => {
     const date = eventDate(event.date);
