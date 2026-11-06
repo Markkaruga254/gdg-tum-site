@@ -1,9 +1,11 @@
 import Tag from "./Tag";
+import { trackTagColor } from "@/lib/tracks";
+import type { TrackSlug } from "@/lib/types";
 
 type PhotoCardProps = {
   url: string;
   caption: string;
-  trackId: string;
+  trackId: TrackSlug;
   writeupId: string;
   href?: string;
   featured?: boolean;
@@ -12,7 +14,7 @@ type PhotoCardProps = {
 };
 
 function trackLabel(trackId: string) {
-  return trackId === "women-in-tech" ? "Women in Tech" : trackId.replaceAll("-", " ").replace(/\\b\\w/g, (letter) => letter.toUpperCase());
+  return trackId === "women-in-tech" ? "Women in Tech" : trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 export default function PhotoCard({
@@ -47,7 +49,7 @@ export default function PhotoCard({
       </div>
       <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
         {caption}
-        <Tag label={trackId} color={tagColor ?? ("ink" as const)} />
+        <Tag label={trackLabel(trackId)} color={tagColor ?? trackTagColor(trackId)} />
       </div>
     </a>
   );
