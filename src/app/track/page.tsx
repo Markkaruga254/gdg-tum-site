@@ -71,72 +71,70 @@ function View() {
     <>
       <Nav />
       <main className="mx-auto max-w-[1280px]">
-        <header className="border-b-[3px] border-ink px-[26px] py-[44px]" style={{ backgroundColor: TRACK_BG_COLORS[track.slug], color: darkText ? "#111" : "#fff" }}>
-          <Tag label={track.name} color={trackTagColor(track.slug)} />
-          <h1 className="mt-[20px] font-display text-[clamp(64px,10vw,132px)] uppercase leading-[.9]">{track.name}</h1>
-          <p className="mt-[18px] max-w-[700px] text-[17px] leading-[1.5]">{track.description}</p>
-          <p className="mt-[22px] text-[12px] font-bold uppercase">
-            {leads.length ? <>Led by {leads.map((lead) => lead.name).join(", ")}</> : "Track leads to be announced"}
-          </p>
+        <header className="border-b-[3px] border-ink px-[26px] py-[34px]" style={{ backgroundColor: TRACK_BG_COLORS[track.slug], color: darkText ? "#111" : "#fff" }}>
+          <h1 className="font-display text-[clamp(60px,9vw,120px)] uppercase leading-none">{track.name}</h1>
+          <p className="mt-[14px] max-w-[600px] text-[17px] leading-[1.5]">{track.description}</p>
+          {leads.length > 0 && (
+            <div className="mt-[18px] flex flex-wrap gap-[10px]">
+              {leads.map((lead) => (
+                <a key={lead.id} href={`/lead?id=${lead.id}`} className="border-[3px] border-ink bg-white px-[20px] py-[12px] text-[12px] font-bold uppercase text-ink">{lead.name} ↗</a>
+              ))}
+            </div>
+          )}
         </header>
 
         {error && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[16px] font-bold">{error}</p>}
 
-        <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[220px_minmax(0,1fr)]">
-          <div className="border-b-[3px] border-ink px-[26px] py-[22px] md:border-b-0 md:border-r-[3px]">
-            <h2 className="text-[13px] font-bold uppercase">Track leads</h2>
+        <section>
+          <div className="flex flex-wrap items-center justify-between gap-[10px] border-y-[3px] border-ink px-[26px] py-[18px]">
+            <h2 className="text-[14px] font-bold uppercase">Upcoming events</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2">
-            {leads.length ? leads.map((lead) => (
-              <a key={lead.id} href={`/lead?id=${lead.id}`} className="border-b-[3px] border-ink px-[22px] py-[20px] font-bold uppercase underline underline-offset-4 sm:border-r-[3px]">
-                {lead.name} ↗
-              </a>
-            )) : <p className="px-[22px] py-[20px] text-[13px] uppercase">Lead information coming soon.</p>}
-          </div>
-        </section>
-
-        <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[220px_minmax(0,1fr)]">
-          <div className="border-b-[3px] border-ink px-[26px] py-[22px] md:border-b-0 md:border-r-[3px]">
-            <h2 className="text-[13px] font-bold uppercase">Upcoming events</h2>
-          </div>
-          <div>
-            {upcoming.length ? upcoming.map((event, index) => (
-              <a key={event.id} href={`/event?id=${event.id}`} className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-[14px] border-b-[3px] border-ink px-[18px] py-[16px] last:border-b-0">
-                <span className="font-display text-[38px] leading-none">{String(index + 1).padStart(2, "0")}</span>
-                <span className="min-w-0"><strong className="block text-[16px]">{event.title}</strong><span className="text-[12px]">{dateLabel(event.date)} · {event.venue}</span></span>
-                <span className="text-[11px] font-bold uppercase underline">RSVP ↗</span>
-              </a>
-            )) : <p className="px-[22px] py-[20px] text-[13px] uppercase">No upcoming events.</p>}
-          </div>
-        </section>
-
-        <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[220px_minmax(0,1fr)]">
-          <div className="border-b-[3px] border-ink px-[26px] py-[22px] md:border-b-0 md:border-r-[3px]">
-            <h2 className="text-[13px] font-bold uppercase">Past events</h2>
-          </div>
-          <div>
-            {past.length ? past.map((event, index) => (
-              <a key={event.id} href={`/event?id=${event.id}`} className="grid grid-cols-[52px_minmax(0,1fr)_auto] items-center gap-[14px] border-b-[3px] border-ink px-[18px] py-[16px] last:border-b-0">
-                <span className="font-display text-[38px] leading-none">{String(index + 1).padStart(2, "0")}</span>
-                <span className="min-w-0"><strong className="block text-[16px]">{event.title}</strong><span className="text-[12px]">{dateLabel(event.date)} · {event.attendance ?? 0} attended</span></span>
-                <span className="text-[11px] font-bold uppercase underline">{event.writeupId ? "Writeup ↗" : "Details ↗"}</span>
-              </a>
-            )) : <p className="px-[22px] py-[20px] text-[13px] uppercase">No past events yet.</p>}
-          </div>
+          {upcoming.length ? upcoming.map((event, index) => (
+            <article key={event.id} className="grid grid-cols-[56px_minmax(0,1fr)] items-center gap-[14px] border-b-[3px] border-ink bg-white px-[20px] py-[16px] sm:grid-cols-[90px_minmax(0,1fr)_auto] sm:gap-[18px] sm:px-[26px]">
+              <span className="font-display text-[48px] leading-none sm:text-[56px]">{String(index + 1).padStart(2, "0")}</span>
+              <div className="min-w-0">
+                <a href={`/event?id=${event.id}`} className="text-[18px] font-bold underline-offset-4 hover:underline sm:text-[20px]">{event.title}</a>
+                <p className="mt-[4px] text-[13px]">{dateLabel(event.date)} · {event.venue}</p>
+              </div>
+              <div className="col-start-2 flex flex-wrap items-center gap-[12px] sm:col-start-auto">
+                <Tag label={track.name} color={trackTagColor(track.slug)} />
+                <a href={`/event?id=${event.id}`} className="text-[12px] font-bold uppercase underline underline-offset-4">RSVP ↗</a>
+              </div>
+            </article>
+          )) : <p className="px-[26px] py-[20px] text-[13px] font-bold uppercase">No upcoming events.</p>}
         </section>
 
         <section>
-          <div className="border-b-[3px] border-ink px-[26px] py-[22px]">
-            <h2 className="font-display text-[42px] uppercase leading-none">Writeups</h2>
+          <div className="flex flex-wrap items-center justify-between gap-[10px] border-y-[3px] border-ink px-[26px] py-[18px]">
+            <h2 className="text-[14px] font-bold uppercase">Past events</h2>
+          </div>
+          {past.length ? past.map((event, index) => (
+            <article key={event.id} className="grid grid-cols-[56px_minmax(0,1fr)] items-center gap-[14px] border-b-[3px] border-ink bg-white px-[20px] py-[16px] sm:grid-cols-[90px_minmax(0,1fr)_auto] sm:gap-[18px] sm:px-[26px]">
+              <span className="font-display text-[48px] leading-none sm:text-[56px]">{String(index + 1).padStart(2, "0")}</span>
+              <div className="min-w-0">
+                <a href={`/event?id=${event.id}`} className="text-[18px] font-bold underline-offset-4 hover:underline sm:text-[20px]">{event.title}</a>
+                <p className="mt-[4px] text-[13px]">{dateLabel(event.date)} · {event.attendance ?? 0} attended</p>
+              </div>
+              <div className="col-start-2 flex flex-wrap items-center gap-[12px] sm:col-start-auto">
+                <Tag label={track.name} color={trackTagColor(track.slug)} />
+                <a href={event.writeupId ? `/writeup?id=${event.writeupId}` : `/event?id=${event.id}`} className="text-[12px] font-bold uppercase underline underline-offset-4">{event.writeupId ? "Writeup ↗" : "Event details ↗"}</a>
+              </div>
+            </article>
+          )) : <p className="px-[26px] py-[20px] text-[13px] font-bold uppercase">No past events yet.</p>}
+        </section>
+
+        <section>
+          <div className="flex flex-wrap items-center justify-between gap-[10px] border-y-[3px] border-ink px-[26px] py-[18px]">
+            <h2 className="text-[14px] font-bold uppercase">Writeups</h2>
           </div>
           {writeups.length ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {writeups.map((writeup, index) => (
-                <article key={writeup.id} className={`border-b-[3px] border-r-[3px] border-ink p-[22px] ${index % 3 === 1 ? "bg-yellow" : "bg-white"}`}>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-[16px] p-[20px]">
+              {writeups.map((writeup) => (
+                <article key={writeup.id} className="border-[3px] border-ink bg-white p-[22px]">
                   <Tag label={track.name} color={trackTagColor(track.slug)} />
-                  <h3 className="mt-[16px] text-[20px] font-bold leading-[1.2]">{writeup.title}</h3>
-                  <p className="mt-[10px] text-[13px] leading-[1.5]">{writeup.summary}</p>
-                  <a href={`/writeup?id=${writeup.id}`} className="mt-[18px] inline-block text-[12px] font-bold uppercase underline underline-offset-4">Read ↗</a>
+                  <h3 className="mt-[14px] text-[20px] font-bold leading-[1.25]">{writeup.title}</h3>
+                  <p className="mt-[8px] text-[14px] leading-[1.5] text-[#333]">{writeup.summary}</p>
+                  <a href={`/writeup?id=${writeup.id}`} className="mt-[14px] inline-block text-[12px] font-bold uppercase underline underline-offset-4">Read ↗</a>
                 </article>
               ))}
             </div>
