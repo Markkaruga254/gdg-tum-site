@@ -40,7 +40,7 @@ export default function Home() {
   const [events, setEvents] = useState<EventWithId[]>([]);
   const [writeups, setWriteups] = useState<WriteupWithId[]>([]);
   const [posts, setPosts] = useState<PostWithId[]>([]);
-  const [postsLoading, setPostsLoading] = useState(false);
+  const [postsLoading, setPostsLoading] = useState(true);
   const [postsError, setPostsError] = useState<string | null>(null);
   const [partners, setPartners] = useState<PartnerWithId[]>([]);
   const [tracks, setTracks] = useState<TrackWithId[]>([]);
@@ -49,7 +49,7 @@ export default function Home() {
   const [partnersError, setPartnersError] = useState<string | null>(null);
   const [momentsError, setMomentsError] = useState<string | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
-  const [momentsLoading, setMomentsLoading] = useState(false);
+  const [momentsLoading, setMomentsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -110,6 +110,8 @@ export default function Home() {
   const held = listed.filter((e) => e.status === "past").length;
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
   const activeOrderedPartners = [...partners].filter((p) => p.active).sort((a, b) => a.order - b.order);
+  const trackOrder = ["cloud", "cybersecurity", "web", "women-in-tech"];
+  const orderedTracks = [...tracks].sort((a, b) => trackOrder.indexOf(a.slug) - trackOrder.indexOf(b.slug));
   const partnerTypes = [...new Set(activeOrderedPartners.map((p) => p.type))];
 
   return (
@@ -195,7 +197,7 @@ export default function Home() {
                         {w.aiDrafted ? "Drafted with AI · reviewed by lead" : "Published by a track lead"}
                       </div>
                     </div>
-                    <Tag label={w.trackId} color={isRed ? "ink" : trackTagColor(w.trackId)} />
+                    <Tag label={w.trackId === "women-in-tech" ? "Women in Tech" : w.trackId.replaceAll("-", " ").replace(/\\b\\w/g, (letter) => letter.toUpperCase())} color={isRed ? "ink" : trackTagColor(w.trackId)} />
                   </div>
                 );
               })
@@ -221,7 +223,7 @@ export default function Home() {
             {tracks.length === 0 ? (
               <div className="px-[26px] py-[22px] border-b-[3px] border-ink">No tracks yet.</div>
             ) : (
-              tracks.map((t, i) => {
+              orderedTracks.map((t, i) => {
                 const trackLeads = leads.filter((lead) => t.leadIds.includes(lead.id));
                 const last = i === tracks.length - 1;
                 const isYellow = t.color === "yellow";
@@ -330,7 +332,7 @@ export default function Home() {
                   </div>
                   <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                     {photos[0].caption} &middot;{" "}
-                    <Tag label={photos[0].trackId} color={trackTagColor(photos[0].trackId)} />
+                    <Tag label={photos[0].trackId === "women-in-tech" ? "Women in Tech" : photos[0].trackId.replaceAll("-", " ").replace(/\\b\\w/g, (letter) => letter.toUpperCase())} color={trackTagColor(photos[0].trackId)} />
                   </div>
                 </a>
                 <div className="flex-[3_1_340px] grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-[16px]">
@@ -345,7 +347,7 @@ export default function Home() {
                       </div>
                       <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                         {photo.caption}
-                        <Tag label={photo.trackId} color={trackTagColor(photo.trackId)} />
+                        <Tag label={photo.trackId === "women-in-tech" ? "Women in Tech" : photo.trackId.replaceAll("-", " ").replace(/\\b\\w/g, (letter) => letter.toUpperCase())} color={trackTagColor(photo.trackId)} />
                       </div>
                     </a>
                   ))}
