@@ -354,15 +354,15 @@ export default function Home() {
 
         {/* Blog preview */}
         <section id="blog" className="border-b-[3px] border-ink">
-          <div className="flex justify-between items-center flex-wrap gap-[10px] p-[20px] p-[26px] border-b-[3px] border-ink">
+          <div className="flex justify-between items-center flex-wrap gap-[10px] px-[22px] py-[16px] border-b-[3px] border-ink">
             <SectionHeader className="text-[14px]">Tech blog</SectionHeader>
             <span className="bg-ink text-white px-[10px] py-[4px] text-[12px] font-bold uppercase">
               Curated by GDG TUM Bot
             </span>
           </div>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
-            {posts.filter((post) => post.hidden !== true).slice(0, 3).map((post, index) => (
-              <article key={post.id} className={`border-r-[3px] border-b-[3px] border-ink p-[24px] ${index === 1 ? "bg-yellow" : "bg-white"}`}>
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-[16px] p-[20px]">
+            {posts.filter((post) => post.hidden !== true).slice(0, 3).map((post) => (
+              <article key={post.id} className="border-[3px] border-ink bg-white p-[22px]">
                 <Tag label={post.tags?.[0] || "News"} color="green" />
                 <h3 className="mt-[16px] text-[20px] font-bold leading-[1.25]">{post.title}</h3>
                 <p className="mt-[8px] text-[14px] leading-[1.5] text-[#333]">{post.summary}</p>
