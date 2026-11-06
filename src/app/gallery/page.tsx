@@ -105,7 +105,7 @@ export default function Gallery() {
         ) : photos.length === 0 ? (
           <p className="border-b-[3px] border-ink px-[26px] py-[32px] text-center text-[13px] font-bold uppercase">No photos in this collection yet.</p>
         ) : (
-          <div className="grid grid-cols-1 gap-[16px] p-[20px] sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-[16px] p-[20px]">
             {photos.map((photo) => (
               <PhotoCard
                 key={photo.mediaId}
@@ -122,7 +122,7 @@ export default function Gallery() {
         )}
 
         {hasMore && !loading && (
-          <div className="border-t-[3px] border-ink px-[26px] py-[22px] text-center">
+          <div className="flex justify-center pb-[26px]">
             <button
               type="button"
               onClick={() => void loadNextPage()}
