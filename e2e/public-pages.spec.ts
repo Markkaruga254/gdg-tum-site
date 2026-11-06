@@ -31,7 +31,7 @@ test("writeups, blog and labs pages render their empty and populated states", as
   await expect(page.getByText("No articles have been published yet.")).toBeVisible();
 
   await page.goto("/labs");
-  await expect(page.getByRole("heading", { name: "Labs" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Labs", exact: true })).toBeVisible();
   await expect(page.getByText("Coming soon")).toBeVisible();
 });
 
