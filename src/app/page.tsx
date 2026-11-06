@@ -404,10 +404,10 @@ export default function Home() {
         </section>
 
         {/* Footer strip */}
-        <div className="flex flex-wrap justify-between gap-[12px] px-[26px] py-[16px] text-[12px] font-bold uppercase">
+        <footer className="flex flex-wrap justify-between gap-[12px] px-[26px] py-[16px] text-[12px] font-bold uppercase">
           <span>&copy; 2026 GDG on Campus TUM</span>
           <span>GitHub &middot; LinkedIn &middot; Instagram &middot; X</span>
-        </div>
+        </footer>
       </main>
     </>
   );
