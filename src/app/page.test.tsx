@@ -31,6 +31,8 @@ vi.mock("@/lib/auth", () => ({
 const dataMocks = vi.hoisted(() => ({
   getEvents: vi.fn(),
   getWriteups: vi.fn(),
+  getTracks: vi.fn(),
+  getUsers: vi.fn(),
   getPosts: vi.fn(),
   getPartners: vi.fn(),
 }));
@@ -52,6 +54,8 @@ beforeEach(() => {
   vi.clearAllMocks();
   dataMocks.getEvents.mockResolvedValue([]);
   dataMocks.getWriteups.mockResolvedValue([]);
+  dataMocks.getTracks.mockResolvedValue([]);
+  dataMocks.getUsers.mockResolvedValue([]);
   dataMocks.getPosts.mockResolvedValue([]);
   dataMocks.getPartners.mockResolvedValue([]);
   authMocks.onAuthStateChanged.mockImplementation(() => () => {});
