@@ -41,7 +41,7 @@ export default function MediaTab({ mediaList, mediaUploading, mediaUploadProgres
                     </div>
                   )}
                   <div className="mt-4 grid gap-3">
-                    {mediaList.map((m) => (
+                    {mediaList.map((m: any) => (
                       <div key={m.id} className="border-[3px] border-ink p-3">
                         <img src={m.url} alt={m.altText || m.caption || ""} className="h-32 w-32 object-cover" />
                         <label htmlFor={`media-caption-${m.id}`} className="mt-2 block text-[10px] font-bold uppercase">Caption</label>
