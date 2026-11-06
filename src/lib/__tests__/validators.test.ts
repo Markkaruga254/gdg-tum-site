@@ -90,6 +90,18 @@ describe("validateWriteup", () => {
     ).toEqual({});
   });
 
+  it("allows a summary of exactly 40 words", () => {
+    const summary = Array(40).fill("word").join(" ");
+    expect(validateWriteup({ ...base, summary }, false)).toEqual({});
+  });
+
+  it("rejects summaries longer than 40 words", () => {
+    const summary = Array(41).fill("word").join(" ");
+    expect(validateWriteup({ ...base, summary }, false)).toEqual({
+      summary: "Summary must be 40 words or fewer.",
+    });
+  });
+
   it("requires eventId and title", () => {
     expect(validateWriteup({ ...base, eventId: "", title: "" }, false)).toEqual({
       eventId: "Event required",
