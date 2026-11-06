@@ -248,6 +248,7 @@ export default function Home() {
 
         {/* Partners */}
         <section id="partners" className="border-b-[3px] border-ink">
+          {partnersError && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[14px] text-[12px] font-bold uppercase">{partnersError}</p>}
           <div className="flex justify-between items-center flex-wrap gap-[10px] px-[26px] py-[20px] border-b-[3px] border-ink">
             <SectionHeader className="text-[14px]">Who we work with</SectionHeader>
             {contactEmail ? (
