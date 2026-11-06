@@ -69,54 +69,33 @@ function EventDetail() {
     <>
       <Nav />
       <main className="mx-auto max-w-[1280px]">
-        <header className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[minmax(0,1fr)_320px]">
+        <header className="border-b-[3px] border-ink px-[26px] py-[34px]">
           <div className="px-[26px] py-[38px]">
             <Tag label={trackName(event.trackId)} color={trackTagColor(event.trackId)} />
             <p className="mt-[18px] text-[12px] font-bold uppercase">{stateLabel}</p>
             <h1 className="mt-[12px] font-display text-[clamp(48px,8vw,104px)] uppercase leading-[.92]">{event.title}</h1>
           </div>
-          <div className="flex flex-col justify-between border-t-[3px] border-ink bg-yellow p-[24px] md:border-l-[3px] md:border-t-0">
-            <h2 className="text-[13px] font-bold uppercase">Details</h2>
-            <div className="mt-[26px]">
-              <p className="text-[12px] font-bold uppercase">Date & time</p>
-              <p className="mt-[5px] text-[16px]">{date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</p>
-              <p className="text-[14px]">{date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}</p>
-            </div>
-            <div className="mt-[20px]">
-              <p className="text-[12px] font-bold uppercase">Venue</p>
-              <p className="mt-[5px] text-[16px]">{event.venue}</p>
-            </div>
-            <div className="mt-[20px]">
-              <p className="text-[12px] font-bold uppercase">Track</p>
-              <p className="mt-[5px] text-[16px]">{trackName(event.trackId)}</p>
-            </div>
-            {event.status === "upcoming" && (
-              <button type="button" disabled className="mt-[26px] w-full cursor-not-allowed border-[3px] border-ink bg-white px-[16px] py-[13px] text-[12px] font-bold uppercase opacity-60">
-                RSVP coming soon
-              </button>
-            )}
-          </div>
+
         </header>
 
         {error && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[16px] font-bold">{error}</p>}
 
-        {event.status === "live" && (
-          <section className="border-b-[3px] border-ink bg-red px-[26px] py-[24px]">
-            <p className="text-[12px] font-bold uppercase">Live update</p>
-            <p className="mt-[8px] font-display text-[clamp(28px,4vw,48px)] uppercase leading-[1.05]">{ticker?.message || "This event is live. Check back for updates."}</p>
-          </section>
-        )}
-
         {event.status === "upcoming" && (
-          <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[220px_minmax(0,1fr)]">
-            <div className="border-b-[3px] border-ink px-[26px] py-[22px] md:border-b-0 md:border-r-[3px]">
-              <h2 className="text-[13px] font-bold uppercase">Upcoming event</h2>
+          <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-2">
+            <div className="border-b-[3px] border-ink px-[26px] py-[26px] md:border-b-0 md:border-r-[3px]">
+              <h2 className="text-[12px] font-bold uppercase">Details</h2>
+              <p className="mt-[12px] text-[16px] leading-[1.65]">
+                {date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })} · {date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}<br />
+                {event.venue}<br />
+                Track: {trackName(event.trackId)}
+              </p>
+              <button type="button" disabled className="mt-[20px] cursor-not-allowed border-[3px] border-ink bg-blue px-[18px] py-[12px] text-[12px] font-bold uppercase text-white opacity-60">RSVP (coming soon)</button>
             </div>
-            <div className="grid grid-cols-1 gap-[18px] px-[26px] py-[24px] sm:grid-cols-2">
-              <div><p className="text-[11px] font-bold uppercase">Date & time</p><p className="mt-[6px] text-[15px]">{date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })} · {date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}</p></div>
-              <div><p className="text-[11px] font-bold uppercase">Venue</p><p className="mt-[6px] text-[15px]">{event.venue}</p></div>
-              <div><p className="text-[11px] font-bold uppercase">Track</p><p className="mt-[6px] text-[15px]">{trackName(event.trackId)}</p></div>
-              <div><p className="text-[11px] font-bold uppercase">RSVP</p><button type="button" disabled className="mt-[6px] border-[3px] border-ink bg-white px-[14px] py-[9px] text-[11px] font-bold uppercase opacity-60">Coming soon</button></div>
+            <div className="bg-yellow px-[26px] py-[26px]">
+              <h2 className="text-[12px] font-bold uppercase">About this event</h2>
+              <p className="mt-[12px] text-[16px] leading-[1.6]">
+                {(event as EventWithId & { description?: string }).description || "The event description has not been added yet."}
+              </p>
             </div>
           </section>
         )}
@@ -124,7 +103,7 @@ function EventDetail() {
         {event.status === "live" && (
           <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[220px_minmax(0,1fr)]">
             <div className="border-b-[3px] border-ink px-[26px] py-[22px] md:border-b-0 md:border-r-[3px]"><h2 className="text-[13px] font-bold uppercase">Live now</h2></div>
-            <div className="bg-red px-[26px] py-[24px]"><p className="font-display text-[clamp(28px,4vw,48px)] uppercase leading-[1.05]">{ticker?.message || "This event is live. Updates will appear here."}</p></div>
+            <div className="bg-green px-[26px] py-[24px]"><p className="font-display text-[clamp(28px,4vw,48px)] uppercase leading-[1.05]">{ticker?.message || "This event is live. Updates will appear here."}</p></div>
           </section>
         )}
 
