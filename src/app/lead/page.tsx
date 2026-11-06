@@ -130,7 +130,7 @@ function View() {
           <div className="border-b-[3px] border-ink px-[24px] py-[18px]"><h2 className="text-[14px] font-bold uppercase">Writeups</h2></div>
           {writeups.length ? (
             <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
-              {writeups.map((writeup, index) => (
+              {writeups.map((writeup) => (
                 <article key={writeup.id} className="border-r-[3px] border-ink p-[24px]">
                   <Tag label={trackLabel(writeup.trackId)} color={trackTagColor(writeup.trackId)} />
                   <h3 className="mt-[14px] text-[19px] font-bold">{writeup.title}</h3>
