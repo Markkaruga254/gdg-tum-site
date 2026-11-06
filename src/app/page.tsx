@@ -297,7 +297,7 @@ export default function Home() {
         {/* Moments */}
         <section id="moments" className="border-b-[3px] border-ink">
           {momentsError && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[14px] text-[12px] font-bold uppercase">{momentsError}</p>}
-          <div className="flex justify-between items-center flex-wrap gap-[10px] px-[26px] py-[20px] border-b-[3px] border-ink">
+          <div className="flex justify-between items-center flex-wrap gap-[10px] px-[22px] py-[16px] border-b-[3px] border-ink">
             <h2 className="font-display font-normal text-[56px] uppercase mt-0">Moments</h2>
             <a
               href="/gallery"
@@ -317,10 +317,10 @@ export default function Home() {
               <>
                 <a
                   href={`/writeup?id=${photos[0].writeupId}`}
-                  className="border-[3px] border-ink flex flex-col flex-[2_1_340px] min-h-[440px]"
+                  className="flex h-full min-h-[440px] flex-[2_1_340px] flex-col border-[3px] border-ink"
                 >
-                  <div className="flex-1 relative overflow-hidden">
-                    <img src={photos[0].url} alt={photos[0].altText} className="w-full h-full object-cover" />
+                  <div className="h-[380px] overflow-hidden border-b-[3px] border-ink">
+                    <img src={photos[0].url} alt={photos[0].altText} className="h-full w-full object-cover" />
                   </div>
                   <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                     {photos[0].caption} &middot;{" "}
@@ -332,10 +332,10 @@ export default function Home() {
                     <a
                       key={photo.mediaId}
                       href={`/writeup?id=${photo.writeupId}`}
-                      className="border-[3px] border-ink flex flex-col min-h-[240px]"
+                      className="flex h-full min-h-[240px] flex-col border-[3px] border-ink"
                     >
-                      <div className="flex-1 relative overflow-hidden">
-                        <img src={photo.url} alt={photo.altText} className="w-full h-full object-cover" />
+                      <div className="h-[150px] overflow-hidden border-b-[3px] border-ink">
+                        <img src={photo.url} alt={photo.altText} className="h-full w-full object-cover" />
                       </div>
                       <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                         {photo.caption}
