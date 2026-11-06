@@ -47,6 +47,7 @@ export function validateWriteup(form: WriteupForm, publish: boolean): Record<str
   const errors: Record<string, string> = {};
   if (!form.title.trim()) errors.title = "Title required";
   if (!form.eventId) errors.eventId = "Event required";
+  if (form.summary.trim().split(/\\s+/).filter(Boolean).length > 40) errors.summary = "Summary must be 40 words or fewer.";
   if (publish && !form.body.trim()) errors.body = "Body required to publish";
   if (form.attendance && Number(form.attendance) < 0) errors.attendance = "Attendance must be non-negative";
   const linkError = validateLinks(form.links);
