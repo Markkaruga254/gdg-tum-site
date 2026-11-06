@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Footer from "@/components/Footer";
 import FormField from "@/components/form/FormField";
 import { onAuthStateChanged } from "firebase/auth";
@@ -193,7 +194,7 @@ export default function DashboardPage() {
   return (
     <>
       <header className="mx-auto flex max-w-[1280px] flex-wrap items-center border-b-[3px] border-ink">
-        <a href="/" className="border-r-[3px] border-ink px-[22px] py-[14px] font-display text-[30px] uppercase tracking-[1px]">GDG<span className="text-blue">.</span>TUM</a>
+        <Link href="/" className="border-r-[3px] border-ink px-[22px] py-[14px] font-display text-[30px] uppercase tracking-[1px]">GDG<span className="text-blue">.</span>TUM</Link>
         <span className="px-[20px] py-[16px] text-[12px] font-bold uppercase">Lead dashboard</span>
         <span className="ml-auto border-l-[3px] border-ink bg-blue px-[20px] py-[20px] text-[12px] font-bold uppercase text-white">{role === "admin" ? "Admin" : `${track.replaceAll("-", " ")} Track`}</span>
         <button type="button" onClick={() => void signOut()} className="border-l-[3px] border-ink px-[16px] py-[20px] text-[11px] font-bold uppercase">Sign out</button>
