@@ -76,8 +76,9 @@ export async function getWriteups({
   authorId?: string;
   limitCount?: number;
 } = {}): Promise<WriteupWithId[]> {
-  const constraints: QueryConstraint[] = [orderBy("publishedAt", "desc")];
+  const constraints: QueryConstraint[] = [];
   if (status) constraints.push(where("status", "==", status));
+  if (status === "published") constraints.push(orderBy("publishedAt", "desc"));
   if (trackId) constraints.push(where("trackId", "==", trackId));
   if (authorId) constraints.push(where("authorId", "==", authorId));
   if (limitCount) constraints.push(limit(limitCount));
@@ -116,7 +117,7 @@ export async function getMediaByWriteup(writeupId: string): Promise<MediaWithId[
 }
 
 export async function getPosts(): Promise<PostWithId[]> {
-  return getCollection<Post>("posts");
+  return getCollection<Post>("posts", [orderBy("fetchedAt", "desc")]);
 }
 
 export async function getTicker(): Promise<TickerWithId[]> {
