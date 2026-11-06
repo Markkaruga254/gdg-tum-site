@@ -11,7 +11,7 @@ export default function MediaTab({ mediaList, mediaUploading, mediaUploadProgres
                   <p className="mt-2 text-sm">Only upload photos where people have agreed to be shown.</p>
                   <p className="mt-1 text-xs">Media is attached to the writeup currently selected in &quot;New writeup&quot;. Save a draft or select an existing writeup before uploading.</p>
                   <label htmlFor="writeup-media-upload" className="mt-[16px] block text-[11px] font-bold uppercase">Upload photo (JPEG, PNG or WebP · max 5 MB)</label>
-                  <input id="writeup-media-upload" type="file" accept="image/jpeg,image/png,image/webp" disabled={mediaUploading} onChange={async (e) => {
+                  <input id="writeup-media-upload" type="file" accept="image/jpeg,image/png,image/webp" disabled={!editingWriteup?.id || mediaUploading} onChange={async (e) => {
                     const f = e.target.files?.[0]; if (!f) return;
                     if (f.size > 5 * 1024 * 1024) { setErr("File too large (max 5MB)"); e.target.value = ""; return; }
                     if (!["image/jpeg", "image/png", "image/webp"].includes(f.type)) { setErr("Only JPEG, PNG or WebP images are allowed."); e.target.value = ""; return; }
