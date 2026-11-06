@@ -19,3 +19,20 @@ body {
 .font-display {
   font-family: var(--font-display);
 }
+
+
+a:hover {
+  background-color: #FBBC04;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 3px solid #1967D2;
+  outline-offset: 3px;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  cursor: not-allowed;
+}
