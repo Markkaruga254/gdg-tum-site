@@ -44,9 +44,6 @@ export default function Gallery() {
 
   useEffect(() => {
     photosRef.current = [];
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setPhotos([]);
-    setNextCursor(null);
     void loadPage(false);
   }, [trackFilter]);
 
