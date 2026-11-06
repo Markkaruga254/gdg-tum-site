@@ -56,6 +56,12 @@ jobs:
           FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
           FIREBASE_PROJECT_ID: demo-gdg-tum-site
 
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: npm run test:e2e:ci
+
       - name: Production build (static export)
         env:
           # Placeholder client config: prerendering is client-shell only
