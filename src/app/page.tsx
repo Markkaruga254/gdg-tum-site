@@ -11,11 +11,13 @@ import {
   getPosts,
   getPartners,
   getTracks,
+  getUsers,
   type EventWithId,
   type WriteupWithId,
   type PostWithId,
   type PartnerWithId,
   type TrackWithId,
+  type AppUserWithId,
 } from "@/lib/data";
 import { getGalleryPage, type Photo } from "@/lib/gallery";
 import { trackTagColor } from "@/lib/tracks";
@@ -28,78 +30,94 @@ const COLOR_CLASS: Record<string, string> = {
   ink: "bg-ink",
 };
 
+function postTagColor(tag: string): "blue" | "red" | "green" | "yellow" | "ink" {
+  const value = tag.toLowerCase();
+  if (value.includes("cloud")) return "blue";
+  if (value.includes("cyber") || value.includes("security")) return "red";
+  if (value.includes("ai") || value.includes("ml")) return "yellow";
+  if (value.includes("devops")) return "ink";
+  return "green";
+}
+
 function formatDateTime(date: unknown): string {
   if (!date || typeof (date as { toDate: () => Date }).toDate !== "function") return "";
   const d = (date as { toDate: () => Date }).toDate();
-  return `${d.toLocaleDateString(undefined, { month: "short", day: "numeric" })} · ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
+  return `${d.toLocaleDateString(undefined, { weekday: "short" })} ${d.getDate()} ${d.toLocaleDateString(undefined, { month: "short" })} · ${d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" })}`;
 }
 
 export default function Home() {
   const [events, setEvents] = useState<EventWithId[]>([]);
   const [writeups, setWriteups] = useState<WriteupWithId[]>([]);
   const [posts, setPosts] = useState<PostWithId[]>([]);
-  const [postsLoading, setPostsLoading] = useState(false);
+  const [postsLoading, setPostsLoading] = useState(true);
   const [postsError, setPostsError] = useState<string | null>(null);
   const [partners, setPartners] = useState<PartnerWithId[]>([]);
   const [tracks, setTracks] = useState<TrackWithId[]>([]);
+  const [leads, setLeads] = useState<AppUserWithId[]>([]);
+  const [tracksError, setTracksError] = useState<string | null>(null);
+  const [partnersError, setPartnersError] = useState<string | null>(null);
+  const [momentsError, setMomentsError] = useState<string | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
-  const [momentsLoading, setMomentsLoading] = useState(false);
+  const [momentsLoading, setMomentsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const fetchedEvents = await getEvents({ orderAsc: true });
-        setEvents(fetchedEvents);
-        const fetchedWriteups = await getWriteups({ status: "published", limitCount: 3 });
-        setWriteups(fetchedWriteups);
-        try {
-          const fetchedTracks = await getTracks?.().catch(() => []);
-          setTracks(fetchedTracks);
-        } catch {
-          // Tracks non-critical
-        }
-        try {
-          setPostsLoading(true);
-          const fetchedPosts = await getPosts();
-          setPosts(fetchedPosts);
-        } catch {
-          setPosts([]);
-          setPostsError("Failed to load posts.");
-        } finally {
-          setPostsLoading(false);
-        }
-        try {
-          const fetchedPartners = await getPartners();
-          setPartners(fetchedPartners);
-        } catch {
-          // Partners non-critical
-        }
-        try {
-          setMomentsLoading(true);
-          const { photos: fetchedPhotos } = await getGalleryPage({ pageSize: 5 });
-          setPhotos(fetchedPhotos);
-        } catch {
-          // Photos non-critical
-        } finally {
-          setMomentsLoading(false);
-        }
-      } catch (e) {
-        console.error("Home: Firestore reads failed", e);
-        const code = e instanceof Error && "code" in e ? String((e as { code: unknown }).code) : "unknown";
-        setError(`read failed (${code}).`);
-      } finally {
-        setLoading(false);
+    let active = true;
+    const load = async () => {
+      const results = await Promise.allSettled([
+        getEvents({ orderAsc: true }),
+        getWriteups({ status: "published", limitCount: 3 }),
+        getTracks(),
+        getUsers("lead"),
+        getPosts(),
+        getPartners(),
+        getGalleryPage({ pageSize: 5 }),
+      ]);
+      if (!active) return;
+
+      const [eventsResult, writeupsResult, tracksResult, leadsResult, postsResult, partnersResult, momentsResult] = results;
+
+      if (eventsResult.status === "fulfilled") setEvents(eventsResult.value);
+      else setError("Events could not be loaded.");
+
+      if (writeupsResult.status === "fulfilled") setWriteups(writeupsResult.value);
+      else setError("Writeups could not be loaded.");
+
+      if (tracksResult.status === "fulfilled") setTracks(tracksResult.value);
+      else setTracksError("Tracks could not be loaded. Open the tracks page to retry.");
+
+      if (leadsResult.status === "fulfilled") setLeads(leadsResult.value);
+      else setLeads([]);
+
+      if (postsResult.status === "fulfilled") setPosts(postsResult.value);
+      else {
+        setPosts([]);
+        setPostsError("Failed to load posts.");
       }
-    })();
+
+      if (partnersResult.status === "fulfilled") setPartners(partnersResult.value);
+      else setPartnersError("Partners could not be loaded.");
+
+      if (momentsResult.status === "fulfilled") setPhotos(momentsResult.value.photos);
+      else setMomentsError("Moments could not be loaded. Refresh the page to retry.");
+
+      setPostsLoading(false);
+      setMomentsLoading(false);
+      setLoading(false);
+    };
+
+    void load();
+    return () => { active = false; };
   }, []);
 
   const listed = events.filter((e) => e.status !== "cancelled");
-  const nextEvent = listed.find((e) => e.status === "upcoming") || listed[0];
-  const held = listed.filter((e) => e.status !== "cancelled").length;
+  const nextEvent = listed.find((e) => e.status === "upcoming");
+  const held = listed.filter((e) => e.status === "past").length;
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
   const activeOrderedPartners = [...partners].filter((p) => p.active).sort((a, b) => a.order - b.order);
+  const trackOrder = ["cloud", "cybersecurity", "web", "women-in-tech"];
+  const orderedTracks = [...tracks].sort((a, b) => trackOrder.indexOf(a.slug) - trackOrder.indexOf(b.slug));
   const partnerTypes = [...new Set(activeOrderedPartners.map((p) => p.type))];
 
   return (
@@ -109,126 +127,126 @@ export default function Home() {
       <main className="mx-auto max-w-[1280px]">
         {error && (
           <section className="border-b-[3px] border-ink bg-red p-4 text-sm text-white">
-            Events and writeups could not be loaded: {error}
+            Some homepage content could not be loaded: {error}
           </section>
         )}
 
         {/* Hero + next event + stats */}
         <section className="grid grid-cols-[repeat(auto-fit,minmax(340px,1fr))] border-b-[3px] border-ink">
-          <div className="px-[40px] py-[44px] border-r-[3px] border-ink">
-            <h1 className="font-display font-normal text-[clamp(64px,9vw,128px)] leading-[.92] uppercase">
+          <div className="border-b-[3px] border-ink px-[20px] py-[28px] xl:border-b-0 xl:border-r-[3px] xl:px-[40px] xl:py-[44px]">
+            <h1 className="font-display font-normal text-[72px] leading-[.92] uppercase xl:text-[clamp(64px,9vw,128px)]">
               Build.<br />
               Learn.<br />
               <span className="text-red">Ship.</span>
             </h1>
-            <p className="text-[18px] leading-[1.5] max-w-[460px] mt-[26px]">
+            <p className="mt-[18px] max-w-[460px] text-[16px] leading-[1.5] xl:mt-[26px] xl:text-[18px]">
               Student developers at the Technical University of Mombasa, learning Google technologies by building real things together.
             </p>
             <a
               href="/tracks"
-              className="mt-[26px] inline-block border-[3px] border-ink px-[22px] py-[12px] font-bold text-[13px] uppercase"
+              className="mt-[18px] inline-block border-[3px] border-ink px-[22px] py-[12px] text-[12px] font-bold uppercase xl:mt-[26px] xl:text-[13px]"
             >
               Explore tracks ↗
             </a>
           </div>
           <div className="flex flex-col">
-            <div className={`bg-blue text-white px-[32px] py-[30px] border-b-[3px] border-ink flex-1`}>
+            <div className={`bg-blue text-white px-[20px] py-[24px] border-b-[3px] border-ink flex-1 xl:px-[32px] xl:py-[30px]`}>
               <SectionHeader className="tracking-[1px]">Next event</SectionHeader>
               {loading ? (
                 <p className="mt-[12px] text-[15px]">Loading…</p>
               ) : nextEvent ? (
                 <>
-                  <h2 className="font-display text-[44px] leading-[1.05] uppercase mt-[12px]">{nextEvent.title}</h2>
-                  <p className="text-[15px] mt-[4px]">{formatDateTime(nextEvent.date)} · {nextEvent.venue}</p>
-                  <a
-                    href="#events"
-                    className="mt-[18px] inline-block border-[3px] border-ink bg-white px-[18px] py-[10px] font-bold text-[13px] uppercase opacity-60 pointer-events-none"
-                  >
-                    RSVP ↗
-                  </a>
+                  <h2 className="font-display text-[38px] leading-[1.05] uppercase mt-[10px] xl:mt-[12px] xl:text-[44px]">{nextEvent.title}</h2>
+                  <p className="mt-[4px] text-[14px] xl:text-[15px]">{formatDateTime(nextEvent.date)} · {nextEvent.venue}</p>
+                  <button type="button" disabled className="mt-[18px] w-fit cursor-not-allowed border-[3px] border-ink bg-white px-[18px] py-[10px] text-[12px] font-bold uppercase opacity-60">
+                    RSVP (coming soon)
+                  </button>
                 </>
               ) : (
                 <p className="mt-[12px] text-[15px]">No upcoming events.</p>
               )}
             </div>
-            <div className="grid grid-cols-3 gap-[18px] p-[18px] border-t-[3px] border-ink">
+            <div className="grid grid-cols-3">
               <StatBlock value={held} label="Events held" />
               <StatBlock value={writeups.length} label="Writeups" />
-              <StatBlock value={tracks.length || 4} label="Tracks" />
+              <StatBlock value={tracks.length} label="Tracks" />
             </div>
           </div>
         </section>
 
-        {/* Latest writeups (numbered rows, row 2 red) */}
-        <section id="events" className="grid grid-cols-[minmax(160px,1fr)_3fr] border-b-[3px] border-ink">
-          <div className="px-[24px] py-[28px] border-r-[3px] border-ink flex flex-col justify-between gap-[20px]">
-            <div>
-              <SectionHeader className="text-[14px]">Latest writeups</SectionHeader>
-              <a href="/writeups" className="text-[12px] font-bold uppercase">
-                See all ↗
-              </a>
-            </div>
+        {/* Latest writeups */}
+        <section id="writeups" className="border-b-[3px] border-ink">
+          <div className="flex flex-wrap items-center justify-between gap-[10px] border-y-[3px] border-ink px-[22px] py-[16px]">
+            <SectionHeader className="text-[14px]">Latest writeups</SectionHeader>
+            <a href="/writeups" className="hidden text-[12px] font-bold uppercase tracking-[.5px] xl:inline">See all ↗</a>
           </div>
-          <div>
-            {writeups.length === 0 ? (
-              <div className="px-[24px] py-[18px]">No writeups yet.</div>
-            ) : (
-              writeups.slice(0, 3).map((w, i) => {
-                const num = String(i + 1).padStart(2, "0");
-                const isRed = i === 1;
-                return (
-                  <div
-                    key={w.id}
-                    className={`grid grid-cols-[90px_1fr_auto] gap-[18px] px-[24px] py-[18px] items-center border-b-[3px] border-ink ${isRed ? "bg-red" : ""}`}
-                  >
-                    <span className="font-display text-[64px] leading-1">{num}</span>
-                    <div>
-                      <div className="font-bold text-[20px]">{w.title}</div>
-                      <div className="text-[12px] mt-[4px] text-[#444]">
-                        Drafted with AI · reviewed by Lead
-                      </div>
-                    </div>
-                    <Tag label={w.trackId} color={isRed ? "ink" : trackTagColor(w.trackId)} />
+          {writeups.length === 0 ? (
+            <p className="px-[22px] py-[18px] text-[13px] font-bold uppercase">No writeups yet.</p>
+          ) : (
+            writeups.slice(0, 3).map((w, i) => {
+              const num = String(i + 1).padStart(2, "0");
+              const isRed = i === 1;
+              const trackLabel = w.trackId === "women-in-tech" ? "Women in Tech" : w.trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+              const publishedDate = w.publishedAt?.toDate
+                ? w.publishedAt.toDate().toLocaleDateString(undefined, { day: "numeric", month: "short" })
+                : "";
+              return (
+                <article
+                  key={w.id}
+                  className={"grid grid-cols-[44px_minmax(0,1fr)] items-center gap-[12px] border-b-[3px] border-ink px-[20px] py-[16px] xl:grid-cols-[90px_minmax(0,1fr)_auto] xl:gap-[14px] xl:px-[22px] xl:py-[14px] " + (isRed ? "bg-red" : "bg-white") + (i === 2 ? " border-b-0" : "")}
+                >
+                  <span className="font-display text-[44px] leading-none xl:text-[56px]">{num}</span>
+                  <div className="min-w-0">
+                    <a href={"/writeup?id=" + w.id} className="text-[17px] font-bold underline-offset-4 hover:underline xl:text-[19px]">{w.title}</a>
+                    <p className="mt-[4px] hidden text-[12px] xl:block">
+                      {publishedDate}{publishedDate ? " · " : ""}
+                      {w.aiDrafted ? "Drafted with AI, reviewed by the lead" : trackLabel + " Track"}
+                    </p>
                   </div>
-                );
-              })
-            )}
-          </div>
+                  <div className="col-start-2 flex flex-wrap items-center gap-[10px] xl:col-start-auto">
+                    <Tag label={trackLabel} color={trackTagColor(w.trackId)} />
+                  </div>
+                </article>
+              );
+            })
+          )}
         </section>
 
         {/* Tracks block */}
         <section id="tracks" className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] border-b-[3px] border-ink">
-          <div className="px-[32px] py-[36px] border-r-[3px] border-ink bg-yellow">
-            <h2 className="font-display font-normal text-[72px] leading-[.95] uppercase">
-              Four<br />
-              tracks.<br />
-              One<br />
-              club.
-            </h2>
-            <p className="text-[15px] leading-[1.5] mt-[18px]">
+          <div className="bg-yellow px-[20px] py-[26px] xl:border-r-[3px] xl:px-[32px] xl:py-[36px]">
+            <h2 className="block font-display text-[56px] font-normal uppercase leading-[.95] xl:hidden">Four tracks. One club.</h2>
+            <h2 className="hidden font-display text-[72px] font-normal uppercase leading-[.95] xl:block">Four<br />tracks.<br />One<br />club.</h2>
+            <p className="mt-[18px] hidden text-[15px] leading-[1.5] xl:block">
               Each track is led by a student lead who runs sessions, posts writeups and builds a public portfolio.
             </p>
           </div>
           <div>
+            {tracksError && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[16px] text-[12px] font-bold uppercase">{tracksError}</p>}
             {tracks.length === 0 ? (
               <div className="px-[26px] py-[22px] border-b-[3px] border-ink">No tracks yet.</div>
             ) : (
-              tracks.map((t, i) => {
+              orderedTracks.map((t, i) => {
+                const trackLeads = leads.filter((lead) => t.leadIds.includes(lead.id));
                 const last = i === tracks.length - 1;
                 const isYellow = t.color === "yellow";
                 return (
-                  <div
+                  <a
                     key={t.id}
-                    className={`flex justify-between items-center px-[26px] py-[22px] ${!last ? "border-b-[3px]" : "border-b-0"} border-ink`}
+                    href={`/track?slug=${t.slug}`}
+                    className={`flex items-center justify-between gap-[16px] border-t-[3px] border-ink px-[20px] py-[18px] hover:bg-yellow xl:border-t-0 xl:px-[26px] xl:py-[22px] ${!last ? "xl:border-b-[3px]" : ""}` }
                   >
-                    <span className="text-[22px] font-bold flex items-center gap-[12px]">
-                      <span
-                        className={`inline-block w-[14px] h-[14px] ${COLOR_CLASS[t.color]} ${isYellow ? "border-[2px] border-ink box-border" : ""}`}
-                      ></span>
-                      {String(i + 1).padStart(2, "0")} &nbsp; {t.name}
+                    <span className="flex min-w-0 items-center gap-[12px]">
+                      <span className={`inline-block h-[14px] w-[14px] shrink-0 ${COLOR_CLASS[t.color]} ${isYellow ? "border-[2px] border-ink" : ""}`}></span>
+                      <span className="min-w-0">
+                        <span className="block text-[18px] font-bold xl:hidden">{t.name}</span>
+                        <span className="hidden text-[22px] font-bold xl:block">{String(i + 1).padStart(2, "0")} · {t.name}</span>
+                        <span className="mt-[4px] hidden text-[11px] uppercase xl:block">{trackLeads.map((lead) => lead.name).join(", ") || "Lead to be announced"}</span>
+                      </span>
                     </span>
-                    <span className="text-[28px]">+</span>
-                  </div>
+                    <span className="shrink-0 text-[28px] xl:hidden">+</span>
+                    <span className="hidden shrink-0 text-[28px] xl:inline">↗</span>
+                  </a>
                 );
               })
             )}
@@ -237,47 +255,39 @@ export default function Home() {
 
         {/* Partners */}
         <section id="partners" className="border-b-[3px] border-ink">
-          <div className="flex justify-between items-center flex-wrap gap-[10px] px-[26px] py-[20px] border-b-[3px] border-ink">
+          {partnersError && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[14px] text-[12px] font-bold uppercase">{partnersError}</p>}
+          <div className="flex justify-between items-center flex-wrap gap-[10px] px-[22px] py-[16px] border-b-[3px] border-ink">
             <SectionHeader className="text-[14px]">Who we work with</SectionHeader>
             {contactEmail ? (
-              <a href={`mailto:${contactEmail}`} className="text-[12px] font-bold uppercase">
+              <a href={`mailto:${contactEmail}`} className="hidden text-[12px] font-bold uppercase xl:inline">
                 Become a partner ↗
               </a>
             ) : (
-              <span className="text-[12px] font-bold uppercase">Become a partner ↗</span>
+              <span className="hidden text-[12px] font-bold uppercase xl:inline">Become a partner ↗</span>
             )}
           </div>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+          <div className="grid grid-cols-2 xl:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
             {activeOrderedPartners.map((p) => (
-              <a key={p.id} href={p.link} target="_blank" rel="noopener noreferrer" className="block">
-                <div className="min-h-[120px] flex flex-col items-center justify-center border-r-[3px] border-ink border-b-[3px] border-ink p-[2px]">
-                  {p.logoUrl ? (
-                    <img src={p.logoUrl} alt={p.name} className="object-contain max-h-[64px] mb-[2px]" />
-                  ) : (
-                    <span className="font-bold text-[13px] text-ink uppercase">{p.name}</span>
-                  )}
-                  {p.type === "company" ? (
-                    <span className="mt-[2px] inline-block border-[3px] border-ink px-[2px] py-[0.5px] text-[10px] font-bold uppercase bg-white text-ink">
-                      Company
-                    </span>
-                  ) : (
-                    <Tag
-                      label={p.type[0].toUpperCase() + p.type.slice(1)}
-                      color={p.type === "university" ? "blue" : p.type === "community" ? "green" : "red"}
-                    />
-                  )}
-                </div>
+              <a key={p.id} href={p.link} target="_blank" rel="noopener noreferrer" className="flex min-h-[96px] flex-col items-center justify-center gap-[10px] border-r-[3px] border-b-[3px] border-ink p-[20px] even:border-r-0 xl:min-h-[110px] xl:even:border-r-[3px] text-center text-[13px] font-bold uppercase">
+                {p.logoUrl ? (
+                  <img src={p.logoUrl} alt={p.name} className="mb-[2px] max-h-[64px] object-contain" />
+                ) : (
+                  <span>{p.name}</span>
+                )}
+                {p.type === "company" ? (
+                  <span className="inline-block border-[3px] border-ink bg-white px-[10px] py-[4px] text-[11px] font-bold uppercase text-ink">Company</span>
+                ) : (
+                  <Tag label={p.type[0].toUpperCase() + p.type.slice(1)} color={p.type === "university" ? "blue" : p.type === "community" ? "green" : "red"} />
+                )}
               </a>
             ))}
-            <div key="placeholder" className="min-h-[120px] flex flex-col items-center justify-center border-[3px] border-ink bg-[#FBBC04] p-[2px]">
-              {contactEmail ? (
-                <a href={`mailto:${contactEmail}`} className="font-bold text-[13px] text-ink uppercase">Your organisation here ↗</a>
-              ) : (
-                <span className="font-bold text-[13px] text-ink uppercase">Your organisation here ↗</span>
-              )}
-            </div>
+            {contactEmail ? (
+              <a key="placeholder" href={"mailto:" + contactEmail} className="flex min-h-[96px] flex-col items-center justify-center border-b-[3px] border-ink bg-yellow p-[20px] xl:min-h-[110px] text-center text-[13px] font-bold uppercase">Your organisation here ↗</a>
+            ) : (
+              <div key="placeholder" className="flex min-h-[110px] flex-col items-center justify-center border-b-[3px] border-ink bg-yellow p-[20px] text-center text-[13px] font-bold uppercase">Your organisation here ↗</div>
+            )}
           </div>
-          <div className="flex flex-wrap gap-[10px] px-[26px] py-[14px]">
+          <div className="hidden flex-wrap gap-[10px] px-[26px] py-[14px] xl:flex">
             {partnerTypes.map((t) => (
               <Tag
                 key={t}
@@ -290,16 +300,17 @@ export default function Home() {
 
         {/* Moments */}
         <section id="moments" className="border-b-[3px] border-ink">
-          <div className="flex justify-between items-center flex-wrap gap-[10px] p-[20px] p-[26px] border-b-[3px] border-ink">
-            <h2 className="font-display font-normal text-[56px] uppercase mt-0">Moments</h2>
+          {momentsError && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[14px] text-[12px] font-bold uppercase">{momentsError}</p>}
+          <div className="flex justify-between items-center flex-wrap gap-[10px] px-[22px] py-[16px] border-b-[3px] border-ink">
+            <h2 className="font-display font-normal text-[44px] uppercase mt-0 xl:text-[56px]">Moments</h2>
             <a
               href="/gallery"
-              className="border-[3px] border-ink px-[16px] py-[10px] font-bold text-[12px] uppercase"
+              className="hidden border-[3px] border-ink px-[16px] py-[10px] font-bold text-[12px] uppercase xl:inline-block"
             >
               Open the gallery ↗
             </a>
           </div>
-          <div className="flex flex-wrap gap-[16px] p-[20px]">
+          <div className="flex flex-wrap gap-[14px] p-[16px] xl:gap-[16px] xl:p-[20px]">
             {momentsLoading ? (
               <div className="border-[3px] border-ink text-center text-[12px] font-bold">Loading photos…</div>
             ) : photos.length === 0 ? (
@@ -310,29 +321,29 @@ export default function Home() {
               <>
                 <a
                   href={`/writeup?id=${photos[0].writeupId}`}
-                  className="border-[3px] border-ink flex flex-col flex-[2_1_340px] min-h-[440px]"
+                  className="flex h-full min-h-[240px] flex-[2_1_340px] flex-col border-[3px] border-ink xl:min-h-[440px]"
                 >
-                  <div className="flex-1 relative overflow-hidden">
-                    <img src={photos[0].url} alt={photos[0].altText} className="w-full h-full object-cover" />
+                  <div className="h-[200px] overflow-hidden border-b-[3px] border-ink xl:h-[380px]">
+                    <img src={photos[0].url} alt={photos[0].altText} className="h-full w-full object-cover" />
                   </div>
                   <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                     {photos[0].caption} &middot;{" "}
-                    <Tag label={photos[0].trackId} color={trackTagColor(photos[0].trackId)} />
+                    <Tag label={photos[0].trackId === "women-in-tech" ? "Women in Tech" : photos[0].trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())} color={trackTagColor(photos[0].trackId)} />
                   </div>
                 </a>
                 <div className="flex-[3_1_340px] grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-[16px]">
-                  {photos.slice(1, 5).map((photo) => (
+                  {photos.slice(1, 5).map((photo, index) => (
                     <a
                       key={photo.mediaId}
                       href={`/writeup?id=${photo.writeupId}`}
-                      className="border-[3px] border-ink flex flex-col min-h-[240px]"
+                      className={`flex h-full min-h-[160px] flex-col border-[3px] border-ink xl:min-h-[240px] ${index > 1 ? "hidden xl:flex" : ""}`}
                     >
-                      <div className="flex-1 relative overflow-hidden">
-                        <img src={photo.url} alt={photo.altText} className="w-full h-full object-cover" />
+                      <div className="h-[110px] overflow-hidden border-b-[3px] border-ink xl:h-[150px]">
+                        <img src={photo.url} alt={photo.altText} className="h-full w-full object-cover" />
                       </div>
                       <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                         {photo.caption}
-                        <Tag label={photo.trackId} color={trackTagColor(photo.trackId)} />
+                        <Tag label={photo.trackId === "women-in-tech" ? "Women in Tech" : photo.trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())} color={trackTagColor(photo.trackId)} />
                       </div>
                     </a>
                   ))}
@@ -347,59 +358,41 @@ export default function Home() {
 
         {/* Blog preview */}
         <section id="blog" className="border-b-[3px] border-ink">
-          <div className="flex justify-between items-center flex-wrap gap-[10px] p-[20px] p-[26px] border-b-[3px] border-ink">
+          <div className="flex justify-between items-center flex-wrap gap-[10px] px-[22px] py-[16px] border-b-[3px] border-ink">
             <SectionHeader className="text-[14px]">Tech blog</SectionHeader>
-            <span className="bg-ink text-white px-[10px] py-[4px] text-[12px] font-bold uppercase">
+            <span className="hidden bg-ink px-[10px] py-[4px] text-[12px] font-bold uppercase text-white xl:inline-block">
               Curated by GDG TUM Bot
             </span>
           </div>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))]">
-            {[
-              ...posts.slice(0, 3),
-              ...(posts.length < 3
-                ? [
-                    {
-                      id: "placeholder",
-                      title: "News headline",
-                      summary: "Two-line summary and why it matters for students.",
-                      tags: ["Cloud"],
-                      sourceUrl: "#",
-                    },
-                  ]
-                : []),
-            ].map((p, i) => {
-              const last = i === 2;
-              const tag = (p.tags?.[0] ?? "Cloud") as string;
-              return (
-                <div
-                  key={p.id}
-                  className={`p-[24px] border-r-[3px] border-ink border-b-[3px] border-ink ${!last ? "" : "border-r-0 border-b-0"}`}
-                >
-                  <Tag label={tag} color="green" />
-                  <div className="font-bold text-[20px] leading-[1.25] mt-[16px] mb-[8px]">{p.title}</div>
-                  <div className="text-[14px] leading-[1.5] text-[#333]">
-                    {p.summary} <a href={p.sourceUrl} className="font-bold">
-                      Source ↗
-                    </a>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-[14px] p-[16px] xl:gap-[16px] xl:p-[20px]">
+            {posts.filter((post) => post.hidden !== true).slice(0, 3).map((post, index) => (
+              <article key={post.id} className={`border-[3px] border-ink bg-white p-[22px] ${index > 1 ? "hidden xl:block" : ""}`}>
+                <Tag label={post.tags?.[0] || "News"} color={postTagColor(post.tags?.[0] || "News")} />
+                <h3 className="mt-[16px] text-[20px] font-bold leading-[1.25]">{post.title}</h3>
+                <p className="mt-[8px] text-[14px] leading-[1.5] text-[#333]">{post.summary}</p>
+                <a href={post.sourceUrl} target="_blank" rel="noopener noreferrer" className="mt-[14px] inline-block text-[12px] font-bold uppercase underline">Source ↗</a>
+              </article>
+            ))}
+            {!postsLoading && posts.filter((post) => post.hidden !== true).length === 0 && (
+              <p className="px-[24px] py-[22px] text-[12px] font-bold uppercase">No articles have been published yet.</p>
+            )}
+            {postsLoading && <p className="px-[24px] py-[22px] text-[12px] font-bold uppercase">Loading articles…</p>}
+            {postsError && <p role="alert" className="bg-red px-[24px] py-[22px] text-[12px] font-bold uppercase">{postsError}</p>}
           </div>
         </section>
 
         {/* Labs Soon + red digest */}
         <section id="labs" className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] border-b-[3px] border-ink">
-          <div className="px-[32px] py-[34px] border-r-[3px] border-ink bg-ink text-white flex flex-col gap-[12px]">
+          <div className="flex flex-col gap-[12px] border-b-[3px] border-ink bg-ink px-[28px] py-[34px] text-white xl:border-b-0 xl:border-r-[3px] xl:px-[32px]">
             <Tag label="Soon" color="yellow" />
             <h2 className="font-display font-normal text-[64px] leading-[1.1] uppercase mb-[8px]">Labs</h2>
             <p className="text-[16px] leading-[1.6] mt-[8px]">Where students upskill with hands-on, guided practice.</p>
           </div>
-          <div id="join" className="px-[32px] py-[34px] bg-red flex flex-col gap-[22px]">
+          <div id="join" className="flex flex-col gap-[22px] bg-red px-[26px] py-[30px] xl:px-[32px] xl:py-[34px]">
             <h2 className="font-display font-normal text-[44px] leading-[1.1] uppercase mb-[14px]">
               Get the weekly digest
             </h2>
-            <div className="flex flex-wrap border-[3px] border-ink bg-white gap-[18px]">
+            <div className="flex flex-wrap border-[3px] border-ink bg-white">
               <label htmlFor="em" className="sr-only">
                 Email
               </label>
@@ -408,9 +401,9 @@ export default function Home() {
                 type="email"
                 placeholder="ENTER YOUR EMAIL"
                 disabled
-                className="flex-1 min-w-[160px] border-0 px-[16px] py-[16px] text-[14px] font-bold bg-transparent focus:outline-none"
+                className="min-w-[140px] flex-1 border-0 bg-transparent px-[14px] py-[14px] text-[13px] font-bold focus:outline-none"
               />
-              <button type="button" disabled className="bg-ink text-white border-0 px-[26px] py-[16px] text-[14px] font-bold uppercase">
+              <button type="button" disabled className="border-0 bg-ink px-[20px] py-[14px] text-[13px] font-bold uppercase text-white">
                 Coming soon
               </button>
             </div>
@@ -418,10 +411,10 @@ export default function Home() {
         </section>
 
         {/* Footer strip */}
-        <div className="flex flex-wrap justify-between gap-[12px] px-[26px] py-[16px] text-[12px] font-bold uppercase">
+        <footer className="flex flex-wrap justify-between gap-[12px] px-[22px] py-[16px] text-[12px] font-bold uppercase">
           <span>&copy; 2026 GDG on Campus TUM</span>
           <span>GitHub &middot; LinkedIn &middot; Instagram &middot; X</span>
-        </div>
+        </footer>
       </main>
     </>
   );

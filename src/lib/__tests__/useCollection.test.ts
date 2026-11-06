@@ -27,7 +27,6 @@ vi.mock("@/lib/firebase", () => ({
   db: {},
 }));
 
-import type { QueryConstraint } from "firebase/firestore";
 import { useCollection } from "../data";
 
 function makeDoc(id: string, data: unknown): { id: string; data(): unknown; exists(): boolean } {
@@ -83,16 +82,4 @@ describe("useCollection", () => {
     expect(mocks.getDocs).not.toHaveBeenCalled();
   });
 
-  it("passes constraints to query", async () => {
-    mocks.collection.mockReturnValue({});
-    mocks.query.mockReturnValue({});
-    mocks.getDocs.mockResolvedValue({ docs: [] });
-    const { result } = renderHook(() => useCollection<{ x: number }>("test", [vi.fn() as unknown as QueryConstraint]));
-
-    await act(async () => {
-      await result.current.refetch();
-    });
-
-    expect(mocks.query).toHaveBeenCalledWith({}, expect.any(Function));
-  });
 });

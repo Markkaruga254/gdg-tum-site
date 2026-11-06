@@ -16,10 +16,10 @@ export const TRACKS: TrackConfig[] = [
 ];
 
 export const TRACK_BG_COLORS: Record<TrackSlug, string> = {
-  cloud: "#3b82f6",
-  cybersecurity: "#ef4444",
-  web: "#10b981",
-  "women-in-tech": "#fbbf24",
+  cloud: "#1967D2",
+  cybersecurity: "#EA4335",
+  web: "#34A853",
+  "women-in-tech": "#FBBC04",
 };
 
 export function trackColor(slug: TrackSlug): TrackColor {

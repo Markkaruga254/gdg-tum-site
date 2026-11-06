@@ -13,8 +13,8 @@ export default function Tag({
 }: { label: string; color?: Color; bordered?: boolean }) {
   return (
     <span
-      className={`inline-block px-[6px] py-[4px] text-[11px] font-bold uppercase ${map[color]} ${
-        bordered ? "border-[3px] border-ink" : ""
+      className={`inline-block px-[10px] py-[4px] text-[11px] font-bold uppercase ${map[color]} ${
+        (bordered || (color === "yellow" && /women in tech/i.test(label))) ? "border-[2px] border-ink" : ""
       }`}
     >
       {label}

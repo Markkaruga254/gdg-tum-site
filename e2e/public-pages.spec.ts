@@ -1,0 +1,47 @@
+import { test, expect } from "@playwright/test";
+
+test("public leads directory and lead profile render real records", async ({ page }) => {
+  await page.goto("/leads");
+  await expect(page.getByRole("heading", { name: "Leads" })).toBeVisible();
+  await expect(page.getByText("Cloud Lead")).toBeVisible();
+
+  await page.goto("/lead?id=u-lead-cloud");
+  await expect(page.getByRole("heading", { name: "Cloud Lead" })).toBeVisible();
+  await expect(page.getByText("Students reached")).toBeVisible();
+});
+
+test("tracks and event detail routes render seeded records", async ({ page }) => {
+  await page.goto("/tracks");
+  await expect(page.getByRole("heading", { name: "Tracks" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Cloud" })).toBeVisible();
+
+  await page.goto("/event?id=ev-cloud-past");
+  await expect(page.getByRole("heading", { name: "Cloud 101 Workshop" })).toBeVisible();
+  await expect(page.getByText("Attended")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Read the writeup/ })).toBeVisible();
+});
+
+test("writeups, blog and labs pages render their empty and populated states", async ({ page }) => {
+  await page.goto("/writeups");
+  await expect(page.getByRole("heading", { name: "Writeups" })).toBeVisible();
+  await expect(page.getByText("Cloud 101 Recap")).toBeVisible();
+
+  await page.goto("/blog");
+  await expect(page.getByRole("heading", { name: "Tech blog" })).toBeVisible();
+  await expect(page.getByText("No articles have been published yet.")).toBeVisible();
+
+  await page.goto("/labs");
+  await expect(page.getByRole("heading", { name: "Labs", exact: true })).toBeVisible();
+  await expect(page.getByText("Coming soon")).toBeVisible();
+});
+
+test("login renders and protected staff pages reject signed-out visitors", async ({ page }) => {
+  await page.goto("/login");
+  await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+
+  await page.goto("/admin");
+  await expect(page.getByRole("heading", { name: "Not allowed" })).toBeVisible();
+
+  await page.goto("/dashboard");
+  await expect(page.getByRole("heading", { name: "Not allowed" })).toBeVisible();
+});

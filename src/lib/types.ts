@@ -20,6 +20,7 @@ export interface Event {
   trackId: TrackSlug;
   date: Timestamp;
   venue: string;
+  description?: string;
   status: "upcoming" | "live" | "past" | "cancelled";
   cancelledBy?: string;
   cancelledAt?: Timestamp;
@@ -62,6 +63,7 @@ export interface Post {
   sourceUrl: string;
   tags: string[];
   fetchedAt: Timestamp;
+  hidden?: boolean;
 }
 
 export interface Ticker {

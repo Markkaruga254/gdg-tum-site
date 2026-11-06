@@ -16,6 +16,7 @@ export interface Photo {
 
 export interface GalleryPage {
   photos: Photo[];
+  overflowPhotos: Photo[];
   nextCursor: QueryDocumentSnapshot | null;
 }
 
@@ -41,17 +42,17 @@ export async function getGalleryPage({
   const constraints: any[] = [
     where("status", "==", "published"),
     orderBy("publishedAt", "desc"),
-    limit(pageSize ?? 6),
+    limit((pageSize ?? 6) + 1),
   ];
   if (trackId) constraints.push(where("trackId", "==", trackId));
   if (cursor) constraints.push(startAfter(cursor));
 
   const q = query(collection(db, "writeups"), ...constraints);
   const snap = await getDocs(q);
-  const docs = snap.docs;
+  const pageDocs = snap.docs.slice(0, pageSize ?? 6);
 
-  const photos: Photo[] = [];
-  for (const docRef of docs) {
+  const allPhotos: Photo[] = [];
+  for (const docRef of pageDocs) {
     const writeup = { id: docRef.id, ...docRef.data() } as unknown as {
       id: string;
       title: string;
@@ -66,7 +67,7 @@ export async function getGalleryPage({
         caption?: string;
         altText?: string;
       };
-      photos.push({
+      allPhotos.push({
         mediaId: media.id,
         url: cloudThumb(media.url, 600),
         caption: media.caption ?? writeup.title,
@@ -79,6 +80,11 @@ export async function getGalleryPage({
     }
   }
 
-  const nextCursor = docs.length > 0 ? docs[docs.length - 1] : null;
-  return { photos, nextCursor };
+  const size = pageSize ?? 6;
+  const nextCursor = snap.docs.length > size && pageDocs.length > 0 ? pageDocs[pageDocs.length - 1] : null;
+  return {
+    photos: allPhotos.slice(0, size),
+    overflowPhotos: allPhotos.slice(size),
+    nextCursor,
+  };
 }

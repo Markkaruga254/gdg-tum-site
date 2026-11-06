@@ -33,7 +33,14 @@ To seed another non-production project with a service account, set
 Firestore if the project id is missing, unknown, or production.
 
 ## Deploy
-`npm run build && firebase deploy --only hosting,firestore:rules`
+Build the static site and deploy Hosting plus Firestore rules:
+
+```bash
+npm run build
+firebase deploy --only hosting,firestore:rules
+```
+
+Deployments to production are human-controlled. CI validates pull requests and does not deploy them.
 
 ## Decisions
 - Event detail uses query param `/event?id=...` for static export.
@@ -50,9 +57,6 @@ Set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET i
 - Lead cannot edit another track.
 - Public cannot read drafts.
 - User cannot promote themselves to admin.
-
-## Deploy
-npm run build && firebase deploy --only hosting,firestore:rules
 
 ## Known limitations
 Unsigned Cloudinary preset can be abused; will be replaced by signed uploads later.

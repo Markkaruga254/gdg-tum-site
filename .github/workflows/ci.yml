@@ -56,6 +56,21 @@ jobs:
           FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
           FIREBASE_PROJECT_ID: demo-gdg-tum-site
 
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: npm run test:e2e:ci
+
+      - name: Upload responsive review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: responsive-review
+          path: test-results/mockup-review/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Production build (static export)
         env:
           # Placeholder client config: prerendering is client-shell only

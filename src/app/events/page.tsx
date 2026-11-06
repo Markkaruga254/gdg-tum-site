@@ -9,7 +9,7 @@ import { trackTagColor } from "@/lib/tracks";
 function eventDate(value: EventWithId["date"]) {
   const date = value.toDate();
   return {
-    date: date.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }),
+    date: date.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }),
     time: date.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }),
     value: date.getTime(),
   };
@@ -40,7 +40,12 @@ export default function EventsPage() {
   }, []);
 
   const visible = events.filter((event) => event.status !== "cancelled");
-  const tracks = [...new Set(visible.map((event) => event.trackId))];
+  const tracks = [
+    { id: "cloud", label: "Cloud" },
+    { id: "cybersecurity", label: "Cybersecurity" },
+    { id: "web", label: "Web" },
+    { id: "women-in-tech", label: "Women in Tech" },
+  ];
   const filtered = visible.filter((event) => track === "all" || event.trackId === track);
   const upcoming = filtered
     .filter((event) => event.status === "upcoming" || event.status === "live")
@@ -54,12 +59,12 @@ export default function EventsPage() {
     return (
       <article
         key={event.id}
-        className={`grid grid-cols-[64px_minmax(0,1fr)] sm:grid-cols-[90px_minmax(0,1fr)_auto] items-center gap-[18px] border-b-[3px] border-ink px-[26px] py-[16px] ${index === 1 ? "bg-red" : "bg-white"}`}
+        className={`grid grid-cols-[64px_minmax(0,1fr)] sm:grid-cols-[90px_minmax(0,1fr)_auto] items-center gap-[18px] border-b-[3px] border-ink px-[26px] py-[16px] ${!isPast && index === 1 ? "bg-red" : "bg-white"}`}
       >
         <span className="font-display text-[56px] leading-[1]">{String(index + 1).padStart(2, "0")}</span>
         <div className="min-w-0">
           <h2 className="font-bold text-[20px] leading-[1.2]">{event.title}</h2>
-          <p className="mt-[4px] text-[13px]">{date.date} · {date.time} · {event.venue}</p>
+          <p className="mt-[4px] text-[13px]">{isPast ? `${date.date} · ${event.venue} · ${event.attendance ?? 0} attended` : `${date.date} · ${date.time} · ${event.venue}`}</p>
         </div>
         <div className="col-start-2 sm:col-start-auto flex flex-wrap items-center gap-[12px]">
           <Tag label={trackLabel(event.trackId)} color={trackTagColor(event.trackId)} />
@@ -83,7 +88,7 @@ export default function EventsPage() {
         </header>
 
         <nav className="flex flex-wrap border-b-[3px] border-ink" aria-label="Filter events by track">
-          {[{ id: "all", label: "All" }, ...tracks.map((value) => ({ id: value, label: trackLabel(value) }))].map((item) => (
+          {[{ id: "all", label: "All" }, ...tracks].map((item) => (
             <button
               key={item.id}
               type="button"

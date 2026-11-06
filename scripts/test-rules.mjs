@@ -76,6 +76,9 @@ await expectAllowed(() => deleteDoc(doc(admin, "ticker", "tk-web")), "admin dele
 await expectAllowed(() => addDoc(collection(leadCloud, "ticker"), { eventId: "ev-cloud", message: "hi", status: "inactive", createdBy: "u-lead-cloud" }), "cloud lead creates a ticker row for a cloud event");
 await expectAllowed(() => updateDoc(doc(leadCloud, "ticker", "tk-cloud"), { status: "active" }), "cloud lead activates their own cloud ticker row");
 await expectAllowed(() => deleteDoc(doc(leadCloud, "ticker", "tk-cloud")), "cloud lead deletes their own cloud ticker row");
+await setDoc(doc(admin, "ticker", "tk-cloud-admin-created"), { eventId: "ev-cloud", message: "Admin-created row", status: "inactive", createdBy: "u-admin" });
+await expectAllowed(() => updateDoc(doc(leadCloud, "ticker", "tk-cloud-admin-created"), { status: "active" }), "cloud lead manages another creator's ticker row in their own track");
+await expectAllowed(() => deleteDoc(doc(leadCloud, "ticker", "tk-cloud-admin-created")), "cloud lead removes another creator's ticker row in their own track");
 await expectDenied(() => addDoc(collection(leadCloud, "ticker"), { eventId: "ev-web", message: "hi", status: "inactive", createdBy: "u-lead-cloud" }), "cloud lead cannot ticker a web event", { clean: true });
 await expectDenied(() => addDoc(collection(leadWeb, "ticker"), { eventId: "ev-cloud", message: "hi", status: "inactive", createdBy: "u-lead-web" }), "web lead cannot ticker a cloud event", { clean: true });
 await expectDenied(() => addDoc(collection(member, "ticker"), { eventId: "ev-cloud", message: "hi", status: "inactive", createdBy: "u-member" }), "member cannot create a ticker row", { clean: true });
