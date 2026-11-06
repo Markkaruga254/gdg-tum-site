@@ -26,6 +26,7 @@ export default function LeadsPage() {
   const [filter, setFilter] = useState<TrackSlug | "all">("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 
   useEffect(() => {
     (async () => {
@@ -105,7 +106,7 @@ export default function LeadsPage() {
                   <div className="p-[16px]">
                     <h2 className="text-[20px] font-bold">{lead.name}</h2>
                     <p className="my-[4px] text-[12px] font-bold uppercase">{trackName(lead.track)} Track Lead</p>
-                    <p className="mb-[14px] text-[14px] leading-[1.5]">{lead.bio || "Helping students learn, build and share what they create."}</p>
+                    <p className="mb-[14px] text-[14px] leading-[1.5]">{lead.bio || "Bio coming soon."}</p>
                     <p className="mb-[14px] text-[12px] font-bold uppercase">{eventCounts[lead.track] || 0} events · {writeupCounts[lead.id] || 0} writeups</p>
                     <a href={`/lead?id=${lead.id}`} className="inline-block border-[3px] border-ink px-[20px] py-[12px] text-[12px] font-bold uppercase">View profile ↗</a>
                   </div>
@@ -117,7 +118,7 @@ export default function LeadsPage() {
 
         <section className="flex flex-wrap items-center justify-between gap-[12px] border-t-[3px] border-ink bg-yellow px-[26px] py-[22px]">
           <h2 className="font-display text-[32px] uppercase">Want to lead a track?</h2>
-          <a href="/tracks" className="inline-block border-[3px] border-ink bg-white px-[20px] py-[12px] text-[12px] font-bold uppercase">Get in touch ↗</a>
+          {contactEmail ? <a href={"mailto:" + contactEmail} className="inline-block border-[3px] border-ink bg-white px-[20px] py-[12px] text-[12px] font-bold uppercase">Get in touch ↗</a> : <span className="inline-block border-[3px] border-ink bg-white px-[20px] py-[12px] text-[12px] font-bold uppercase opacity-60">Get in touch</span>}
         </section>
       </main>
       <Footer />
