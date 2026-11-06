@@ -19,8 +19,19 @@ function categoryColor(tag: string): "blue" | "red" | "green" | "yellow" | "ink"
 
 function categoryMatch(post: PostWithId, category: string) {
   if (category === "All") return true;
-  const target = category.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return post.tags.some((tag) => tag.toLowerCase().replace(/[^a-z0-9]/g, "").includes(target));
+  const aliases: Record<string, string[]> = {
+    Mobile: ["mobile", "android", "flutter", "ios"],
+    Cloud: ["cloud", "firebase", "gcp", "aws"],
+    "AI / ML": ["ai", "ml", "machine learning", "gemini", "llm"],
+    Web: ["web", "javascript", "react", "next", "frontend"],
+    Cybersecurity: ["cybersecurity", "security", "cyber", "pentest"],
+    DevOps: ["devops", "ci/cd", "terraform", "kubernetes", "automation"],
+  };
+  const terms = aliases[category] || [category.toLowerCase()];
+  return post.tags.some((tag) => {
+    const normalized = tag.toLowerCase().replace(/[^a-z0-9]/g, "");
+    return terms.some((term) => normalized.includes(term.replace(/[^a-z0-9]/g, "")));
+  });
 }
 
 export default function BlogPage() {
