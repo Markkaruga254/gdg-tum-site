@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import FormField from "@/components/form/FormField";
+import type { EventForm } from "@/lib/validators";
 
 export default function MyEventsTab({ events, role, eventForm, setEventForm, eventErrors, saveEvent, saving, editingEvent, setEditingEvent, startEditEvent, cancelEvent, deleteEvent }: any) {
   return (
@@ -36,7 +37,7 @@ export default function MyEventsTab({ events, role, eventForm, setEventForm, eve
                   </form>
                   <div className="mt-4">
                     {events.length === 0 && <p>No events.</p>}
-                    {events.map((ev) => (
+                    {events.map((ev: any) => (
                       <div key={ev.id} className="border-[3px] border-ink p-3 mt-2">
                         <div className="font-bold">{ev.title} — {ev.status}</div>
                         <div className="text-sm">{ev.venue} · {ev.date?.toDate ? ev.date.toDate().toLocaleString() : ev.date}</div>
