@@ -64,7 +64,7 @@ export default function EventsPage() {
         <span className="font-display text-[56px] leading-[1]">{String(index + 1).padStart(2, "0")}</span>
         <div className="min-w-0">
           <h2 className="font-bold text-[20px] leading-[1.2]">{event.title}</h2>
-          <p className="mt-[4px] text-[13px]">{date.date} · {date.time} · {event.venue}</p>
+          <p className="mt-[4px] text-[13px]">{isPast ? `${date.date} · ${event.venue} · ${event.attendance ?? 0} attended` : `${date.date} · ${date.time} · ${event.venue}`}</p>
         </div>
         <div className="col-start-2 sm:col-start-auto flex flex-wrap items-center gap-[12px]">
           <Tag label={trackLabel(event.trackId)} color={trackTagColor(event.trackId)} />
