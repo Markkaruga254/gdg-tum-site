@@ -154,9 +154,15 @@ describe("getEventById", () => {
 });
 
 describe("getWriteups", () => {
-  it("queries writeups ordered by publishedAt desc by default", async () => {
+  it("does not order draft-inclusive writeup queries by publishedAt", async () => {
     mocks.getDocs.mockResolvedValue({ docs: [] });
     await getWriteups();
+    expect(mocks.orderBy).not.toHaveBeenCalled();
+  });
+
+  it("orders published writeups by publishedAt descending", async () => {
+    mocks.getDocs.mockResolvedValue({ docs: [] });
+    await getWriteups({ status: "published" });
     expect(mocks.orderBy).toHaveBeenCalledWith("publishedAt", "desc");
   });
 
