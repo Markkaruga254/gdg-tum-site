@@ -37,7 +37,7 @@ export default function LeadsPage() {
           getWriteups({ status: "published" }),
         ]);
         setLeads(users);
-        setEventCounts(events.reduce<Record<string, number>>((counts, event) => {
+        setEventCounts(events.filter((event) => event.status === "past").reduce<Record<string, number>>((counts, event) => {
           counts[event.trackId] = (counts[event.trackId] || 0) + 1;
           return counts;
         }, {}));
