@@ -47,13 +47,18 @@ const users = [
 const events = [
   { id: "ev-cloud-upcoming", title: "Cloud Build Day", trackId: "cloud", date: new Date("2026-12-01T10:00:00Z"), venue: "Hall A", status: "upcoming", attendance: 50, rsvpCount: 30, writeupId: null },
   { id: "ev-cloud-past", title: "Cloud 101 Workshop", trackId: "cloud", date: new Date("2026-10-15T14:00:00Z"), venue: "Hall B", status: "past", attendance: 40, rsvpCount: 40, writeupId: "w-published-cloud" },
+  { id: "ev-cloud-past-2", title: "Serverless Lab", trackId: "cloud", date: new Date("2026-09-15T14:00:00Z"), venue: "Lab 1", status: "past", attendance: 32, rsvpCount: 32, writeupId: "w-published-cloud-2" },
+  { id: "ev-cloud-past-3", title: "Cloud Storage Workshop", trackId: "cloud", date: new Date("2026-08-15T14:00:00Z"), venue: "Hall A", status: "past", attendance: 28, rsvpCount: 28, writeupId: "w-published-cloud-3" },
   { id: "ev-web-upcoming", title: "Web Workshop", trackId: "web", date: new Date("2026-12-10T16:00:00Z"), venue: "Lab 2", status: "upcoming", attendance: null, rsvpCount: null, writeupId: null },
+  { id: "ev-cyber-upcoming", title: "Cybersecurity Lab", trackId: "cybersecurity", date: new Date("2026-12-15T10:00:00Z"), venue: "Lab 3", status: "upcoming", attendance: null, rsvpCount: null, writeupId: null },
 ];
 
 const writeups = [
   { id: "w-published-cloud", eventId: "ev-cloud-past", trackId: "cloud", authorId: "u-lead-cloud", title: "Cloud 101 Recap", summary: "A recap of our cloud workshop", body: "# Cloud 101\n\nWe learned about serverless.", attendance: 40, links: [], tags: { topics: ["cloud"], products: [] }, status: "published", publishedAt: new Date("2026-10-16T10:00:00Z"), aiDrafted: false },
   { id: "w-draft-cloud", eventId: "ev-cloud-upcoming", trackId: "cloud", authorId: "u-lead-cloud", title: "Cloud Build Day Draft", summary: "Draft of upcoming event", body: "Draft content", attendance: "", links: [], tags: { topics: ["cloud"], products: [] }, status: "draft", publishedAt: null, aiDrafted: false },
   { id: "w-published-web", eventId: "ev-web-upcoming", trackId: "web", authorId: "u-lead-web", title: "Web Intro", summary: "Web development intro", body: "# Web Intro\n\nIntro to web dev.", attendance: "", links: [], tags: { topics: ["web"], products: [] }, status: "published", publishedAt: new Date("2026-11-01T10:00:00Z"), aiDrafted: false },
+  { id: "w-published-cloud-2", eventId: "ev-cloud-past-2", trackId: "cloud", authorId: "u-lead-cloud", title: "Serverless Functions in Practice", summary: "A hands-on introduction to serverless workflows.", body: "# Serverless Functions\n\nWe built and tested a small serverless workflow.", attendance: 32, links: [], tags: { topics: ["cloud"], products: ["Firebase"] }, status: "published", publishedAt: new Date("2026-09-16T10:00:00Z"), aiDrafted: false },
+  { id: "w-published-cloud-3", eventId: "ev-cloud-past-3", trackId: "cloud", authorId: "u-lead-cloud", title: "Getting Started with Cloud Storage", summary: "A practical session on storing and serving files.", body: "# Cloud Storage\n\nWe explored object storage and access controls.", attendance: 28, links: [], tags: { topics: ["cloud"], products: ["Google Cloud"] }, status: "published", publishedAt: new Date("2026-08-16T10:00:00Z"), aiDrafted: false },
 ];
 
 function placeholderPhoto(background, foreground = "#fff") {
@@ -107,9 +112,10 @@ async function main() {
   for (const w of writeups) batch.set(db.collection("writeups").doc(w.id), w);
   for (const m of media) batch.set(db.collection("media").doc(m.id), m);
   for (const p of partners) batch.set(db.collection("partners").doc(p.id), p);
+  for (const post of posts) batch.set(db.collection("posts").doc(post.id), post);
 
   await batch.commit();
-  console.log("Seeded Auth identities plus tracks, users, events, writeups, media, partners.");
+  console.log("Seeded Auth identities plus tracks, users, events, writeups, media, partners and blog posts.");
 }
 
 main().catch((e) => {
