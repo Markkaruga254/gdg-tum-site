@@ -17,3 +17,7 @@
 
 - The repository could not be cloned in this execution environment because DNS resolution for `github.com` failed. Local dependency installation and project test commands therefore cannot be run here. A pull-request CI run is required before treating the phase as verified.
 - A local Chromium launch for opening the supplied `file://` mockups did not complete in the available execution window. Browser measurements and pixel comparisons must remain UNVERIFIED until a working browser run produces evidence.
+
+- Google sign-in now writes the email to `private_users/{uid}` for both new and existing accounts. If an existing public profile contains a legacy `email` field, the next successful sign-in copies the current email to the private document and deletes the public field. No production user documents were inspected or migrated; dormant legacy profiles, if any, require a separately authorized one-time audit/migration.
+- The CI dependency audit currently reports 12 production-tree vulnerabilities (8 moderate, 4 high). `npm audit fix --force` proposes downgrading Firebase to 9.14.0, so no forced dependency change was made. Track this as a separate compatibility-reviewed remediation.
+- Playwright captures the app in Chromium at the required viewport widths, but this run does not load the mockup HTML files side by side. Computed-style and pixel-difference comparisons therefore remain UNVERIFIED; app-only screenshots are retained as a CI artifact, not presented as mockup parity evidence.
