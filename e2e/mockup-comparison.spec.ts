@@ -64,9 +64,9 @@ test("capture approved mockups beside the current public implementation", async 
         await implementationPage.getByRole("button", { name: "Overview" }).click();
         await implementationPage.getByText(/My writeups/).click();
         await implementationPage.getByTestId("edit-writeup-w-draft-cloud").click();
-        await expect(implementationPage.getByRole("heading", { name: "Edit writeup" })).toBeVisible();
         if (screen.action === "draft-step2") {
           await implementationPage.getByRole("button", { name: /2 AI draft/ }).click();
+          await expect(implementationPage.getByRole("heading", { name: "New writeup" })).toBeVisible();
           await expect(implementationPage.getByRole("textbox", { name: "Writeup title" })).toHaveValue("Cloud fundamentals: choosing the right service");
         } else {
           await expect(implementationPage.getByAltText("Blue placeholder for a cloud workshop photo")).toBeVisible();
