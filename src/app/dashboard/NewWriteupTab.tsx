@@ -6,11 +6,7 @@ import ReactMarkdown from "react-markdown";
 const TOPIC_TAGS = ["cloud", "cybersecurity", "web", "mobile", "ai-ml", "data", "devops", "open-source", "careers"];
 const PRODUCT_TAGS = ["android", "firebase", "flutter", "gemini", "chrome", "google-cloud"];
 
-export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, startNewWriteup, writeupStep, setWriteupStep, topicTags, setTopicTags, productTags, setProductTags }: any) {
-  function resetWriteup() {
-    startNewWriteup();
-  }
-
+export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, writeupStep, setWriteupStep, topicTags, setTopicTags, productTags, setProductTags }: any) {
   const toggleTag = (tag: string, selected: string[], setter: (next: string[]) => void) => {
     setter(selected.includes(tag) ? selected.filter((item) => item !== tag) : [...selected, tag]);
   };
@@ -20,7 +16,6 @@ export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, eve
       {writeupStep !== 1 && (
         <div className="flex flex-wrap items-center justify-between gap-[12px]">
           <h2 className="font-display text-[clamp(42px,6vw,56px)] uppercase leading-none">New writeup</h2>
-          {editingWriteup && <button type="button" onClick={resetWriteup} className="border-[3px] border-ink px-[12px] py-[9px] text-[11px] font-bold uppercase">Start new writeup</button>}
         </div>
       )}
 
