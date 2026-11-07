@@ -56,8 +56,18 @@ const writeups = [
   { id: "w-published-web", eventId: "ev-web-upcoming", trackId: "web", authorId: "u-lead-web", title: "Web Intro", summary: "Web development intro", body: "# Web Intro\n\nIntro to web dev.", attendance: "", links: [], tags: { topics: ["web"], products: [] }, status: "published", publishedAt: new Date("2026-11-01T10:00:00Z"), aiDrafted: false },
 ];
 
+function placeholderPhoto(background, foreground = "#fff") {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><rect width="600" height="400" fill="${background}"/><text x="300" y="215" text-anchor="middle" font-family="Arial,sans-serif" font-size="28" font-weight="700" fill="${foreground}">PHOTO</text></svg>`;
+  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+}
+
 const media = [
-  { id: "m-published", writeupId: "w-published-cloud", url: "https://example.invalid/cloud-photo.jpg", publicId: "e2e/cloud-photo", caption: "Cloud workshop photo", altText: "Cloud workshop photo", createdBy: "u-lead-cloud" },
+  { id: "m-cloud-1", writeupId: "w-published-cloud", url: placeholderPhoto("#1967D2"), publicId: "e2e/cloud-photo-1", caption: "Cloud workshop photo", altText: "Blue placeholder for a cloud workshop photo", createdBy: "u-lead-cloud" },
+  { id: "m-cloud-2", writeupId: "w-published-cloud", url: placeholderPhoto("#EA4335", "#111"), publicId: "e2e/cloud-photo-2", caption: "Workshop group photo", altText: "Red placeholder for a workshop group photo", createdBy: "u-lead-cloud" },
+  { id: "m-cloud-3", writeupId: "w-published-cloud", url: placeholderPhoto("#34A853", "#111"), publicId: "e2e/cloud-photo-3", caption: "Cloud lab session", altText: "Green placeholder for a cloud lab session", createdBy: "u-lead-cloud" },
+  { id: "m-web-1", writeupId: "w-published-web", url: placeholderPhoto("#FBBC04", "#111"), publicId: "e2e/web-photo-1", caption: "Web workshop", altText: "Yellow placeholder for a web workshop", createdBy: "u-lead-web" },
+  { id: "m-web-2", writeupId: "w-published-web", url: placeholderPhoto("#1967D2"), publicId: "e2e/web-photo-2", caption: "Web development session", altText: "Blue placeholder for a web development session", createdBy: "u-lead-web" },
+  { id: "m-web-3", writeupId: "w-published-web", url: placeholderPhoto("#EA4335", "#111"), publicId: "e2e/web-photo-3", caption: "Web community", altText: "Red placeholder for a web community photo", createdBy: "u-lead-web" },
 ];
 
 const partners = [
