@@ -101,7 +101,7 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
             </div>
 
             <label htmlFor="wt" className="sr-only">Writeup title</label>
-            <input id="wt" value={wf.title} onChange={(event) => setWf({ ...wf, title: event.target.value })} className="w-full border-[3px] border-ink bg-white px-[12px] py-[10px] font-display text-[30px] uppercase leading-none" placeholder="Your writeup title" />
+            <input id="wt" value={wf.title} onChange={(event) => setWf({ ...wf, title: event.target.value })} className="w-full border-0 bg-transparent px-0 py-[6px] font-display text-[30px] uppercase leading-none focus:outline-none focus:ring-2 focus:ring-blue" placeholder="Your writeup title" />
             {wfErrors.title && <p className="text-[11px] font-bold text-red">{wfErrors.title}</p>}
 
             <label htmlFor="ws" className="sr-only">Writeup summary</label>
