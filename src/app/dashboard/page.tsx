@@ -262,7 +262,7 @@ export default function DashboardPage() {
             if (t === "Live ticker") return role === "admin" || role === "lead";
             return true;
           })).map((t) => (
-            <button key={t} type="button" onClick={() => setTab(t)} aria-current={tab === t ? "page" : undefined} className={`block w-full border-b-[3px] border-ink px-[18px] py-[17px] text-left text-[11px] font-bold uppercase ${tab === t ? "bg-yellow" : "bg-white"}`}>{t}</button>
+            <button key={t} type="button" onClick={() => t === "New writeup" ? startNewWriteup() : setTab(t)} aria-current={tab === t ? "page" : undefined} className={`block w-full border-b-[3px] border-ink px-[18px] py-[17px] text-left text-[11px] font-bold uppercase ${tab === t ? "bg-yellow" : "bg-white"}`}>{t}</button>
           ))}
         </aside>
         <main className="min-w-0 p-[20px] sm:p-[28px]">
@@ -273,7 +273,7 @@ export default function DashboardPage() {
 
           {tab === "My events" && <MyEventsTab events={events} role={role} eventForm={eventForm} setEventForm={setEventForm} eventErrors={eventErrors} saveEvent={saveEvent} saving={saving} editingEvent={editingEvent} setEditingEvent={setEditingEvent} startEditEvent={startEditEvent} cancelEvent={cancelEvent} deleteEvent={deleteEvent} />}
 
-          {tab === "New writeup" && <NewWriteupTab editingWriteup={editingWriteup} wf={wf} setWf={setWf} wfErrors={wfErrors} events={events} saveWriteup={saveWriteup} saving={saving} mediaList={mediaList} aiPhotoIds={aiPhotoIds} setAiPhotoIds={setAiPhotoIds} aiConsent={aiConsent} setAiConsent={setAiConsent} setTab={setTab} startNewWriteup={startNewWriteup} writeupStep={writeupStep} setWriteupStep={setWriteupStep} topicTags={topicTags} setTopicTags={setTopicTags} productTags={productTags} setProductTags={setProductTags} />}
+          {tab === "New writeup" && <NewWriteupTab wf={wf} setWf={setWf} wfErrors={wfErrors} events={events} saveWriteup={saveWriteup} saving={saving} mediaList={mediaList} aiPhotoIds={aiPhotoIds} setAiPhotoIds={setAiPhotoIds} aiConsent={aiConsent} setAiConsent={setAiConsent} setTab={setTab} writeupStep={writeupStep} setWriteupStep={setWriteupStep} topicTags={topicTags} setTopicTags={setTopicTags} productTags={productTags} setProductTags={setProductTags} />}
 
           {tab === "Media" && <MediaTab mediaList={mediaList} mediaUploading={mediaUploading} mediaUploadProgress={mediaUploadProgress} editingWriteup={editingWriteup} uid={uid} role={role} track={track} setMsg={setMsg} setErr={setErr} loadMedia={loadMedia} setMediaUploading={setMediaUploading} setMediaUploadProgress={setMediaUploadProgress} />}
 
