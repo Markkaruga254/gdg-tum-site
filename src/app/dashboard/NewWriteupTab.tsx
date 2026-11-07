@@ -35,12 +35,12 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
           </FormField>
 
           <FormField label="Rough notes" id="wb" error={wfErrors.body}>
-            <textarea id="wb" value={wf.body} onChange={(event) => setWf({ ...wf, body: event.target.value })} className="min-h-[150px] w-full border-[3px] border-ink px-3 py-2" rows={8} placeholder="What happened? Topics covered, highlights, what went well, what to improve." />
+            <textarea id="wb" value={wf.body} onChange={(event) => setWf({ ...wf, body: event.target.value })} className="min-h-[150px] w-full border-[3px] border-ink px-3 py-2" rows={8} placeholder="Your notes go here. The AI only uses what you write." />
           </FormField>
 
           <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
             <FormField label="Attendance" id="wa" error={wfErrors.attendance}>
-              <input id="wa" type="number" min={0} value={wf.attendance} onChange={(event) => setWf({ ...wf, attendance: event.target.value })} className="w-full border-[3px] border-ink px-3 py-2" placeholder="e.g. 40" />
+              <input id="wa" type="number" min={0} value={wf.attendance} onChange={(event) => setWf({ ...wf, attendance: event.target.value })} className="w-full border-[3px] border-ink px-3 py-2" placeholder="000" />
             </FormField>
 
             {writeupStep === 1 && (
@@ -49,13 +49,6 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
               </FormField>
             )}
           </div>
-          {writeupStep === 1 && wf.links.slice(1).map((link: any, offset: number) => (
-            <div key={offset + 1} className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <input aria-label={`Resource ${offset + 2} title`} placeholder="Link title" value={link.title} onChange={(event) => { const links = [...wf.links]; links[offset + 1] = { ...links[offset + 1], title: event.target.value }; setWf({ ...wf, links }); }} className="min-w-0 border-[3px] border-ink px-2 py-2" />
-              <input aria-label={`Resource ${offset + 2} URL`} placeholder="URL" value={link.url} onChange={(event) => { const links = [...wf.links]; links[offset + 1] = { ...links[offset + 1], url: event.target.value }; setWf({ ...wf, links }); }} className="min-w-0 border-[3px] border-ink px-2 py-2" />
-            </div>
-          ))}
-          {writeupStep === 1 && <button type="button" onClick={() => setWf({ ...wf, links: [...wf.links, { title: "", url: "" }] })} className="justify-self-start border-[3px] border-ink px-3 py-2 text-[11px] font-bold uppercase">+ Add link</button>}
           {writeupStep !== 1 && (
             <>
               <div className="border-[3px] border-dashed border-ink bg-white p-[20px] text-center">
@@ -71,10 +64,9 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
         {writeupStep === 1 ? (
           <aside className="grid content-start gap-[14px] bg-[#fafafa] p-[18px] sm:p-[24px]">
             <div className="flex flex-wrap items-center justify-between gap-[8px]">
-              <span className="bg-ink px-[10px] py-[5px] text-[10px] font-bold uppercase text-white">Photos, slides &amp; links</span>
-              <span className="text-[11px] font-bold uppercase">Choose what to include</span>
+              <span className="bg-ink px-[10px] py-[5px] text-[10px] font-bold uppercase text-white">Photos</span>
             </div>
-            <p className="text-[11px] leading-[1.5]">When AI captioning is available, only selected photos will be sent. Unticked photos remain private.</p>
+            <p className="text-[11px] leading-[1.5]">Tick the photos you want AI to caption. Unticked photos stay private and receive no AI caption.</p>
             {mediaList.length ? (
               <div className="grid grid-cols-2 gap-[10px] sm:grid-cols-3">
                 {mediaList.map((media: any) => (
