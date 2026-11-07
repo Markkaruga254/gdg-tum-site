@@ -1,22 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { signInGoogle, signInE2E } from "@/lib/auth";
 
+const subscribeToLocation = (callback: () => void) => {
+  window.addEventListener("popstate", callback);
+  return () => window.removeEventListener("popstate", callback);
+};
+
+const getE2EModeSnapshot = () =>
+  process.env.NODE_ENV !== "production" &&
+  process.env.NEXT_PUBLIC_E2E_AUTH_ENABLED === "true" &&
+  new URLSearchParams(window.location.search).get("e2e") === "1";
+
+const getServerE2EModeSnapshot = () => false;
+
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [e2eMode, setE2eMode] = useState(false);
-
-  useEffect(() => {
-    setE2eMode(
-      process.env.NODE_ENV !== "production" &&
-      process.env.NEXT_PUBLIC_E2E_AUTH_ENABLED === "true" &&
-      new URLSearchParams(window.location.search).get("e2e") === "1",
-    );
-  }, []);
+  const e2eMode = useSyncExternalStore(
+    subscribeToLocation,
+    getE2EModeSnapshot,
+    getServerE2EModeSnapshot,
+  );
 
   async function handleSignIn() {
     setLoading(true);
