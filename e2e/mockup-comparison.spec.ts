@@ -9,6 +9,7 @@ type MockupScreen = {
   path: string;
   phoneMockup?: string;
   auth?: "admin" | "lead";
+  action?: "draft-step1" | "draft-step2";
   widths?: number[];
 };
 
@@ -26,8 +27,8 @@ const screens: MockupScreen[] = [
   { name: "blog", mockup: "docs/mockups/15-blog.html", path: "/blog" },
   { name: "labs", mockup: "docs/mockups/16-labs.html", path: "/labs" },
   { name: "login", mockup: "docs/mockups/17-login.html", path: "/login" },
-  { name: "dashboard-new-writeup", mockup: "docs/mockups/03-dashboard-new-writeup.html", path: "/dashboard", auth: "lead" },
-  { name: "dashboard-ai-before", mockup: "docs/mockups/06-ai-assistant-before.html", path: "/dashboard", auth: "lead", widths: [1280] },
+  { name: "dashboard-new-writeup", mockup: "docs/mockups/03-dashboard-new-writeup.html", path: "/dashboard", auth: "lead", action: "draft-step2" },
+  { name: "dashboard-ai-before", mockup: "docs/mockups/06-ai-assistant-before.html", path: "/dashboard", auth: "lead", action: "draft-step1" },
   { name: "admin", mockup: "docs/mockups/18-admin.html", path: "/admin", auth: "admin" },
 ];
 
@@ -59,8 +60,15 @@ test("capture approved mockups beside the current public implementation", async 
 
       await implementationPage.goto(screen.path, { waitUntil: "domcontentloaded" });
       await expect(implementationPage.locator("main")).toBeVisible();
-      if (screen.name === "dashboard-new-writeup") {
-        await expect(implementationPage.getByRole("heading", { name: "New writeup" })).toBeVisible();
+      if (screen.action) {
+        await implementationPage.getByRole("button", { name: "Overview" }).click();
+        await implementationPage.getByText(/My writeups/).click();
+        await implementationPage.getByTestId("edit-writeup-w-draft-cloud").click();
+        await expect(implementationPage.getByRole("heading", { name: "Edit writeup" })).toBeVisible();
+        if (screen.action === "draft-step2") {
+          await implementationPage.getByRole("button", { name: /2 AI draft/ }).click();
+        }
+        await expect(implementationPage.getByRole("button", { name: screen.action === "draft-step1" ? /1 Add your notes/ : /2 AI draft/ })).toHaveAttribute("aria-current", "step");
       }
       if (screen.name === "admin") {
         await expect(implementationPage.getByRole("heading", { name: "Admin", exact: true })).toBeVisible();
