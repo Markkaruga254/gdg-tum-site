@@ -158,6 +158,9 @@ await expectAllowed(() => deleteDoc(doc(admin, "writeups", "w-draft-web")), "adm
 await expectDenied(() => deleteDoc(doc(leadCloud, "writeups", "w-flip-cloud")), "author cannot delete their own writeup");
 await expectDenied(() => deleteDoc(doc(anon, "writeups", "w-published-cloud")), "anonymous cannot delete a writeup");
 await expectDenied(() => updateDoc(doc(admin, "writeups", "w-flip-cloud"), { authorId: "u-admin" }), "admin cannot change writeup attribution");
+await expectDenied(() => updateDoc(doc(admin, "writeups", "w-flip-cloud"), { trackId: "web" }), "admin cannot change writeup track");
+await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-flip-cloud"), { authorId: "u-admin" }), "lead cannot change writeup author");
+await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-flip-cloud"), { trackId: "web" }), "lead cannot change writeup track");
 
 // ---- media -----------------------------------------------------------------
 section("media — published/admin/author reads; author-or-admin writes only");
