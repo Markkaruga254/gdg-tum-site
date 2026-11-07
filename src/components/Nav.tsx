@@ -95,7 +95,7 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
 
       <Link
         href="/tracks"
-        className="ml-auto flex items-center border-l-[3px] border-ink bg-yellow px-[14px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] whitespace-nowrap md:px-[20px]"
+        className="ml-auto flex items-center border-l-0 border-ink bg-yellow px-[14px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] whitespace-nowrap md:border-l-[3px] md:px-[20px]"
       >
         <span className="md:hidden">Join ↗</span>
         <span className="hidden md:inline">Join a track ↗</span>
