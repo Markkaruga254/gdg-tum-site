@@ -44,13 +44,24 @@ for (const route of routes) {
 
       const navigation = page.getByRole("navigation", { name: "Main navigation" });
       await expect(navigation).toBeVisible();
-      for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Join a track ↗"]) {
-        await expect(navigation.getByRole("link", { name: label })).toBeVisible();
+
+      if (width <= 390) {
+        await expect(navigation.getByRole("button", { name: "Menu" })).toBeVisible();
+        await expect(navigation.getByRole("link", { name: "Events" })).toBeHidden();
+        await expect(navigation.getByRole("link", { name: "Join ↗" })).toBeVisible();
+        await navigation.getByRole("button", { name: "Menu" }).click();
+        for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Sign in"]) {
+          await expect(navigation.getByRole("link", { name: label })).toBeVisible();
+        }
+      } else {
+        for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Sign in", "Join a track ↗"]) {
+          await expect(navigation.getByRole("link", { name: label })).toBeVisible();
+        }
+        await expect(navigation.getByRole("button", { name: "Menu" })).toBeHidden();
       }
 
       if (route.name === "home" && width === 390) {
-        await expect(page.getByText("Google Developer Group on Campus")).toBeVisible();
-        await expect(page.getByRole("button", { name: "Menu" })).toHaveCount(0);
+        await expect(page.getByText("Google Developer Group on Campus")).toBeHidden();
         await page.screenshot({ path: "test-results/mockup-review/home-canonical-nav-390.png", fullPage: true });
       } else if (route.name !== "home") {
         await expect(page.getByText("Google Developer Group on Campus")).toHaveCount(0);
