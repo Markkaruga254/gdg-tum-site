@@ -23,8 +23,8 @@ for (const route of routes) {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
 
-    for (const width of [390, 768, 1280]) {
-      await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
+    for (const width of [360, 390, 768, 1280]) {
+      await page.setViewportSize({ width, height: width <= 390 ? 844 : 1000 });
       await page.goto(route.path, { waitUntil: "domcontentloaded" });
       await expect(page.locator("main")).toBeVisible();
       await page.waitForTimeout(400);
