@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 const TOPIC_TAGS = ["cloud", "cybersecurity", "web", "mobile", "ai-ml", "data", "devops", "open-source", "careers"];
 const PRODUCT_TAGS = ["android", "firebase", "flutter", "gemini", "chrome", "google-cloud"];
 
-export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, setWf, wfErrors, events, setMediaList, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, startNewWriteup, writeupStep, setWriteupStep, topicTags, setTopicTags, productTags, setProductTags }: any) {
+export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, startNewWriteup, writeupStep, setWriteupStep, topicTags, setTopicTags, productTags, setProductTags }: any) {
   function resetWriteup() {
     startNewWriteup();
   }
