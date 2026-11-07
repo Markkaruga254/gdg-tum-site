@@ -74,6 +74,7 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
               <span className="bg-ink px-[10px] py-[5px] text-[10px] font-bold uppercase text-white">Photos, slides &amp; links</span>
               <span className="text-[11px] font-bold uppercase">Choose what to include</span>
             </div>
+            <p className="text-[11px] leading-[1.5]">When AI captioning is available, only selected photos will be sent. Unticked photos remain private.</p>
             {mediaList.length ? (
               <div className="grid grid-cols-2 gap-[10px] sm:grid-cols-3">
                 {mediaList.map((media: any) => (
@@ -94,9 +95,10 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
                 <button type="button" onClick={() => setTab("Media")} className="mt-[14px] border-[3px] border-ink px-[12px] py-[8px] text-[11px] font-bold uppercase">+ Add photos</button>
               </div>
             )}
-            <label className="flex items-start gap-[10px] border-[3px] border-ink bg-yellow p-[12px] text-[12px] leading-[1.5]">
+            <div className="border-[3px] border-ink bg-yellow p-[12px] text-[11px] font-bold leading-[1.5]">Only select photos of people who have agreed to their images being used for AI captioning.</div>
+            <label className="flex items-start gap-[10px] border-[3px] border-ink bg-white p-[12px] text-[12px] leading-[1.5]">
               <input type="checkbox" checked={aiConsent} onChange={(event) => setAiConsent(event.target.checked)} className="mt-[2px]" />
-              <span>I confirm the people in the selected photos have agreed to AI processing. Only photos you tick are sent to the AI service.</span>
+              <span>I confirm the people in the ticked photos have agreed.</span>
             </label>
             <button type="button" disabled title="AI draft generation will be enabled when the approved AI service is deployed." className="justify-self-start border-[3px] border-ink bg-ink px-[16px] py-[12px] text-[11px] font-bold uppercase text-white opacity-50">Generate draft · Coming soon</button>
           </aside>
