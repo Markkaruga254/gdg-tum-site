@@ -17,6 +17,8 @@ const screens = [
   { name: "blog", mockup: "docs/mockups/15-blog.html", path: "/blog" },
   { name: "labs", mockup: "docs/mockups/16-labs.html", path: "/labs" },
   { name: "login", mockup: "docs/mockups/17-login.html", path: "/login" },
+  { name: "dashboard-new-writeup", mockup: "docs/mockups/03-dashboard-new-writeup.html", path: "/dashboard", auth: "lead" as const, widths: [1280] },
+  { name: "admin", mockup: "docs/mockups/18-admin.html", path: "/admin", auth: "admin" as const, widths: [1280] },
 ];
 
 test("capture approved mockups beside the current public implementation", async ({ browser }) => {
@@ -24,7 +26,7 @@ test("capture approved mockups beside the current public implementation", async 
   await mkdir(outputDir, { recursive: true });
 
   for (const screen of screens) {
-    for (const width of [390, 1280]) {
+    for (const width of screen.widths ?? [390, 1280]) {
       const height = width === 390 ? 844 : 1000;
       const context = await browser.newContext({ viewport: { width, height } });
       const referencePage = await context.newPage();
@@ -35,6 +37,14 @@ test("capture approved mockups beside the current public implementation", async 
       await referencePage.goto(mockupUrl);
       await referencePage.evaluate(async () => { await document.fonts.ready; });
       const reference = await referencePage.screenshot({ fullPage: true });
+
+      if (screen.auth) {
+        await implementationPage.goto("/login?e2e=1", { waitUntil: "domcontentloaded" });
+        const accountButton = screen.auth === "admin" ? "Sign in as test admin" : "Sign in as test lead";
+        const accountName = screen.auth === "admin" ? "E2E Admin" : "E2E Cloud Lead";
+        await implementationPage.getByRole("button", { name: accountButton }).click();
+        await expect(implementationPage.getByText(accountName)).toBeVisible();
+      }
 
       await implementationPage.goto(screen.path, { waitUntil: "domcontentloaded" });
       await expect(implementationPage.locator("main")).toBeVisible();
