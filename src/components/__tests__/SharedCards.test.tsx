@@ -23,7 +23,7 @@ describe("shared content components", () => {
     );
     expect(screen.getByText("Lead: Cloud Lead")).toBeInTheDocument();
     rerender(<TrackBlock number={1} name="Cloud" slug="cloud" description="Cloud learning." />);
-    expect(screen.getByText("Lead: To be announced")).toBeInTheDocument();
+    expect(screen.queryByText(/^Lead:/)).not.toBeInTheDocument();
     expect(screen.queryByText(/\[Lead name\]/)).not.toBeInTheDocument();
   });
 });

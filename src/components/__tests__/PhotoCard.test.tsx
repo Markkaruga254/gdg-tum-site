@@ -20,7 +20,7 @@ describe("PhotoCard", () => {
     expect(container.querySelector('[style*="background-color"]')).not.toBeInTheDocument();
     const imageContainer = image.parentElement as HTMLElement;
     fireEvent.error(image);
-    expect(screen.getByRole("img", { name: "Workshop" })).toHaveTextContent("Cloud workshop");
+    expect(screen.getByRole("img", { name: "Workshop" })).toBeEmptyDOMElement();
     expect(imageContainer.style.backgroundColor).toBe("rgb(25, 103, 210)");
   });
 });

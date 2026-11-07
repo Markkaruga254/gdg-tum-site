@@ -22,9 +22,9 @@ export default function TrackBlock({
       <p className="font-display text-[72px] leading-none">{String(number).padStart(2, "0")}</p>
       <h2 className="my-[8px] font-display text-[44px] uppercase leading-none">{name}</h2>
       <p className="mb-[16px] text-[15px] leading-[1.5]">{description}</p>
-      <p className="mb-[16px] text-[12px] font-bold uppercase">
-        Lead: {leadNames.length ? leadNames.join(", ") : "To be announced"}
-      </p>
+      {leadNames.length > 0 && (
+        <p className="mb-[16px] text-[12px] font-bold uppercase">Lead: {leadNames.join(", ")}</p>
+      )}
       <a href={href} className="inline-block border-[3px] border-ink bg-white px-[20px] py-[12px] text-[12px] font-bold uppercase text-ink">
         Open track ↗
       </a>

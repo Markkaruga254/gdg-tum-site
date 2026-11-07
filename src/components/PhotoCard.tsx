@@ -37,9 +37,7 @@ export default function PhotoCard({
         style={imageFailed ? { backgroundColor: bg } : undefined}
       >
         {imageFailed ? (
-          <span role="img" aria-label={altText || caption || "Event photo"} className="px-4 text-center text-[12px] font-bold uppercase text-white">
-            {caption || "Event photo"}
-          </span>
+          <span role="img" aria-label={altText || caption || "Event photo"} className="block h-full w-full" />
         ) : (
           <img
             src={url}
