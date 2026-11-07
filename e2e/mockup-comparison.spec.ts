@@ -61,6 +61,7 @@ test("capture approved mockups beside the current public implementation", async 
       await implementationPage.goto(screen.path, { waitUntil: "domcontentloaded" });
       await expect(implementationPage.locator("main")).toBeVisible();
       if (screen.action) {
+        await implementationPage.getByRole("button", { name: /2 AI draft/ }).click();
         await implementationPage.getByRole("button", { name: "Overview" }).click();
         await implementationPage.getByText(/My writeups/).click();
         await implementationPage.getByTestId("edit-writeup-w-draft-cloud").click();
