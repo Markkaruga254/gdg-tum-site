@@ -57,6 +57,12 @@ test("capture approved mockups beside the current public implementation", async 
 
       await implementationPage.goto(screen.path, { waitUntil: "domcontentloaded" });
       await expect(implementationPage.locator("main")).toBeVisible();
+      if (screen.name === "dashboard-new-writeup") {
+        await expect(implementationPage.getByRole("heading", { name: "New writeup" })).toBeVisible();
+      }
+      if (screen.name === "admin") {
+        await expect(implementationPage.getByRole("heading", { name: "Admin", exact: true })).toBeVisible();
+      }
       await implementationPage.evaluate(async () => { await document.fonts.ready; });
       await implementationPage.waitForTimeout(500);
       const implementation = await implementationPage.screenshot({ fullPage: true });
