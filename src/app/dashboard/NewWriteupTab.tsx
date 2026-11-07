@@ -54,6 +54,16 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
             </div>
           ))}
           <button type="button" onClick={() => setWf({ ...wf, links: [...wf.links, { title: "", url: "" }] })} className="justify-self-start border-[3px] border-ink px-3 py-2 text-[11px] font-bold uppercase">+ Add link</button>
+          {writeupStep !== 1 && (
+            <>
+              <div className="border-[3px] border-dashed border-ink bg-white p-[20px] text-center">
+                <p className="text-[12px] font-bold uppercase">Photos, slides &amp; links</p>
+                <p className="mt-[7px] text-[11px]">Drop files here or browse. {mediaList.length} photo{mediaList.length === 1 ? "" : "s"} attached.</p>
+                <button type="button" onClick={() => setTab("Media")} className="mt-[12px] border-[3px] border-ink px-[12px] py-[8px] text-[11px] font-bold uppercase">Manage media ↗</button>
+              </div>
+              <button type="button" disabled title="AI draft generation will be enabled when the approved AI service is deployed." className="justify-self-start border-[3px] border-ink bg-ink px-[16px] py-[12px] text-[11px] font-bold uppercase text-white opacity-50">Generate draft · Coming soon</button>
+            </>
+          )}
         </div>
 
         {writeupStep === 1 ? (
@@ -117,9 +127,15 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
 
             <section className="border-[3px] border-ink bg-white p-[12px]">
               <h3 className="text-[11px] font-bold uppercase">Auto tags</h3>
-              <div className="mt-[8px] flex flex-wrap gap-[6px]">
-                {TOPIC_TAGS.map((tag) => <button key={tag} type="button" aria-pressed={topicTags.includes(tag)} onClick={() => toggleTag(tag, topicTags, setTopicTags)} className={`border-[2px] border-ink px-[8px] py-[5px] text-[9px] font-bold uppercase ${topicTags.includes(tag) ? "bg-yellow" : "bg-white"}`}>{tag}</button>)}
-                {PRODUCT_TAGS.map((tag) => <button key={tag} type="button" aria-pressed={productTags.includes(tag)} onClick={() => toggleTag(tag, productTags, setProductTags)} className={`border-[2px] border-ink px-[8px] py-[5px] text-[9px] font-bold uppercase ${productTags.includes(tag) ? "bg-yellow" : "bg-white"}`}>{tag}</button>)}
+              <div className="mt-[8px] flex flex-wrap items-center gap-[6px]">
+                {[...topicTags, ...productTags].map((tag) => <span key={tag} className="border-[2px] border-ink bg-yellow px-[8px] py-[5px] text-[9px] font-bold uppercase">{tag}</span>)}
+                <details>
+                  <summary className="cursor-pointer border-[2px] border-ink px-[8px] py-[5px] text-[9px] font-bold uppercase">+ Add tag</summary>
+                  <div className="mt-[8px] flex flex-wrap gap-[6px] border-t-[2px] border-ink pt-[8px]">
+                    {TOPIC_TAGS.map((tag) => <button key={tag} type="button" aria-pressed={topicTags.includes(tag)} onClick={() => toggleTag(tag, topicTags, setTopicTags)} className={`border-[2px] border-ink px-[8px] py-[5px] text-[9px] font-bold uppercase ${topicTags.includes(tag) ? "bg-yellow" : "bg-white"}`}>{tag}</button>)}
+                    {PRODUCT_TAGS.map((tag) => <button key={tag} type="button" aria-pressed={productTags.includes(tag)} onClick={() => toggleTag(tag, productTags, setProductTags)} className={`border-[2px] border-ink px-[8px] py-[5px] text-[9px] font-bold uppercase ${productTags.includes(tag) ? "bg-yellow" : "bg-white"}`}>{tag}</button>)}
+                  </div>
+                </details>
               </div>
             </section>
 
