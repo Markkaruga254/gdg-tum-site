@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
+import PartnerCell from "@/components/PartnerCell";
 import TickerBar from "@/components/TickerBar";
 import Tag from "@/components/Tag";
 import SectionHeader from "@/components/SectionHeader";
@@ -267,32 +269,35 @@ export default function Home() {
             )}
           </div>
           <div className="grid grid-cols-2 xl:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-            {activeOrderedPartners.map((p) => (
-              <a key={p.id} href={p.link} target="_blank" rel="noopener noreferrer" className="flex min-h-[96px] flex-col items-center justify-center gap-[10px] border-r-[3px] border-b-[3px] border-ink p-[20px] even:border-r-0 xl:min-h-[110px] xl:even:border-r-[3px] text-center text-[13px] font-bold uppercase">
-                {p.logoUrl ? (
-                  <img src={p.logoUrl} alt={p.name} className="mb-[2px] max-h-[64px] object-contain" />
-                ) : (
-                  <span>{p.name}</span>
-                )}
-                {p.type === "company" ? (
-                  <span className="inline-block border-[3px] border-ink bg-white px-[10px] py-[4px] text-[11px] font-bold uppercase text-ink">Company</span>
-                ) : (
-                  <Tag label={p.type[0].toUpperCase() + p.type.slice(1)} color={p.type === "university" ? "blue" : p.type === "community" ? "green" : "red"} />
-                )}
-              </a>
+            {activeOrderedPartners.map((partner) => (
+              <PartnerCell
+                key={partner.id}
+                name={partner.name}
+                logoUrl={partner.logoUrl}
+                link={partner.link}
+                type={partner.type}
+              />
             ))}
             {contactEmail ? (
-              <a key="placeholder" href={"mailto:" + contactEmail} className="flex min-h-[96px] flex-col items-center justify-center border-b-[3px] border-ink bg-yellow p-[20px] xl:min-h-[110px] text-center text-[13px] font-bold uppercase">Your organisation here ↗</a>
+              <a
+                href={`mailto:${contactEmail}`}
+                className="flex min-h-[110px] flex-col items-center justify-center border-r-0 border-b-[3px] border-ink bg-yellow p-[20px] text-center text-[13px] font-bold uppercase"
+              >
+                Your organisation here ↗
+              </a>
             ) : (
-              <div key="placeholder" className="flex min-h-[110px] flex-col items-center justify-center border-b-[3px] border-ink bg-yellow p-[20px] text-center text-[13px] font-bold uppercase">Your organisation here ↗</div>
+              <div className="flex min-h-[110px] flex-col items-center justify-center border-r-0 border-b-[3px] border-ink bg-yellow p-[20px] text-center text-[13px] font-bold uppercase">
+                Your organisation here ↗
+              </div>
             )}
           </div>
-          <div className="hidden flex-wrap gap-[10px] px-[26px] py-[14px] xl:flex">
+          <div className="flex flex-wrap gap-[10px] px-[26px] py-[14px]">
             {partnerTypes.map((t) => (
               <Tag
                 key={t}
                 label={t[0].toUpperCase() + t.slice(1)}
-                color={t === "university" ? "blue" : t === "community" ? "green" : "red"}
+                color={t === "university" ? "blue" : t === "community" ? "green" : t === "sponsor" ? "red" : "white"}
+                bordered={t === "company"}
               />
             ))}
           </div>
@@ -411,10 +416,7 @@ export default function Home() {
         </section>
 
         {/* Footer strip */}
-        <footer className="flex flex-wrap justify-between gap-[12px] px-[22px] py-[16px] text-[12px] font-bold uppercase">
-          <span>&copy; 2026 GDG on Campus TUM</span>
-          <span>GitHub &middot; LinkedIn &middot; Instagram &middot; X</span>
-        </footer>
+        <Footer borderTop={false} />
       </main>
     </>
   );

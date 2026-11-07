@@ -4,15 +4,13 @@ export interface TrackConfig {
   slug: TrackSlug;
   name: string;
   color: TrackColor;
-  lead: string;
-  desc: string;
 }
 
 export const TRACKS: TrackConfig[] = [
-  { slug: "cloud", name: "Cloud", color: "blue", lead: "[Lead name]", desc: "[Track description placeholder]" },
-  { slug: "cybersecurity", name: "Cybersecurity", color: "red", lead: "[Lead name]", desc: "[Track description placeholder]" },
-  { slug: "web", name: "Web", color: "green", lead: "[Lead name]", desc: "[Track description placeholder]" },
-  { slug: "women-in-tech", name: "Women in Tech", color: "yellow", lead: "[Lead name]", desc: "[Track description placeholder]" },
+  { slug: "cloud", name: "Cloud", color: "blue" },
+  { slug: "cybersecurity", name: "Cybersecurity", color: "red" },
+  { slug: "web", name: "Web", color: "green" },
+  { slug: "women-in-tech", name: "Women in Tech", color: "yellow" },
 ];
 
 export const TRACK_BG_COLORS: Record<TrackSlug, string> = {
@@ -22,15 +20,18 @@ export const TRACK_BG_COLORS: Record<TrackSlug, string> = {
   "women-in-tech": "#FBBC04",
 };
 
+export function trackName(slug: TrackSlug): string {
+  return TRACKS.find((track) => track.slug === slug)?.name ?? slug;
+}
+
 export function trackColor(slug: TrackSlug): TrackColor {
-  const t = TRACKS.find((x) => x.slug === slug);
-  return t ? t.color : "blue";
+  return TRACKS.find((track) => track.slug === slug)?.color ?? "blue";
 }
 
 export function trackFilterOptions() {
   return [
     { label: "All", trackId: undefined as TrackSlug | undefined },
-    ...TRACKS.map((t) => ({ label: t.name, trackId: t.slug })),
+    ...TRACKS.map((track) => ({ label: track.name, trackId: track.slug })),
   ];
 }
 

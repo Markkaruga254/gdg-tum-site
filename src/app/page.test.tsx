@@ -79,4 +79,28 @@ describe("Home page moments", () => {
     await screen.findByText("Photos from our events will appear here.");
     expect(screen.queryByText("Loading photos…")).not.toBeInTheDocument();
   });
+
+  it("shows only active partners in order, with only their types and the CTA last", async () => {
+    dataMocks.getPartners.mockResolvedValue([
+      { id: "partner-b", name: "Beta Community", link: "https://beta.example", type: "community", order: 2, active: true },
+      { id: "partner-hidden", name: "Inactive Partner", link: "https://hidden.example", type: "company", order: 0, active: false },
+      { id: "partner-a", name: "Alpha University", link: "https://alpha.example", type: "university", order: 1, active: true },
+    ]);
+    render(<Home />);
+
+    await screen.findByText("Alpha University");
+    const cta = screen.getByText("Your organisation here ↗");
+    const partnerSection = document.querySelector("#partners");
+    const partnerLinks = Array.from(partnerSection?.querySelectorAll('a[href^="https://"]') ?? []);
+
+    expect(partnerLinks.map((link) => link.getAttribute("href"))).toEqual([
+      "https://alpha.example",
+      "https://beta.example",
+    ]);
+    expect(screen.queryByText("Inactive Partner")).not.toBeInTheDocument();
+    expect(screen.getByText("University")).toBeInTheDocument();
+    expect(screen.getByText("Community")).toBeInTheDocument();
+    expect(screen.queryByText("Company")).not.toBeInTheDocument();
+    expect(cta.closest(".grid")?.lastElementChild).toBe(cta);
+  });
 });
