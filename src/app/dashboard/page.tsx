@@ -255,16 +255,18 @@ export default function DashboardPage() {
           {role === "admin" ? "Admin" : `${track.replaceAll("-", " ")} Track`}
         </span>
       </header>
-      <div className="mx-auto grid max-w-[1280px] grid-cols-1 border-x-[3px] border-ink md:grid-cols-[230px_minmax(0,1fr)]">
-        <aside className="border-b-[3px] border-ink md:border-b-0 md:border-r-[3px]">
-          {(TABS.filter((t) => {
-            if (t === "Partners") return role === "admin";
-            if (t === "Live ticker") return role === "admin" || role === "lead";
-            return true;
-          })).map((t) => (
-            <button key={t} type="button" onClick={() => t === "New writeup" ? startNewWriteup() : setTab(t)} aria-current={tab === t ? "page" : undefined} className={`block w-full border-b-[3px] border-ink px-[18px] py-[17px] text-left text-[11px] font-bold uppercase ${tab === t ? "bg-yellow" : "bg-white"}`}>{t}</button>
-          ))}
-        </aside>
+      <div className={`mx-auto grid max-w-[1280px] grid-cols-1 border-x-[3px] border-ink ${tab === "New writeup" && writeupStep === 1 ? "" : "md:grid-cols-[230px_minmax(0,1fr)]"}`}>
+        {!(tab === "New writeup" && writeupStep === 1) && (
+          <aside className="border-b-[3px] border-ink md:border-b-0 md:border-r-[3px]">
+            {(TABS.filter((t) => {
+              if (t === "Partners") return role === "admin";
+              if (t === "Live ticker") return role === "admin" || role === "lead";
+              return true;
+            })).map((t) => (
+              <button key={t} type="button" onClick={() => t === "New writeup" ? startNewWriteup() : setTab(t)} aria-current={tab === t ? "page" : undefined} className={`block w-full border-b-[3px] border-ink px-[18px] py-[17px] text-left text-[11px] font-bold uppercase ${tab === t ? "bg-yellow" : "bg-white"}`}>{t}</button>
+            ))}
+          </aside>
+        )}
         <main className="min-w-0 p-[20px] sm:p-[28px]">
           {msg && <p className="mb-2 text-sm text-green">{msg}</p>}
           {err && <p className="mb-2 text-sm text-red">{err}</p>}
@@ -284,7 +286,6 @@ export default function DashboardPage() {
           {tab === "My profile" && <MyProfileTab uid={uid!} setMsg={setMsg} setErr={setErr} />}
         </main>
       </div>
-      <Footer />
     </>
   );
 }
