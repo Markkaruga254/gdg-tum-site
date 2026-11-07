@@ -18,7 +18,7 @@ const screens: MockupScreen[] = [
   { name: "gallery", mockup: "docs/mockups/05-gallery.html", path: "/gallery" },
   { name: "leads", mockup: "docs/mockups/08-leads.html", path: "/leads" },
   { name: "events", mockup: "docs/mockups/09-events.html", path: "/events" },
-  { name: "event-detail", mockup: "docs/mockups/10-event-detail.html", path: "/event?id=ev-cloud-past" },
+  { name: "event-detail", mockup: "docs/mockups/10-event-detail.html", path: "/event?id=ev-cloud-upcoming" },
   { name: "tracks", mockup: "docs/mockups/11-tracks.html", path: "/tracks" },
   { name: "track-detail", mockup: "docs/mockups/12-track-detail.html", path: "/track?slug=cloud" },
   { name: "writeups", mockup: "docs/mockups/13-writeups.html", path: "/writeups" },
@@ -26,9 +26,9 @@ const screens: MockupScreen[] = [
   { name: "blog", mockup: "docs/mockups/15-blog.html", path: "/blog" },
   { name: "labs", mockup: "docs/mockups/16-labs.html", path: "/labs" },
   { name: "login", mockup: "docs/mockups/17-login.html", path: "/login" },
-  { name: "dashboard-new-writeup", mockup: "docs/mockups/03-dashboard-new-writeup.html", path: "/dashboard", auth: "lead", widths: [1280] },
+  { name: "dashboard-new-writeup", mockup: "docs/mockups/03-dashboard-new-writeup.html", path: "/dashboard", auth: "lead" },
   { name: "dashboard-ai-before", mockup: "docs/mockups/06-ai-assistant-before.html", path: "/dashboard", auth: "lead", widths: [1280] },
-  { name: "admin", mockup: "docs/mockups/18-admin.html", path: "/admin", auth: "admin", widths: [1280] },
+  { name: "admin", mockup: "docs/mockups/18-admin.html", path: "/admin", auth: "admin" },
 ];
 
 test("capture approved mockups beside the current public implementation", async ({ browser }) => {
