@@ -31,7 +31,7 @@ export default function OverviewTab({ events, writeups, setTab, startEditWriteup
               <div className="flex flex-wrap gap-[7px]">
                 {canManageWriteup(role, uid, track, writeup) && (
                   <>
-                    <button type="button" onClick={() => startEditWriteup(writeup)} className="border-[2px] border-ink px-[10px] py-[7px] text-[10px] font-bold uppercase">Edit</button>
+                    <button type="button" onClick={() => startEditWriteup(writeup)} data-testid={`edit-writeup-${writeup.id}`} className="border-[2px] border-ink px-[10px] py-[7px] text-[10px] font-bold uppercase">Edit</button>
                     {writeup.status === "published" ? (
                       <button type="button" onClick={() => unpublish(writeup.id)} className="border-[2px] border-ink px-[10px] py-[7px] text-[10px] font-bold uppercase">Unpublish</button>
                     ) : (
