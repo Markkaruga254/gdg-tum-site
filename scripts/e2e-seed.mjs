@@ -32,7 +32,7 @@ const tracks = [
 
 const testAccounts = [
   { id: "e2e-admin", email: "admin@e2e.test", name: "E2E Admin", role: "admin", track: null },
-  { id: "e2e-lead-cloud", email: "lead@e2e.test", name: "Visual QA Lead", role: "lead", track: "cloud" },
+  { id: "u-lead-cloud", email: "lead@e2e.test", name: "Cloud Lead", role: "lead", track: "cloud" },
 ];
 
 const users = [
@@ -41,7 +41,7 @@ const users = [
   { id: "u-lead-web", name: "Web Lead", role: "lead", track: "web", photoUrl: "", bio: "", links: [] },
   { id: "u-lead-wit", name: "WIT Lead", role: "lead", track: "women-in-tech", photoUrl: "", bio: "", links: [] },
   { id: "u-member", name: "Member User", role: "member", track: "cloud", photoUrl: "", bio: "", links: [] },
-  ...testAccounts.map(({ id, name, role, track }) => ({ id, name, role, track, photoUrl: "", bio: "", links: [] })),
+  ...testAccounts.filter(({ role }) => role === "admin").map(({ id, name, role, track }) => ({ id, name, role, track, photoUrl: "", bio: "", links: [] })),
 ];
 
 const events = [
