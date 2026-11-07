@@ -20,12 +20,11 @@ body {
   font-family: var(--font-display);
 }
 
-
 a:hover {
   background-color: #FBBC04;
 }
 
-:where(a, button, input, select, textarea):focus-visible {
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
   outline: 3px solid #1967D2;
   outline-offset: 3px;
 }
