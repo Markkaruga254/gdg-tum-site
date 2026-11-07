@@ -40,26 +40,28 @@ const db = admin.firestore();
 console.log(`Seeding ${projectId} (${process.env.FIRESTORE_EMULATOR_HOST ? "emulator" : "live"})`);
 
 async function main() {
-  const leadCloud = await db.collection("users").add({
-    name: "Cloud Track Lead",
-    role: "lead",
-    track: "cloud",
-    bio: "Helps students build and deploy practical cloud projects.",
-    photoUrl: "",
-  });
-  const leadCyber = await db.collection("users").add({
-    name: "Cybersecurity Track Lead",
-    role: "lead",
-    track: "cybersecurity",
-    bio: "Guides hands-on security learning and responsible practice.",
-    photoUrl: "",
-  });
+  const leadDefs = [
+    { name: "Mitchelle Ndunge", role: "lead", track: "cloud", bio: "Chapter lead", photoUrl: "" },
+    { name: "Rooney Odhiambo", role: "lead", track: "cloud", bio: "VC chair", photoUrl: "" },
+    { name: "Mark Karuga", role: "lead", track: "cloud", bio: "Cloud track lead", photoUrl: "" },
+    { name: "Lewis Kagiri", role: "lead", track: "cloud", bio: "AI/ML lead", photoUrl: "" },
+    { name: "Ian Chacha", role: "lead", track: "cloud", bio: "Mobile track lead", photoUrl: "" },
+    { name: "Kimberly Gift", role: "lead", track: "cybersecurity", bio: "Cybersecurity track lead", photoUrl: "" },
+    { name: "Larah Flynn", role: "lead", track: "women-in-tech", bio: "Women in Tech lead", photoUrl: "" },
+    { name: "Edith Karanja", role: "lead", track: "cloud", bio: "Hackathons and solutions", photoUrl: "" },
+    { name: "Sam Ryan", role: "lead", track: "web", bio: "Web development lead", photoUrl: "" },
+  ];
+  const leadRefs = await Promise.all(leadDefs.map((lead) => db.collection("users").add(lead)));
+  const leadIdsByTrack: Record<string, string[]> = { cloud: [], cybersecurity: [], web: [], "women-in-tech": [] };
+  leadDefs.forEach((lead, i) => { leadIdsByTrack[lead.track].push(leadRefs[i].id); });
+  const leadCloud = leadRefs[2];
+  const leadCyber = leadRefs[5];
 
   const tracks = [
-    { name: "Cloud", slug: "cloud", color: "blue", description: "Explore cloud platforms, infrastructure and deployment.", leadIds: [leadCloud.id] },
-    { name: "Cybersecurity", slug: "cybersecurity", color: "red", description: "Learn to identify risks and build more secure systems.", leadIds: [leadCyber.id] },
-    { name: "Web", slug: "web", color: "green", description: "Design, build and ship useful web experiences.", leadIds: [] },
-    { name: "Women in Tech", slug: "women-in-tech", color: "yellow", description: "Create space for women to learn, collaborate and lead in technology.", leadIds: [] },
+    { name: "Cloud", slug: "cloud", color: "blue", description: "Explore cloud platforms, infrastructure and deployment.", leadIds: leadIdsByTrack.cloud },
+    { name: "Cybersecurity", slug: "cybersecurity", color: "red", description: "Learn to identify risks and build more secure systems.", leadIds: leadIdsByTrack.cybersecurity },
+    { name: "Web", slug: "web", color: "green", description: "Design, build and ship useful web experiences.", leadIds: leadIdsByTrack.web },
+    { name: "Women in Tech", slug: "women-in-tech", color: "yellow", description: "Create space for women to learn, collaborate and lead in technology.", leadIds: leadIdsByTrack["women-in-tech"] },
   ];
   for (const t of tracks) await db.collection("tracks").doc(t.slug).set(t);
 
