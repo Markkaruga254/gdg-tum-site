@@ -46,7 +46,7 @@ const users = [
 
 const events = [
   { id: "ev-cloud-upcoming", title: "Cloud Build Day", trackId: "cloud", date: new Date("2026-12-01T10:00:00Z"), venue: "Hall A", status: "upcoming", attendance: 50, rsvpCount: 30, writeupId: null },
-  { id: "ev-cloud-past", title: "Cloud Track, Week 2: Tools of the trade", trackId: "cloud", date: new Date("2026-10-15T14:00:00Z"), venue: "Hall B", status: "past", attendance: 40, rsvpCount: 40, writeupId: "w-published-cloud" },
+  { id: "ev-cloud-past", title: "Cloud 101 Workshop", trackId: "cloud", date: new Date("2026-10-15T14:00:00Z"), venue: "Hall B", status: "past", attendance: 40, rsvpCount: 40, writeupId: "w-published-cloud" },
   { id: "ev-cloud-past-2", title: "Serverless Lab", trackId: "cloud", date: new Date("2026-09-15T14:00:00Z"), venue: "Lab 1", status: "past", attendance: 32, rsvpCount: 32, writeupId: "w-published-cloud-2" },
   { id: "ev-cloud-past-3", title: "Cloud Storage Workshop", trackId: "cloud", date: new Date("2026-08-15T14:00:00Z"), venue: "Hall A", status: "past", attendance: 28, rsvpCount: 28, writeupId: "w-published-cloud-3" },
   { id: "ev-web-upcoming", title: "Web Workshop", trackId: "web", date: new Date("2026-12-10T16:00:00Z"), venue: "Lab 2", status: "upcoming", attendance: null, rsvpCount: null, writeupId: null },
