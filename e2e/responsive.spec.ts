@@ -24,7 +24,7 @@ for (const route of routes) {
     page.on("pageerror", (error) => pageErrors.push(error.message));
 
     for (const width of [390, 768, 1280]) {
-      await page.setViewportSize({ width, height: 900 });
+      await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
       await page.goto(route.path, { waitUntil: "domcontentloaded" });
       await expect(page.locator("main")).toBeVisible();
       await page.waitForTimeout(400);
@@ -35,20 +35,25 @@ for (const route of routes) {
       }));
       expect(dimensions.document, `${route.name} overflows at ${width}px`).toBeLessThanOrEqual(dimensions.viewport);
 
-      if (width === 390 || width === 1280) {
+      if (width === 390 || width === 768 || width === 1280) {
         await page.screenshot({
           path: `test-results/mockup-review/${route.name}-${width}.png`,
           fullPage: true,
         });
       }
 
+      const navigation = page.getByRole("navigation", { name: "Main navigation" });
+      await expect(navigation).toBeVisible();
+      for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Join a track ↗"]) {
+        await expect(navigation.getByRole("link", { name: label })).toBeVisible();
+      }
+
       if (route.name === "home" && width === 390) {
-        await page.getByRole("button", { name: "Menu" }).click();
-        await expect(page.locator("#mobile-site-menu")).toBeVisible();
-        const menuWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-        expect(menuWidth).toBeLessThanOrEqual(width);
-        await page.screenshot({ path: "test-results/mockup-review/home-menu-open-390.png", fullPage: true });
-        await page.getByRole("button", { name: "Close" }).click();
+        await expect(page.getByText("Google Developer Group on Campus")).toBeVisible();
+        await expect(page.getByRole("button", { name: "Menu" })).toHaveCount(0);
+        await page.screenshot({ path: "test-results/mockup-review/home-canonical-nav-390.png", fullPage: true });
+      } else if (route.name !== "home") {
+        await expect(page.getByText("Google Developer Group on Campus")).toHaveCount(0);
       }
     }
 
