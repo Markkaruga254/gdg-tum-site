@@ -40,7 +40,7 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
         href="/"
         onClick={() => setMobileMenuOpen(false)}
         aria-label="GDG on Campus TUM home"
-        className="flex flex-1 items-center border-r-[3px] border-ink px-[16px] py-[12px] font-display text-[26px] uppercase leading-none tracking-[1px] md:flex-none md:px-[22px] md:py-[14px] md:text-[30px]"
+        className={`flex items-center ${home ? "flex-1 md:flex-none" : "flex-none"} border-r-[3px] border-ink px-[16px] py-[12px] font-display text-[26px] uppercase leading-none tracking-[1px] md:px-[22px] md:py-[14px] md:text-[30px]`}
       >
         GDG<span className="text-blue">.</span>TUM
       </Link>
@@ -51,15 +51,17 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
         </span>
       )}
 
-      <button
-        type="button"
-        aria-controls="mobile-navigation"
-        aria-expanded={mobileMenuOpen}
-        onClick={() => setMobileMenuOpen((open) => !open)}
-        className="flex items-center border-r-[3px] border-ink px-[16px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] md:hidden"
-      >
-        Menu
-      </button>
+      {home && (
+        <button
+          type="button"
+          aria-controls="mobile-navigation"
+          aria-expanded={mobileMenuOpen}
+          onClick={() => setMobileMenuOpen((open) => !open)}
+          className="flex items-center border-r-[3px] border-ink px-[16px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] md:hidden"
+        >
+          Menu
+        </button>
+      )}
 
       {pageLinks.map((link) => (
         <Link
@@ -67,7 +69,7 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
           href={link.href}
           onClick={() => setMobileMenuOpen(false)}
           aria-current={activePath === link.href ? "page" : undefined}
-          className={`${cellClass} hidden md:flex ${activePath === link.href ? "bg-yellow" : "bg-white"}`}
+          className={`${cellClass} ${home ? "hidden md:flex" : "flex"} ${activePath === link.href ? "bg-yellow" : "bg-white"}`}
         >
           {link.label}
         </Link>
@@ -86,7 +88,7 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
           href="/login"
           onClick={() => setMobileMenuOpen(false)}
           aria-current={pathname === "/login" ? "page" : undefined}
-          className={`${cellClass} hidden md:flex ${pathname === "/login" ? "bg-yellow" : "bg-white"}`}
+          className={`${cellClass} ${home ? "hidden md:flex" : "flex"} ${pathname === "/login" ? "bg-yellow" : "bg-white"}`}
         >
           Sign in
         </Link>
@@ -95,13 +97,13 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
       <Link
         href="/tracks"
         onClick={() => setMobileMenuOpen(false)}
-        className="ml-auto flex items-center border-l-0 border-ink bg-yellow px-[14px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] whitespace-nowrap md:border-l-[3px] md:px-[20px]"
+        className={`ml-auto flex items-center ${home ? "border-l-0 md:border-l-[3px]" : "border-l-[3px]"} border-ink bg-yellow px-[14px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] whitespace-nowrap md:px-[20px]`}
       >
-        <span className="md:hidden">Join ↗</span>
-        <span className="hidden md:inline">Join a track ↗</span>
+        {home && <span className="md:hidden">Join ↗</span>}
+        <span className={home ? "hidden md:inline" : "inline"}>Join a track ↗</span>
       </Link>
 
-      {mobileMenuOpen && (
+      {home && mobileMenuOpen && (
         <div id="mobile-navigation" className="flex basis-full flex-col border-t-[3px] border-ink md:hidden">
           {pageLinks.map((link) => (
             <Link
