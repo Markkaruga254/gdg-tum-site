@@ -37,7 +37,7 @@ test("capture approved mockups beside the current public implementation", async 
   for (const screen of screens) {
     for (const width of screen.widths ?? [390, 1280]) {
       const height = width === 390 ? 844 : 1000;
-      const context = await browser.newContext({ viewport: { width, height } });
+      const context = await browser.newContext({ baseURL: "http://localhost:3000", viewport: { width, height } });
       const referencePage = await context.newPage();
       const implementationPage = await context.newPage();
 
