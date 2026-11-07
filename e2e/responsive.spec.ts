@@ -42,6 +42,11 @@ for (const route of routes) {
         });
       }
 
+      if (route.name === "home" && width === 390) {
+        await expect(page.getByText("Google Developer Group on Campus")).toBeHidden();
+        await page.screenshot({ path: "test-results/mockup-review/home-canonical-nav-390.png", fullPage: true });
+      }
+
       const navigation = page.getByRole("navigation", { name: "Main navigation" });
       await expect(navigation).toBeVisible();
 
@@ -60,10 +65,7 @@ for (const route of routes) {
         await expect(navigation.getByRole("button", { name: "Menu" })).toBeHidden();
       }
 
-      if (route.name === "home" && width === 390) {
-        await expect(page.getByText("Google Developer Group on Campus")).toBeHidden();
-        await page.screenshot({ path: "test-results/mockup-review/home-canonical-nav-390.png", fullPage: true });
-      } else if (route.name !== "home") {
+      if (route.name !== "home") {
         await expect(page.getByText("Google Developer Group on Campus")).toHaveCount(0);
       }
     }
