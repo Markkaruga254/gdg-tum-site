@@ -77,6 +77,7 @@ export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, eve
                     </span>
                   </label>
                 ))}
+                <button type="button" onClick={() => setTab("Media")} className="flex aspect-[4/3] flex-col items-center justify-center border-[3px] border-dashed border-ink bg-white p-[10px] text-[11px] font-bold uppercase">+ Add photos</button>
               </div>
             ) : (
               <div className="border-[3px] border-dashed border-ink bg-white p-[28px] text-center">
@@ -84,10 +85,9 @@ export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, eve
                 <p className="mt-[8px] text-[11px] leading-[1.5]">Save a draft, then use the Media tab to upload event photos. Each photo stays opted out of AI processing unless you select it here.</p>
               </div>
             )}
-            <button type="button" onClick={() => setTab("Media")} className="justify-self-start border-[3px] border-ink px-[12px] py-[8px] text-[11px] font-bold uppercase">Manage media ↗</button>
             <label className="flex items-start gap-[10px] border-[3px] border-ink bg-yellow p-[12px] text-[12px] leading-[1.5]">
               <input type="checkbox" checked={aiConsent} onChange={(event) => setAiConsent(event.target.checked)} className="mt-[2px]" />
-              <span>I confirm I have permission to submit these notes and only the photos I select for AI processing. AI-generated content must be reviewed before publishing.</span>
+              <span>I confirm the people in the selected photos have agreed to AI processing. Only photos you tick are sent to the AI service.</span>
             </label>
             <button type="button" disabled title="AI draft generation will be enabled when the approved AI service is deployed." className="justify-self-start border-[3px] border-ink bg-ink px-[16px] py-[12px] text-[11px] font-bold uppercase text-white opacity-50">Generate draft · Coming soon</button>
           </aside>
