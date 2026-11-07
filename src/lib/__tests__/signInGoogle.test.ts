@@ -1,6 +1,8 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
 const setDocMock = vi.hoisted(() => vi.fn());
+const updateDocMock = vi.hoisted(() => vi.fn());
+const deleteFieldMock = vi.hoisted(() => vi.fn(() => ({ kind: "deleteField" })));
 const getDocMock = vi.hoisted(() => vi.fn());
 const docMock = vi.hoisted(() => vi.fn());
 const signInWithPopupMock = vi.hoisted(() => vi.fn());
@@ -21,6 +23,8 @@ vi.mock("firebase/firestore", () => ({
   doc: docMock,
   getDoc: getDocMock,
   setDoc: setDocMock,
+  updateDoc: updateDocMock,
+  deleteField: deleteFieldMock,
   getFirestore: vi.fn(() => ({})),
 }));
 
@@ -63,17 +67,47 @@ describe("signInGoogle provisioning", () => {
     expect(setDocMock).toHaveBeenCalledWith(
       expect.anything(),
       { email: "new@example.invalid" },
+      { merge: true },
     );
+    expect(updateDocMock).not.toHaveBeenCalled();
   });
 
-  it("skips provisioning when the user profile already exists", async () => {
+  it("stores existing users' email privately and removes a legacy public email", async () => {
     signInWithPopupMock.mockResolvedValue({
       user: { uid: "u-existing", displayName: "Existing", photoURL: "", email: "existing@example.invalid" },
     });
-    getDocMock.mockResolvedValue({ exists: () => true });
+    getDocMock.mockResolvedValue({
+      exists: () => true,
+      data: () => ({ name: "Existing", role: "member", track: null, email: "legacy@example.invalid" }),
+    });
 
     await signInGoogle();
 
-    expect(setDocMock).not.toHaveBeenCalled();
+    expect(setDocMock).toHaveBeenCalledTimes(1);
+    expect(setDocMock).toHaveBeenCalledWith(
+      expect.anything(),
+      { email: "existing@example.invalid" },
+      { merge: true },
+    );
+    expect(updateDocMock).toHaveBeenCalledWith(expect.anything(), { email: deleteFieldMock() });
+  });
+
+  it("keeps existing public profiles intact when no legacy email is present", async () => {
+    signInWithPopupMock.mockResolvedValue({
+      user: { uid: "u-existing-clean", displayName: "Existing", photoURL: "", email: "clean@example.invalid" },
+    });
+    getDocMock.mockResolvedValue({
+      exists: () => true,
+      data: () => ({ name: "Existing", role: "member", track: null }),
+    });
+
+    await signInGoogle();
+
+    expect(updateDocMock).not.toHaveBeenCalled();
+    expect(setDocMock).toHaveBeenCalledWith(
+      expect.anything(),
+      { email: "clean@example.invalid" },
+      { merge: true },
+    );
   });
 });
