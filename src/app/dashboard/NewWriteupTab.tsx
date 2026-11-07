@@ -116,7 +116,14 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
 
             <div className="border-[3px] border-ink bg-white p-[16px] text-[13px] leading-[1.65]">
               <h3 className="mb-[10px] font-bold uppercase">What we covered</h3>
-              {wf.body ? <ReactMarkdown>{wf.body}</ReactMarkdown> : <p className="text-[#666]">Your notes and writeup content will appear here as you draft.</p>}
+              {wf.body ? (
+                <ReactMarkdown components={{
+                  h2: ({ children }) => <h4 className="mt-[14px] font-bold uppercase">{children}</h4>,
+                  p: ({ children }) => <p className="mt-[6px]">{children}</p>,
+                  ul: ({ children }) => <ul className="mt-[6px] list-disc pl-[18px]">{children}</ul>,
+                  li: ({ children }) => <li className="mt-[3px]">{children}</li>,
+                }}>{wf.body}</ReactMarkdown>
+              ) : <p className="text-[#666]">Your notes and writeup content will appear here as you draft.</p>}
               <h3 className="mt-[18px] font-bold uppercase">Resources</h3>
               {wf.links.filter((link: any) => link.title || link.url).length ? (
                 <ul className="mt-[6px] list-disc pl-[18px]">
