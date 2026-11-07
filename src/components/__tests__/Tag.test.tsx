@@ -28,4 +28,14 @@ describe("Tag", () => {
     expect(el).toHaveClass("bg-red");
     expect(el).toHaveClass("text-ink");
   });
+
+  it("uses the specified 3px ink border for the Women in Tech tag", () => {
+    render(<Tag label="Women in Tech" color="yellow" />);
+    expect(screen.getByText("Women in Tech")).toHaveClass("border-[3px]", "border-ink");
+  });
+
+  it("supports a white company tag with an explicit border", () => {
+    render(<Tag label="Company" color="white" bordered />);
+    expect(screen.getByText("Company")).toHaveClass("bg-white", "border-[3px]");
+  });
 });

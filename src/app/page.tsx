@@ -1,6 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
+import PartnerCell from "@/components/PartnerCell";
+import { PhotoImage } from "@/components/PhotoCard";
 import TickerBar from "@/components/TickerBar";
 import Tag from "@/components/Tag";
 import SectionHeader from "@/components/SectionHeader";
@@ -158,7 +161,7 @@ export default function Home() {
                 <>
                   <h2 className="font-display text-[38px] leading-[1.05] uppercase mt-[10px] xl:mt-[12px] xl:text-[44px]">{nextEvent.title}</h2>
                   <p className="mt-[4px] text-[14px] xl:text-[15px]">{formatDateTime(nextEvent.date)} · {nextEvent.venue}</p>
-                  <button type="button" disabled className="mt-[18px] w-fit cursor-not-allowed border-[3px] border-ink bg-white px-[18px] py-[10px] text-[12px] font-bold uppercase opacity-60">
+                  <button type="button" disabled className="mt-[18px] w-fit cursor-not-allowed border-[3px] border-ink bg-white px-[18px] py-[10px] text-[12px] font-bold uppercase text-ink opacity-60">
                     RSVP (coming soon)
                   </button>
                 </>
@@ -267,32 +270,35 @@ export default function Home() {
             )}
           </div>
           <div className="grid grid-cols-2 xl:grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-            {activeOrderedPartners.map((p) => (
-              <a key={p.id} href={p.link} target="_blank" rel="noopener noreferrer" className="flex min-h-[96px] flex-col items-center justify-center gap-[10px] border-r-[3px] border-b-[3px] border-ink p-[20px] even:border-r-0 xl:min-h-[110px] xl:even:border-r-[3px] text-center text-[13px] font-bold uppercase">
-                {p.logoUrl ? (
-                  <img src={p.logoUrl} alt={p.name} className="mb-[2px] max-h-[64px] object-contain" />
-                ) : (
-                  <span>{p.name}</span>
-                )}
-                {p.type === "company" ? (
-                  <span className="inline-block border-[3px] border-ink bg-white px-[10px] py-[4px] text-[11px] font-bold uppercase text-ink">Company</span>
-                ) : (
-                  <Tag label={p.type[0].toUpperCase() + p.type.slice(1)} color={p.type === "university" ? "blue" : p.type === "community" ? "green" : "red"} />
-                )}
-              </a>
+            {activeOrderedPartners.map((partner) => (
+              <PartnerCell
+                key={partner.id}
+                name={partner.name}
+                logoUrl={partner.logoUrl}
+                link={partner.link}
+                type={partner.type}
+              />
             ))}
             {contactEmail ? (
-              <a key="placeholder" href={"mailto:" + contactEmail} className="flex min-h-[96px] flex-col items-center justify-center border-b-[3px] border-ink bg-yellow p-[20px] xl:min-h-[110px] text-center text-[13px] font-bold uppercase">Your organisation here ↗</a>
+              <a
+                href={`mailto:${contactEmail}`}
+                className="flex min-h-[110px] flex-col items-center justify-center border-r-0 border-b-[3px] border-ink bg-yellow p-[20px] text-center text-[13px] font-bold uppercase"
+              >
+                Your organisation here ↗
+              </a>
             ) : (
-              <div key="placeholder" className="flex min-h-[110px] flex-col items-center justify-center border-b-[3px] border-ink bg-yellow p-[20px] text-center text-[13px] font-bold uppercase">Your organisation here ↗</div>
+              <div className="flex min-h-[110px] flex-col items-center justify-center border-r-0 border-b-[3px] border-ink bg-yellow p-[20px] text-center text-[13px] font-bold uppercase">
+                Your organisation here ↗
+              </div>
             )}
           </div>
-          <div className="hidden flex-wrap gap-[10px] px-[26px] py-[14px] xl:flex">
+          <div className="flex flex-wrap gap-[10px] px-[26px] py-[14px]">
             {partnerTypes.map((t) => (
               <Tag
                 key={t}
                 label={t[0].toUpperCase() + t.slice(1)}
-                color={t === "university" ? "blue" : t === "community" ? "green" : "red"}
+                color={t === "university" ? "blue" : t === "community" ? "green" : t === "sponsor" ? "red" : "white"}
+                bordered={t === "company"}
               />
             ))}
           </div>
@@ -323,9 +329,7 @@ export default function Home() {
                   href={`/writeup?id=${photos[0].writeupId}`}
                   className="flex h-full min-h-[240px] flex-[2_1_340px] flex-col border-[3px] border-ink xl:min-h-[440px]"
                 >
-                  <div className="h-[200px] overflow-hidden border-b-[3px] border-ink xl:h-[380px]">
-                    <img src={photos[0].url} alt={photos[0].altText} className="h-full w-full object-cover" />
-                  </div>
+                  <PhotoImage url={photos[0].url} altText={photos[0].altText} trackId={photos[0].trackId} className="h-[200px] overflow-hidden border-b-[3px] border-ink xl:h-[380px]" />
                   <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                     {photos[0].caption} &middot;{" "}
                     <Tag label={photos[0].trackId === "women-in-tech" ? "Women in Tech" : photos[0].trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())} color={trackTagColor(photos[0].trackId)} />
@@ -338,9 +342,7 @@ export default function Home() {
                       href={`/writeup?id=${photo.writeupId}`}
                       className={`flex h-full min-h-[160px] flex-col border-[3px] border-ink xl:min-h-[240px] ${index > 1 ? "hidden xl:flex" : ""}`}
                     >
-                      <div className="h-[110px] overflow-hidden border-b-[3px] border-ink xl:h-[150px]">
-                        <img src={photo.url} alt={photo.altText} className="h-full w-full object-cover" />
-                      </div>
+                      <PhotoImage url={photo.url} altText={photo.altText} trackId={photo.trackId} className="h-[110px] overflow-hidden border-b-[3px] border-ink xl:h-[150px]" />
                       <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                         {photo.caption}
                         <Tag label={photo.trackId === "women-in-tech" ? "Women in Tech" : photo.trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())} color={trackTagColor(photo.trackId)} />
@@ -411,10 +413,7 @@ export default function Home() {
         </section>
 
         {/* Footer strip */}
-        <footer className="flex flex-wrap justify-between gap-[12px] px-[22px] py-[16px] text-[12px] font-bold uppercase">
-          <span>&copy; 2026 GDG on Campus TUM</span>
-          <span>GitHub &middot; LinkedIn &middot; Instagram &middot; X</span>
-        </footer>
+        <Footer borderTop={false} />
       </main>
     </>
   );

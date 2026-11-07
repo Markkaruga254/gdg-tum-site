@@ -1,3 +1,3 @@
 export default function BorderCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <div className={`border-[3px] border-ink ${className}`}>{children}</div>;
+  return <article className={`border-[3px] border-ink bg-white ${className}`}>{children}</article>;
 }

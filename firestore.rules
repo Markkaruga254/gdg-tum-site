@@ -2,102 +2,142 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     function isSignedIn() { return request.auth != null; }
-    function role() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role; }
-    function isAdmin() { return isSignedIn() && role() == "admin"; }
-    function isLeadOf(trackId) { return isSignedIn() && role() == "lead" && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.track == trackId; }
-
-    function writeupOf(writeupId) {
-      return get(/databases/$(database)/documents/writeups/$(writeupId));
+    function userPath(uid) { return /databases/$(database)/documents/users/$(uid); }
+    function role() {
+      return isSignedIn() && exists(userPath(request.auth.uid))
+        ? get(userPath(request.auth.uid)).data.get("role", "")
+        : "";
     }
+    function isAdmin() { return role() == "admin"; }
+    function isLeadOf(trackId) {
+      return role() == "lead"
+        && get(userPath(request.auth.uid)).data.get("track", "") == trackId;
+    }
+
+    function eventPath(eventId) { return /databases/$(database)/documents/events/$(eventId); }
     function eventTrackId(eventId) {
-      let e = get(/databases/$(database)/documents/events/$(eventId));
-      return e != null ? e.data.trackId : "";
+      return get(eventPath(eventId)).data.get("trackId", "");
     }
-    // Admin, or a lead of the track the ticker's event belongs to.
     function canManageTicker(eventId) {
-      return isAdmin() || (isSignedIn() && isLeadOf(eventTrackId(eventId)));
+      return exists(eventPath(eventId)) && (isAdmin() || isLeadOf(eventTrackId(eventId)));
+    }
+    function validTickerMessage(data) {
+      return data.message is string
+        && data.message.size() >= 1
+        && data.message.size() <= 140;
     }
 
+    function writeupPath(writeupId) { return /databases/$(database)/documents/writeups/$(writeupId); }
+    function writeupExists(writeupId) { return exists(writeupPath(writeupId)); }
+    function writeupData(writeupId) { return get(writeupPath(writeupId)).data; }
+    function isWriteupAuthor(writeupId) {
+      return isSignedIn() && writeupExists(writeupId)
+        && writeupData(writeupId).get("authorId", "") == request.auth.uid;
+    }
     function canManageMedia(writeupId) {
-      let w = writeupOf(writeupId);
-      return w != null && (
-        isAdmin()
-        || (isSignedIn() && w.data.authorId == request.auth.uid)
-        || (isSignedIn() && isLeadOf(w.data.trackId))
-      );
+      return isAdmin() || isWriteupAuthor(writeupId);
     }
 
     match /tracks/{id} {
       allow read: if true;
       allow write: if isAdmin();
     }
+
     match /events/{id} {
       allow read: if true;
       allow create: if isAdmin() || isLeadOf(request.resource.data.trackId);
-      // Both sides must be the actor's track: a lead can neither push an event out
-      // of their track nor pull one in and inherit the other track's lead rights.
-      // A lead may only stamp cancelledBy with their own uid.
-      allow update: if isAdmin() || (isLeadOf(resource.data.trackId) && isLeadOf(request.resource.data.trackId)
+      allow update: if isAdmin() || (
+        isLeadOf(resource.data.trackId)
+        && isLeadOf(request.resource.data.trackId)
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(["cancelledBy"])
-            || request.resource.data.cancelledBy == request.auth.uid));
-      // Leads cancel (a status write); only an admin may destroy an event.
+          || request.resource.data.cancelledBy == request.auth.uid)
+      );
       allow delete: if isAdmin();
     }
+
     match /ticker/{id} {
       allow read: if true;
-      // Creators can create rows; track leads manage rows for their own track,
-      // and admins manage any ticker row. Messages are
-      // capped at 140 characters.
-      allow create: if isSignedIn() && request.resource.data.createdBy == request.auth.uid && canManageTicker(request.resource.data.eventId) && request.resource.data.message is string && request.resource.data.message.size() >= 1 && request.resource.data.message.size() <= 140;
-      allow update: if isAdmin() || (
-        isSignedIn()
-        && canManageTicker(resource.data.eventId)
-        && request.resource.data.eventId == resource.data.eventId
+      allow create: if isSignedIn()
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.eventId is string
+        && validTickerMessage(request.resource.data)
+        && canManageTicker(request.resource.data.eventId);
+      allow update: if request.resource.data.eventId == resource.data.eventId
         && request.resource.data.createdBy == resource.data.createdBy
         && request.resource.data.status in ["active", "inactive"]
-        && request.resource.data.message is string
-        && request.resource.data.message.size() >= 1
-        && request.resource.data.message.size() <= 140
+        && validTickerMessage(request.resource.data)
+        && canManageTicker(resource.data.eventId);
+      allow delete: if isAdmin() || (
+        isSignedIn() && exists(eventPath(resource.data.eventId))
+        && isLeadOf(eventTrackId(resource.data.eventId))
       );
-      allow delete: if isAdmin() || (isSignedIn() && canManageTicker(resource.data.eventId));
     }
+
     match /posts/{id} {
       allow read: if true;
       allow write: if false;
     }
+
     match /users/{uid} {
-      // Public user docs hold no email; emails live in private_users.
       allow read: if true;
-      allow create: if isSignedIn() && request.auth.uid == uid && request.resource.data.role == "member";
-      allow update: if (isSignedIn() && request.auth.uid == uid && !request.resource.data.diff(resource.data).changedKeys().hasAny(["role","track"])) || isAdmin();
+      allow create: if isSignedIn()
+        && request.auth.uid == uid
+        && !request.resource.data.keys().hasAny(["email"])
+        && request.resource.data.get("role", "") == "member";
+      allow update: if !request.resource.data.keys().hasAny(["email"]) && (
+        (isSignedIn() && request.auth.uid == uid
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(["role", "track"]))
+        || (isAdmin() && (
+          request.auth.uid != uid
+          || !request.resource.data.diff(resource.data).affectedKeys().hasAny(["role", "track"])
+        ))
+      );
       allow delete: if isAdmin();
     }
+
     match /private_users/{uid} {
       allow read, write: if isSignedIn() && (request.auth.uid == uid || isAdmin());
     }
+
     match /writeups/{id} {
-      allow read: if resource.data.status == "published" || (isSignedIn() && (resource.data.authorId == request.auth.uid || isAdmin()));
-      // Admin may create any writeup; a lead may create a draft or published
-      // writeup in their own track, attributed to themselves.
+      allow read: if resource.data.get("status", "") == "published"
+        || (isSignedIn() && (resource.data.get("authorId", "") == request.auth.uid || isAdmin()));
       allow create: if isSignedIn() && (
         isAdmin()
-        || (role() == "lead" && request.resource.data.authorId == request.auth.uid && request.resource.data.trackId == get(/databases/$(database)/documents/users/$(request.auth.uid)).data.track && (request.resource.data.status == "draft" || request.resource.data.status == "published"))
+        || (isLeadOf(request.resource.data.trackId)
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.status in ["draft", "published"])
       );
-      // Admin may update anything; a lead author may update their own writeup
-      // as long as authorId and trackId are unchanged (status may change).
-      allow update: if isAdmin() || (isSignedIn() && role() == "lead" && resource.data.authorId == request.auth.uid && request.resource.data.authorId == resource.data.authorId && request.resource.data.trackId == resource.data.trackId);
+      allow update: if request.resource.data.authorId == resource.data.authorId
+        && request.resource.data.trackId == resource.data.trackId
+        && (isAdmin() || (
+          isSignedIn()
+          && isLeadOf(resource.data.trackId)
+          && resource.data.authorId == request.auth.uid
+          && request.resource.data.status in ["draft", "published"]
+        ));
       allow delete: if isAdmin();
     }
+
     match /media/{id} {
-      allow read: if writeupOf(resource.data.writeupId).data.status == "published" || isAdmin() || (isSignedIn() && writeupOf(resource.data.writeupId).data.authorId == request.auth.uid);
+      allow read: if isAdmin() || (
+        writeupExists(resource.data.writeupId) && (
+          writeupData(resource.data.writeupId).get("status", "") == "published"
+          || isWriteupAuthor(resource.data.writeupId)
+        )
+      );
       allow create: if isSignedIn() && canManageMedia(request.resource.data.writeupId);
-      allow update: if isSignedIn() && canManageMedia(resource.data.writeupId);
+      allow update: if isSignedIn()
+        && request.resource.data.writeupId == resource.data.writeupId
+        && canManageMedia(resource.data.writeupId);
       allow delete: if isSignedIn() && canManageMedia(resource.data.writeupId);
     }
+
     match /partners/{id} {
       allow read: if true;
       allow write: if isAdmin();
     }
+
     match /{document=**} {
       allow read, write: if false;
     }

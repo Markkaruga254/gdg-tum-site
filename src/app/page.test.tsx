@@ -59,6 +59,8 @@ beforeEach(() => {
   dataMocks.getPosts.mockResolvedValue([]);
   dataMocks.getPartners.mockResolvedValue([]);
   authMocks.onAuthStateChanged.mockImplementation(() => () => {});
+
+
 });
 
 afterEach(() => {
@@ -66,6 +68,24 @@ afterEach(() => {
 });
 
 describe("Home page moments", () => {
+  it("keeps the homepage RSVP label visible while disabled", async () => {
+    dataMocks.getEvents.mockResolvedValue([{
+      id: "event-next",
+      title: "Upcoming workshop",
+      date: { toDate: () => new Date("2026-12-01T10:00:00Z") },
+      venue: "Main Lab",
+      status: "upcoming",
+      trackId: "cloud",
+    }]);
+    galleryMocks.getGalleryPage.mockResolvedValue({ photos: [], nextCursor: null });
+
+    render(<Home />);
+
+    const rsvp = await screen.findByRole("button", { name: "RSVP (coming soon)" });
+    expect(rsvp).toBeDisabled();
+    expect(rsvp).toHaveClass("text-ink");
+  });
+
   it("renders a loading block while photos are loading without reading photos[0]", async () => {
     galleryMocks.getGalleryPage.mockImplementation(() => new Promise(() => {}));
     render(<Home />);
@@ -78,5 +98,29 @@ describe("Home page moments", () => {
     render(<Home />);
     await screen.findByText("Photos from our events will appear here.");
     expect(screen.queryByText("Loading photos…")).not.toBeInTheDocument();
+  });
+
+  it("shows only active partners in order, with only their types and the CTA last", async () => {
+    dataMocks.getPartners.mockResolvedValue([
+      { id: "partner-b", name: "Beta Community", link: "https://beta.example", type: "community", order: 2, active: true },
+      { id: "partner-hidden", name: "Inactive Partner", link: "https://hidden.example", type: "company", order: 0, active: false },
+      { id: "partner-a", name: "Alpha University", link: "https://alpha.example", type: "university", order: 1, active: true },
+    ]);
+    render(<Home />);
+
+    await screen.findByText("Alpha University");
+    const cta = screen.getByText("Your organisation here ↗");
+    const partnerSection = document.querySelector("#partners");
+    const partnerLinks = Array.from(partnerSection?.querySelectorAll('a[href^="https://"]') ?? []);
+
+    expect(partnerLinks.map((link) => link.getAttribute("href"))).toEqual([
+      "https://alpha.example",
+      "https://beta.example",
+    ]);
+    expect(screen.queryByText("Inactive Partner")).not.toBeInTheDocument();
+    expect(screen.getAllByText("University")).toHaveLength(2);
+    expect(screen.getAllByText("Community")).toHaveLength(2);
+    expect(screen.queryByText("Company")).not.toBeInTheDocument();
+    expect(cta.closest(".grid")?.lastElementChild).toBe(cta);
   });
 });

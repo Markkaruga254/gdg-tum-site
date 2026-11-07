@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   collection,
   doc,
@@ -124,6 +124,18 @@ export async function getTicker(): Promise<TickerWithId[]> {
   return getCollection<Ticker>("ticker");
 }
 
+function stableSerialize(value: unknown): string {
+  if (value instanceof Date) return `Date(${value.toISOString()})`;
+  if (value === null || typeof value !== "object") {
+    return JSON.stringify(value) ?? String(value);
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map(stableSerialize).join(",")}]`;
+  }
+  const record = value as Record<string, unknown>;
+  return `{${Object.keys(record).sort().map((key) => `${JSON.stringify(key)}:${stableSerialize(record[key])}`).join(",")}}`;
+}
+
 const EMPTY_QUERY_CONSTRAINTS: QueryConstraint[] = [];
 
 export function useCollection<T>(
@@ -139,16 +151,21 @@ export function useCollection<T>(
   const [data, setData] = useState<(T & { id: string })[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
+  const constraintsKey = stableSerialize(constraints);
+  // The normalized key captures the query constraint values, not the array identity.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const stableConstraints = useMemo(() => constraints, [constraintsKey]);
+  const enabled = options.enabled !== false;
 
   const load = useCallback(async () => {
-    if (options.enabled === false) {
+    if (!enabled) {
       setLoading(false);
       return;
     }
     try {
       setLoading(true);
       setError(null);
-      const q = query(collection(db, collectionName), ...constraints);
+      const q = query(collection(db, collectionName), ...stableConstraints);
       const snap = await getDocs(q);
       setData(mapDocs<T>(snap.docs));
     } catch (e) {
@@ -156,7 +173,7 @@ export function useCollection<T>(
     } finally {
       setLoading(false);
     }
-  }, [collectionName, constraints, options.enabled]);
+  }, [collectionName, stableConstraints, enabled]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect

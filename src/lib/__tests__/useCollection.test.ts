@@ -1,5 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act, waitFor } from "@testing-library/react";
 
 const mocks = vi.hoisted(() => ({
   getDocs: vi.fn(),
@@ -71,6 +71,23 @@ describe("useCollection", () => {
     expect(result.current.data).toEqual([]);
     expect(result.current.error).toBeInstanceOf(Error);
     expect((result.current.error as Error).message).toBe("boom");
+  });
+
+  it("does not refetch when a render recreates an equivalent constraints array", async () => {
+    mocks.getDocs.mockResolvedValue({ docs: [] });
+    const { rerender } = renderHook(() =>
+      useCollection<{ x: number }>("test", [{
+        type: "where",
+        _field: { _segments: ["status"] },
+        _op: "==",
+        _value: "published",
+      } as unknown as import("firebase/firestore").QueryConstraint]),
+    );
+
+    await waitFor(() => expect(mocks.getDocs).toHaveBeenCalledTimes(1));
+    rerender();
+    await act(async () => {});
+    expect(mocks.getDocs).toHaveBeenCalledTimes(1);
   });
 
   it("does not load when enabled is false", async () => {

@@ -1,6 +1,40 @@
+"use client";
+
+import { useState } from "react";
 import Tag from "./Tag";
-import { trackTagColor } from "@/lib/tracks";
+import { TRACK_BG_COLORS, trackName, trackTagColor } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
+
+export function PhotoImage({
+  url,
+  altText,
+  trackId,
+  className = "",
+  bg = TRACK_BG_COLORS[trackId],
+}: {
+  url: string;
+  altText?: string;
+  trackId: TrackSlug;
+  className?: string;
+  bg?: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  return (
+    <div className={className} style={imageFailed ? { backgroundColor: bg } : undefined}>
+      {imageFailed ? (
+        <span role="img" aria-label={altText || "Event photo"} className="block h-full w-full" />
+      ) : (
+        <img
+          src={url}
+          alt={altText || "Event photo"}
+          className="h-full w-full object-cover"
+          onError={() => setImageFailed(true)}
+        />
+      )}
+    </div>
+  );
+}
 
 type PhotoCardProps = {
   url: string;
@@ -14,10 +48,6 @@ type PhotoCardProps = {
   bg?: string;
 };
 
-function trackLabel(trackId: string) {
-  return trackId === "women-in-tech" ? "Women in Tech" : trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
-}
-
 export default function PhotoCard({
   url,
   caption,
@@ -27,24 +57,20 @@ export default function PhotoCard({
   href = `/writeup?id=${writeupId}`,
   featured = false,
   tagColor,
-  bg = "#111",
+  bg = TRACK_BG_COLORS[trackId],
 }: PhotoCardProps) {
   return (
     <a href={href} className={`flex h-full flex-col border-[3px] border-ink bg-white ${featured ? "min-h-[440px]" : "min-h-[300px]"}`}>
-      <div className={`relative flex-1 overflow-hidden ${featured ? "min-h-[380px]" : "min-h-[240px]"}`} style={{ backgroundColor: bg }}>
-        <span className="absolute inset-0 flex items-center justify-center text-[12px] font-bold uppercase">{caption || "Event photo"}</span>
-        <img
-          src={url}
-          alt={altText || caption}
-          className="absolute inset-0 h-full w-full object-cover"
-          onError={(event) => {
-            event.currentTarget.style.display = "none";
-          }}
-        />
-      </div>
+      <PhotoImage
+        url={url}
+        altText={altText || caption}
+        trackId={trackId}
+        bg={bg}
+        className={`flex flex-1 items-center justify-center overflow-hidden ${featured ? "min-h-[380px]" : "min-h-[240px]"}`}
+      />
       <div className="flex flex-col gap-1 border-t-[3px] border-ink bg-white px-[12px] py-[10px] text-[13px] font-bold">
         {caption}
-        <Tag label={trackLabel(trackId)} color={tagColor ?? trackTagColor(trackId)} />
+        <Tag label={trackName(trackId)} color={tagColor ?? trackTagColor(trackId)} />
       </div>
     </a>
   );

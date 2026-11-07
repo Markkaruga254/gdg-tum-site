@@ -1,10 +1,10 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth, signOut } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { db } from "@/lib/firebase";
 import { doc, collection, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import {
@@ -175,7 +175,9 @@ export default function DashboardPage() {
     try {
       const ev = events.find((x) => x.id === wf.eventId);
       const data: any = {
-        eventId: wf.eventId, trackId: ev?.trackId || track, authorId: uid,
+        eventId: wf.eventId,
+        trackId: editingWriteup?.trackId || ev?.trackId || track,
+        authorId: editingWriteup?.authorId || uid,
         title: wf.title, summary: wf.summary, body: wf.body,
         attendance: wf.attendance ? Number(wf.attendance) : null,
         links: wf.links.filter((l: any) => l.url),
@@ -224,16 +226,15 @@ export default function DashboardPage() {
     loadMedia(w.id);
   }
 
-  if (allowed === null) return <><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]">Loading dashboard…</main></>;
-  if (!allowed) return <><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]"><h1 className="font-display text-[48px] uppercase">Not allowed</h1><p className="mt-2 text-sm">This dashboard is available to track leads and admins.</p></main></>;
+  if (allowed === null) return <><Nav /><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]">Loading dashboard…</main><Footer /></>;
+  if (!allowed) return <><Nav /><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]"><h1 className="font-display text-[48px] uppercase">Not allowed</h1><p className="mt-2 text-sm">This dashboard is available to track leads and admins.</p></main><Footer /></>;
 
   return (
     <>
-      <header className="mx-auto flex max-w-[1280px] flex-wrap items-center border-b-[3px] border-ink">
-        <Link href="/" className="border-r-[3px] border-ink px-[22px] py-[14px] font-display text-[30px] uppercase tracking-[1px]">GDG<span className="text-blue">.</span>TUM</Link>
-        <span className="px-[20px] py-[16px] text-[12px] font-bold uppercase">Lead dashboard</span>
-        <span className="ml-auto border-l-[3px] border-ink bg-blue px-[20px] py-[20px] text-[12px] font-bold uppercase text-white">{role === "admin" ? "Admin" : `${track.replaceAll("-", " ")} Track`}</span>
-        <button type="button" onClick={() => void signOut()} className="border-l-[3px] border-ink px-[16px] py-[20px] text-[11px] font-bold uppercase">Sign out</button>
+      <Nav />
+      <header className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-[10px] border-b-[3px] border-ink px-[20px] py-[14px]">
+        <span className="text-[12px] font-bold uppercase tracking-[.5px]">Lead dashboard</span>
+        <span className="bg-blue px-[14px] py-[8px] text-[11px] font-bold uppercase text-white">{role === "admin" ? "Admin" : `${track.replaceAll("-", " ")} Track`}</span>
       </header>
       <div className="mx-auto grid max-w-[1280px] grid-cols-1 border-x-[3px] border-ink md:grid-cols-[230px_minmax(0,1fr)]">
         <aside className="border-b-[3px] border-ink md:border-b-0 md:border-r-[3px]">
@@ -253,7 +254,7 @@ export default function DashboardPage() {
 
           {tab === "My events" && <MyEventsTab events={events} role={role} eventForm={eventForm} setEventForm={setEventForm} eventErrors={eventErrors} saveEvent={saveEvent} saving={saving} editingEvent={editingEvent} setEditingEvent={setEditingEvent} startEditEvent={startEditEvent} cancelEvent={cancelEvent} deleteEvent={deleteEvent} />}
 
-          {tab === "New writeup" && <NewWriteupTab editingWriteup={editingWriteup} setEditingWriteup={setEditingWriteup} wf={wf} setWf={setWf} wfErrors={wfErrors} events={events} setMediaList={setMediaList} saveWriteup={saveWriteup} saving={saving} mediaList={mediaList} aiPhotoIds={aiPhotoIds} setAiPhotoIds={setAiPhotoIds} aiConsent={aiConsent} setAiConsent={setAiConsent} setTab={setTab} preview={preview} setPreview={setPreview} writeups={writeups} startEditWriteup={startEditWriteup} unpublish={unpublish} publishWriteup={publishWriteup} deleteWriteup={deleteWriteup} role={role} topicTags={topicTags} setTopicTags={setTopicTags} productTags={productTags} setProductTags={setProductTags} />}
+          {tab === "New writeup" && <NewWriteupTab editingWriteup={editingWriteup} setEditingWriteup={setEditingWriteup} wf={wf} setWf={setWf} wfErrors={wfErrors} events={events} setMediaList={setMediaList} saveWriteup={saveWriteup} saving={saving} mediaList={mediaList} aiPhotoIds={aiPhotoIds} setAiPhotoIds={setAiPhotoIds} aiConsent={aiConsent} setAiConsent={setAiConsent} setTab={setTab} preview={preview} setPreview={setPreview} writeups={writeups} startEditWriteup={startEditWriteup} unpublish={unpublish} publishWriteup={publishWriteup} deleteWriteup={deleteWriteup} role={role} uid={uid} track={track} topicTags={topicTags} setTopicTags={setTopicTags} productTags={productTags} setProductTags={setProductTags} />}
 
           {tab === "Media" && <MediaTab mediaList={mediaList} mediaUploading={mediaUploading} mediaUploadProgress={mediaUploadProgress} editingWriteup={editingWriteup} uid={uid} role={role} track={track} setMsg={setMsg} setErr={setErr} loadMedia={loadMedia} setMediaUploading={setMediaUploading} setMediaUploadProgress={setMediaUploadProgress} />}
 
