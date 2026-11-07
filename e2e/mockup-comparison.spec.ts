@@ -28,7 +28,6 @@ const screens: MockupScreen[] = [
   { name: "login", mockup: "docs/mockups/17-login.html", path: "/login" },
   { name: "dashboard-new-writeup", mockup: "docs/mockups/03-dashboard-new-writeup.html", path: "/dashboard", auth: "lead", widths: [1280] },
   { name: "dashboard-ai-before", mockup: "docs/mockups/06-ai-assistant-before.html", path: "/dashboard", auth: "lead", widths: [1280] },
-  { name: "dashboard-ai-draft-ready", mockup: "docs/mockups/07-ai-assistant-draft-ready.html", path: "/dashboard", auth: "lead", widths: [1280] },
   { name: "admin", mockup: "docs/mockups/18-admin.html", path: "/admin", auth: "admin", widths: [1280] },
 ];
 
