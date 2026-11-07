@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { canManageWriteup } from "@/lib/permissions";
 
-export default function OverviewTab({ events, writeups, setTab, startEditWriteup, unpublish, publishWriteup, deleteWriteup, role, uid, track }: any) {
+export default function OverviewTab({ events, writeups, setTab, startEditWriteup, startNewWriteup, unpublish, publishWriteup, deleteWriteup, role, uid, track }: any) {
   return (
     <section>
       <h1 className="font-display text-[clamp(42px,6vw,64px)] uppercase leading-none">Overview</h1>
@@ -13,7 +13,7 @@ export default function OverviewTab({ events, writeups, setTab, startEditWriteup
         <div className="border-b-[3px] border-r-[3px] border-ink p-[18px]"><p className="font-display text-[48px] leading-none">{writeups.filter((item: any) => item.status === "published").length}</p><p className="mt-[8px] text-[11px] font-bold uppercase">Published</p></div>
       </div>
       <div className="mt-[22px] flex flex-wrap gap-[10px]">
-        <button type="button" onClick={() => setTab("New writeup")} className="border-[3px] border-ink bg-yellow px-[18px] py-[12px] text-[12px] font-bold uppercase">New writeup ↗</button>
+        <button type="button" onClick={startNewWriteup} className="border-[3px] border-ink bg-yellow px-[18px] py-[12px] text-[12px] font-bold uppercase">New writeup ↗</button>
         <button type="button" onClick={() => setTab("My events")} className="border-[3px] border-ink px-[18px] py-[12px] text-[12px] font-bold uppercase">Manage events ↗</button>
       </div>
       <details className="mt-[24px] border-[3px] border-ink">
