@@ -53,8 +53,7 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
             <>
               <div className="border-[3px] border-dashed border-ink bg-white p-[20px] text-center">
                 <p className="text-[12px] font-bold uppercase">Photos, slides &amp; links</p>
-                <p className="mt-[7px] text-[11px]">Drop files here or browse. {mediaList.length} photo{mediaList.length === 1 ? "" : "s"} attached.</p>
-                <button type="button" onClick={() => setTab("Media")} className="mt-[12px] border-[3px] border-ink px-[12px] py-[8px] text-[11px] font-bold uppercase">Manage media ↗</button>
+                <button type="button" onClick={() => setTab("Media")} className="mt-[7px] border-[3px] border-ink px-[14px] py-[12px] text-[11px] font-bold uppercase">Drop files here or browse ↗</button>
               </div>
               <button type="button" disabled title="AI draft generation will be enabled when the approved AI service is deployed." className="justify-self-start border-[3px] border-ink bg-ink px-[16px] py-[12px] text-[11px] font-bold uppercase text-white opacity-50">Generate draft · Coming soon</button>
             </>
