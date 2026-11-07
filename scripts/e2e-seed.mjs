@@ -72,7 +72,18 @@ const media = [
 
 const partners = [
   { id: "p-university", name: "Technical University of Mombasa", logoUrl: "", link: "https://tum.ac.ke", type: "university", order: 1, active: true },
-  { id: "p-sponsor", name: "Tech Sponsor", logoUrl: "", link: "https://example.invalid", type: "sponsor", order: 2, active: true },
+  { id: "p-community", name: "Community Partner", logoUrl: "", link: "https://example.com/community", type: "community", order: 2, active: true },
+  { id: "p-sponsor", name: "Tech Sponsor", logoUrl: "", link: "https://example.com/sponsor", type: "sponsor", order: 3, active: true },
+  { id: "p-company", name: "Company Partner", logoUrl: "", link: "https://example.com/company", type: "company", order: 4, active: true },
+];
+
+const posts = [
+  { id: "post-cloud", title: "Building with cloud-native tools", summary: "A practical look at deploying reliable applications with modern cloud services.", sourceName: "Sample source", sourceUrl: "https://example.com/e2e-cloud", tags: ["cloud", "devops"], fetchedAt: new Date("2026-11-07T08:00:00Z"), hidden: false },
+  { id: "post-web", title: "What is new in web development", summary: "A short roundup of useful frontend and full-stack engineering ideas.", sourceName: "Sample source", sourceUrl: "https://example.com/e2e-web", tags: ["web", "javascript"], fetchedAt: new Date("2026-11-06T08:00:00Z"), hidden: false },
+  { id: "post-ai", title: "Practical AI for developers", summary: "Ideas for building useful AI-powered tools with clear evaluation and safeguards.", sourceName: "Sample source", sourceUrl: "https://example.com/e2e-ai", tags: ["AI", "machine-learning"], fetchedAt: new Date("2026-11-05T08:00:00Z"), hidden: false },
+  { id: "post-security", title: "Security basics for every builder", summary: "A checklist for protecting applications, accounts and user data.", sourceName: "Sample source", sourceUrl: "https://example.com/e2e-security", tags: ["cybersecurity", "security"], fetchedAt: new Date("2026-11-04T08:00:00Z"), hidden: false },
+  { id: "post-data", title: "Working with data responsibly", summary: "How to turn raw information into useful and trustworthy insights.", sourceName: "Sample source", sourceUrl: "https://example.com/e2e-data", tags: ["data", "AI"], fetchedAt: new Date("2026-11-03T08:00:00Z"), hidden: false },
+  { id: "post-open-source", title: "Getting started with open source", summary: "Small ways to contribute, learn in public and collaborate with others.", sourceName: "Sample source", sourceUrl: "https://example.com/e2e-open-source", tags: ["community", "open-source"], fetchedAt: new Date("2026-11-02T08:00:00Z"), hidden: false },
 ];
 
 async function main() {
