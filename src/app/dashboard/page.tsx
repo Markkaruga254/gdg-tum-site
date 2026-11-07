@@ -49,7 +49,7 @@ export default function DashboardPage() {
   const [mediaList, setMediaList] = useState<any[]>([]);
   const [mediaUploading, setMediaUploading] = useState(false);
   const [mediaUploadProgress, setMediaUploadProgress] = useState(0);
-  const [preview, setPreview] = useState(true);
+  const [writeupStep, setWriteupStep] = useState(1);
   const [aiConsent, setAiConsent] = useState(false);
   const [aiPhotoIds, setAiPhotoIds] = useState<string[]>([]);
   const [topicTags, setTopicTags] = useState<string[]>([]);
@@ -219,6 +219,8 @@ export default function DashboardPage() {
   }
   function startEditWriteup(w: any) {
     setEditingWriteup(w);
+    setWriteupStep(1);
+    setTab("New writeup");
     setWf({ eventId: w.eventId, title: w.title, summary: w.summary || "", body: w.body || "", attendance: w.attendance ?? "", links: w.links?.length ? w.links : [{ title: "", url: "" }] });
     setAiConsent(false);
     setAiPhotoIds([]);
@@ -255,11 +257,11 @@ export default function DashboardPage() {
           {msg && <p className="mb-2 text-sm text-green">{msg}</p>}
           {err && <p className="mb-2 text-sm text-red">{err}</p>}
 
-          {tab === "Overview" && <OverviewTab events={events} writeups={writeups} setTab={setTab} />}
+          {tab === "Overview" && <OverviewTab events={events} writeups={writeups} setTab={setTab} startEditWriteup={startEditWriteup} unpublish={unpublish} publishWriteup={publishWriteup} deleteWriteup={deleteWriteup} role={role} uid={uid} track={track} />}
 
           {tab === "My events" && <MyEventsTab events={events} role={role} eventForm={eventForm} setEventForm={setEventForm} eventErrors={eventErrors} saveEvent={saveEvent} saving={saving} editingEvent={editingEvent} setEditingEvent={setEditingEvent} startEditEvent={startEditEvent} cancelEvent={cancelEvent} deleteEvent={deleteEvent} />}
 
-          {tab === "New writeup" && <NewWriteupTab editingWriteup={editingWriteup} setEditingWriteup={setEditingWriteup} wf={wf} setWf={setWf} wfErrors={wfErrors} events={events} setMediaList={setMediaList} saveWriteup={saveWriteup} saving={saving} mediaList={mediaList} aiPhotoIds={aiPhotoIds} setAiPhotoIds={setAiPhotoIds} aiConsent={aiConsent} setAiConsent={setAiConsent} setTab={setTab} preview={preview} setPreview={setPreview} writeups={writeups} startEditWriteup={startEditWriteup} unpublish={unpublish} publishWriteup={publishWriteup} deleteWriteup={deleteWriteup} role={role} uid={uid} track={track} topicTags={topicTags} setTopicTags={setTopicTags} productTags={productTags} setProductTags={setProductTags} />}
+          {tab === "New writeup" && <NewWriteupTab editingWriteup={editingWriteup} setEditingWriteup={setEditingWriteup} wf={wf} setWf={setWf} wfErrors={wfErrors} events={events} setMediaList={setMediaList} saveWriteup={saveWriteup} saving={saving} mediaList={mediaList} aiPhotoIds={aiPhotoIds} setAiPhotoIds={setAiPhotoIds} aiConsent={aiConsent} setAiConsent={setAiConsent} setTab={setTab} writeupStep={writeupStep} setWriteupStep={setWriteupStep} topicTags={topicTags} setTopicTags={setTopicTags} productTags={productTags} setProductTags={setProductTags} />}
 
           {tab === "Media" && <MediaTab mediaList={mediaList} mediaUploading={mediaUploading} mediaUploadProgress={mediaUploadProgress} editingWriteup={editingWriteup} uid={uid} role={role} track={track} setMsg={setMsg} setErr={setErr} loadMedia={loadMedia} setMediaUploading={setMediaUploading} setMediaUploadProgress={setMediaUploadProgress} />}
 
