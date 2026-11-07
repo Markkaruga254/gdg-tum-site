@@ -20,6 +20,7 @@ const cellClass = "flex items-center border-r-[3px] border-ink px-[20px] py-[22p
 export default function Nav({ home = false }: { home?: boolean } = {}) {
   const pathname = usePathname();
   const [userName, setUserName] = useState<string | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -27,6 +28,10 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
     });
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   const activePath = pathname === "/lead" ? "/leads"
     : pathname === "/track" ? "/tracks"
@@ -38,30 +43,40 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
       <Link
         href="/"
         aria-label="GDG on Campus TUM home"
-        className="flex items-center border-r-[3px] border-ink px-[22px] py-[14px] font-display text-[30px] uppercase leading-none tracking-[1px]"
+        className="flex flex-1 items-center border-r-[3px] border-ink px-[16px] py-[12px] font-display text-[26px] uppercase leading-none tracking-[1px] md:flex-none md:px-[22px] md:py-[14px] md:text-[30px]"
       >
         GDG<span className="text-blue">.</span>TUM
       </Link>
 
       {home && (
-        <span className="flex max-w-[150px] items-center border-r-[3px] border-ink px-[18px] py-[14px] text-[11px] font-bold uppercase leading-[1.3]">
+        <span className="hidden max-w-[150px] items-center border-r-[3px] border-ink px-[18px] py-[14px] text-[11px] font-bold uppercase leading-[1.3] md:flex">
           Google Developer Group on Campus
         </span>
       )}
+
+      <button
+        type="button"
+        aria-controls="mobile-navigation"
+        aria-expanded={mobileMenuOpen}
+        onClick={() => setMobileMenuOpen((open) => !open)}
+        className="flex items-center border-r-[3px] border-ink px-[16px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] md:hidden"
+      >
+        Menu
+      </button>
 
       {pageLinks.map((link) => (
         <Link
           key={link.href}
           href={link.href}
           aria-current={activePath === link.href ? "page" : undefined}
-          className={`${cellClass} ${activePath === link.href ? "bg-yellow" : "bg-white"}`}
+          className={`${cellClass} hidden md:flex ${activePath === link.href ? "bg-yellow" : "bg-white"}`}
         >
           {link.label}
         </Link>
       ))}
 
       {userName ? (
-        <span className="flex items-center gap-[6px] border-r-[3px] border-ink px-[20px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px]">
+        <span className="hidden items-center gap-[6px] border-r-[3px] border-ink px-[20px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] md:flex">
           <span className="max-w-[150px] break-words">{userName}</span>
           <span aria-hidden="true">·</span>
           <button type="button" onClick={() => void signOut()} className="underline underline-offset-2">
@@ -72,7 +87,7 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
         <Link
           href="/login"
           aria-current={pathname === "/login" ? "page" : undefined}
-          className={`${cellClass} ${pathname === "/login" ? "bg-yellow" : "bg-white"}`}
+          className={`${cellClass} hidden md:flex ${pathname === "/login" ? "bg-yellow" : "bg-white"}`}
         >
           Sign in
         </Link>
@@ -80,10 +95,35 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
 
       <Link
         href="/tracks"
-        className="ml-auto flex items-center border-l-[3px] border-ink bg-yellow px-[20px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] whitespace-nowrap"
+        className="ml-auto flex items-center border-l-[3px] border-ink bg-yellow px-[14px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] whitespace-nowrap md:px-[20px]"
       >
-        Join a track ↗
+        <span className="md:hidden">Join ↗</span>
+        <span className="hidden md:inline">Join a track ↗</span>
       </Link>
+
+      {mobileMenuOpen && (
+        <div id="mobile-navigation" className="flex basis-full flex-col border-t-[3px] border-ink md:hidden">
+          {pageLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={activePath === link.href ? "page" : undefined}
+              className={`border-b-[3px] border-ink px-[18px] py-[15px] text-[12px] font-bold uppercase tracking-[.5px] ${activePath === link.href ? "bg-yellow" : "bg-white"}`}
+            >
+              {link.label}
+            </Link>
+          ))}
+          {userName ? (
+            <button type="button" onClick={() => void signOut()} className="bg-white px-[18px] py-[15px] text-left text-[12px] font-bold uppercase tracking-[.5px]">
+              Sign out · {userName}
+            </button>
+          ) : (
+            <Link href="/login" className={`px-[18px] py-[15px] text-[12px] font-bold uppercase tracking-[.5px] ${pathname === "/login" ? "bg-yellow" : "bg-white"}`}>
+              Sign in
+            </Link>
+          )}
+        </div>
+      )}
     </nav>
   );
 }
