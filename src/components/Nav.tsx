@@ -29,10 +29,6 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
     return unsubscribe;
   }, []);
 
-  useEffect(() => {
-    setMobileMenuOpen(false);
-  }, [pathname]);
-
   const activePath = pathname === "/lead" ? "/leads"
     : pathname === "/track" ? "/tracks"
     : pathname === "/event" ? "/events"
@@ -42,6 +38,7 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
     <nav className="flex flex-wrap border-b-[3px] border-ink" aria-label="Main navigation">
       <Link
         href="/"
+        onClick={() => setMobileMenuOpen(false)}
         aria-label="GDG on Campus TUM home"
         className="flex flex-1 items-center border-r-[3px] border-ink px-[16px] py-[12px] font-display text-[26px] uppercase leading-none tracking-[1px] md:flex-none md:px-[22px] md:py-[14px] md:text-[30px]"
       >
@@ -68,6 +65,7 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
         <Link
           key={link.href}
           href={link.href}
+          onClick={() => setMobileMenuOpen(false)}
           aria-current={activePath === link.href ? "page" : undefined}
           className={`${cellClass} hidden md:flex ${activePath === link.href ? "bg-yellow" : "bg-white"}`}
         >
@@ -86,6 +84,7 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
       ) : (
         <Link
           href="/login"
+          onClick={() => setMobileMenuOpen(false)}
           aria-current={pathname === "/login" ? "page" : undefined}
           className={`${cellClass} hidden md:flex ${pathname === "/login" ? "bg-yellow" : "bg-white"}`}
         >
@@ -95,6 +94,7 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
 
       <Link
         href="/tracks"
+        onClick={() => setMobileMenuOpen(false)}
         className="ml-auto flex items-center border-l-0 border-ink bg-yellow px-[14px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] whitespace-nowrap md:border-l-[3px] md:px-[20px]"
       >
         <span className="md:hidden">Join ↗</span>
@@ -107,6 +107,7 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
             <Link
               key={link.href}
               href={link.href}
+              onClick={() => setMobileMenuOpen(false)}
               aria-current={activePath === link.href ? "page" : undefined}
               className={`border-b-[3px] border-ink px-[18px] py-[15px] text-[12px] font-bold uppercase tracking-[.5px] ${activePath === link.href ? "bg-yellow" : "bg-white"}`}
             >
@@ -114,11 +115,11 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
             </Link>
           ))}
           {userName ? (
-            <button type="button" onClick={() => void signOut()} className="bg-white px-[18px] py-[15px] text-left text-[12px] font-bold uppercase tracking-[.5px]">
+            <button type="button" onClick={() => { setMobileMenuOpen(false); void signOut(); }} className="bg-white px-[18px] py-[15px] text-left text-[12px] font-bold uppercase tracking-[.5px]">
               Sign out · {userName}
             </button>
           ) : (
-            <Link href="/login" className={`px-[18px] py-[15px] text-[12px] font-bold uppercase tracking-[.5px] ${pathname === "/login" ? "bg-yellow" : "bg-white"}`}>
+            <Link href="/login" onClick={() => setMobileMenuOpen(false)} className={`px-[18px] py-[15px] text-[12px] font-bold uppercase tracking-[.5px] ${pathname === "/login" ? "bg-yellow" : "bg-white"}`}>
               Sign in
             </Link>
           )}
