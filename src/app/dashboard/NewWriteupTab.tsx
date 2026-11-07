@@ -6,16 +6,9 @@ import ReactMarkdown from "react-markdown";
 const TOPIC_TAGS = ["cloud", "cybersecurity", "web", "mobile", "ai-ml", "data", "devops", "open-source", "careers"];
 const PRODUCT_TAGS = ["android", "firebase", "flutter", "gemini", "chrome", "google-cloud"];
 
-export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, setWf, wfErrors, events, setMediaList, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, writeupStep, setWriteupStep, topicTags, setTopicTags, productTags, setProductTags }: any) {
+export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, setWf, wfErrors, events, setMediaList, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, startNewWriteup, writeupStep, setWriteupStep, topicTags, setTopicTags, productTags, setProductTags }: any) {
   function resetWriteup() {
-    setEditingWriteup(null);
-    setWf({ eventId: "", title: "", summary: "", body: "", attendance: "", links: [{ title: "", url: "" }] });
-    setMediaList([]);
-    setAiConsent(false);
-    setAiPhotoIds([]);
-    setTopicTags([]);
-    setProductTags([]);
-    setWriteupStep(1);
+    startNewWriteup();
   }
 
   const toggleTag = (tag: string, selected: string[], setter: (next: string[]) => void) => {
