@@ -59,6 +59,15 @@ beforeEach(() => {
   dataMocks.getPosts.mockResolvedValue([]);
   dataMocks.getPartners.mockResolvedValue([]);
   authMocks.onAuthStateChanged.mockImplementation(() => () => {});
+
+
+});
+
+afterEach(() => {
+  cleanup();
+});
+
+describe("Home page moments", () => {
   it("keeps the homepage RSVP label visible while disabled", async () => {
     dataMocks.getEvents.mockResolvedValue([{
       id: "event-next",
@@ -77,13 +86,6 @@ beforeEach(() => {
     expect(rsvp).toHaveClass("text-ink");
   });
 
-});
-
-afterEach(() => {
-  cleanup();
-});
-
-describe("Home page moments", () => {
   it("renders a loading block while photos are loading without reading photos[0]", async () => {
     galleryMocks.getGalleryPage.mockImplementation(() => new Promise(() => {}));
     render(<Home />);
