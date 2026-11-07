@@ -32,7 +32,7 @@ const tracks = [
 
 const testAccounts = [
   { id: "e2e-admin", email: "admin@e2e.test", name: "E2E Admin", role: "admin", track: null },
-  { id: "e2e-lead-cloud", email: "lead@e2e.test", name: "E2E Cloud Lead", role: "lead", track: "cloud" },
+  { id: "e2e-lead-cloud", email: "lead@e2e.test", name: "Visual QA Lead", role: "lead", track: "cloud" },
 ];
 
 const users = [
