@@ -87,7 +87,10 @@ service cloud.firestore {
       allow update: if !request.resource.data.keys().hasAny(["email"]) && (
         (isSignedIn() && request.auth.uid == uid
           && !request.resource.data.diff(resource.data).affectedKeys().hasAny(["role", "track"]))
-        || isAdmin()
+        || (isAdmin() && (
+          request.auth.uid != uid
+          || !request.resource.data.diff(resource.data).affectedKeys().hasAny(["role", "track"])
+        ))
       );
       allow delete: if isAdmin();
     }
