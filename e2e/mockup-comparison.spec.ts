@@ -64,7 +64,8 @@ test("capture approved mockups beside the current public implementation", async 
         await implementationPage.getByRole("button", { name: /2 AI draft/ }).click();
         await implementationPage.getByRole("button", { name: "Overview" }).click();
         await implementationPage.getByText(/My writeups/).click();
-        await implementationPage.getByTestId("edit-writeup-w-draft-cloud").click();
+        const draftId = screen.action === "draft-step2" ? "edit-writeup-w-draft-preview-cloud" : "edit-writeup-w-draft-cloud";
+        await implementationPage.getByTestId(draftId).click();
         if (screen.action === "draft-step2") {
           await implementationPage.getByRole("button", { name: /2 AI draft/ }).click();
           await expect(implementationPage.getByRole("heading", { name: "New writeup" })).toBeVisible();
@@ -72,6 +73,9 @@ test("capture approved mockups beside the current public implementation", async 
           await expect(implementationPage.getByRole("textbox", { name: "Writeup title" })).toHaveValue("Cloud workshop recap");
         } else {
           await expect(implementationPage.getByAltText("Blue placeholder for a cloud workshop photo")).toBeVisible();
+          const photoChoices = implementationPage.getByRole("checkbox", { name: "Send for AI caption" });
+          await photoChoices.nth(0).check();
+          await photoChoices.nth(1).check();
           await expect(implementationPage.getByRole("button", { name: "Overview" })).toBeHidden();
         }
         await expect(implementationPage.getByRole("button", { name: screen.action === "draft-step1" ? /1 Add your notes/ : /2 AI draft/ })).toHaveAttribute("aria-current", "step");
