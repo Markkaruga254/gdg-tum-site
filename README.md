@@ -40,7 +40,7 @@ npm run build
 firebase deploy --only hosting,firestore:rules
 ```
 
-Deployments to production are human-controlled. CI validates pull requests and does not deploy them.
+Every push to `main` triggers the production deployment automatically, but only after the full CI test job passes. Pull-request runs validate changes and never deploy. The deploy job rebuilds with the production Firebase configuration and publishes Hosting plus Firestore rules and indexes.
 
 ## Decisions
 - Event detail uses query param `/event?id=...` for static export.

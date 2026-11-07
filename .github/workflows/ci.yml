@@ -75,7 +75,7 @@ jobs:
         env:
           # Placeholder client config: prerendering is client-shell only
           # (useEffect never runs at build time), so Firebase isn't contacted.
-          # Production deploys are manual with real values from .env.local.
+          # Production deployment rebuilds with the production Firebase configuration below.
           NEXT_PUBLIC_FIREBASE_API_KEY: ci-placeholder
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ci-placeholder.firebaseapp.com
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-gdg-tum-site
@@ -109,6 +109,58 @@ jobs:
         with:
           node-version: "24"
           cache: "npm"
+
+      - name: Validate production Firebase configuration
+        env:
+          NEXT_PUBLIC_FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+          NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          set -eu
+          missing=0
+          for name in \
+            NEXT_PUBLIC_FIREBASE_API_KEY \
+            NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN \
+            NEXT_PUBLIC_FIREBASE_PROJECT_ID \
+            NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET \
+            NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID \
+            NEXT_PUBLIC_FIREBASE_APP_ID \
+            FIREBASE_SERVICE_ACCOUNT
+          do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Required production environment secret is missing or empty: $name"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "::error::Configure the missing secrets in the GitHub production environment."
+            exit 1
+          fi
+          if [ "$NEXT_PUBLIC_FIREBASE_PROJECT_ID" != "gdg-tum-site" ]; then
+            echo "::error::NEXT_PUBLIC_FIREBASE_PROJECT_ID must be gdg-tum-site for production."
+            exit 1
+          fi
+          node <<'NODE'
+          let serviceAccount;
+          try {
+            serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+          } catch {
+            console.error("::error::FIREBASE_SERVICE_ACCOUNT must contain valid service-account JSON.");
+            process.exit(1);
+          }
+          if (
+            serviceAccount.project_id !== "gdg-tum-site" ||
+            !serviceAccount.client_email ||
+            !serviceAccount.private_key
+          ) {
+            console.error("::error::FIREBASE_SERVICE_ACCOUNT must be a complete service account for gdg-tum-site.");
+            process.exit(1);
+          }
+          NODE
 
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
