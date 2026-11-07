@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Tag from "./Tag";
-import { trackName, trackTagColor } from "@/lib/tracks";
+import { TRACK_BG_COLORS, trackName, trackTagColor } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
 
 type PhotoCardProps = {
@@ -26,7 +26,7 @@ export default function PhotoCard({
   href = `/writeup?id=${writeupId}`,
   featured = false,
   tagColor,
-  bg = "#111",
+  bg = TRACK_BG_COLORS[trackId],
 }: PhotoCardProps) {
   const [imageFailed, setImageFailed] = useState(false);
 

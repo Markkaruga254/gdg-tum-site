@@ -98,8 +98,8 @@ describe("Home page moments", () => {
       "https://beta.example",
     ]);
     expect(screen.queryByText("Inactive Partner")).not.toBeInTheDocument();
-    expect(screen.getByText("University")).toBeInTheDocument();
-    expect(screen.getByText("Community")).toBeInTheDocument();
+    expect(screen.getAllByText("University")).toHaveLength(2);
+    expect(screen.getAllByText("Community")).toHaveLength(2);
     expect(screen.queryByText("Company")).not.toBeInTheDocument();
     expect(cta.closest(".grid")?.lastElementChild).toBe(cta);
   });
