@@ -24,10 +24,12 @@ export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, s
 
   return (
     <section>
-      <div className="flex flex-wrap items-center justify-between gap-[12px]">
-        <h2 className="font-display text-[clamp(42px,6vw,56px)] uppercase leading-none">{editingWriteup ? "Edit writeup" : "New writeup"}</h2>
-        {editingWriteup && <button type="button" onClick={resetWriteup} className="border-[3px] border-ink px-[12px] py-[9px] text-[11px] font-bold uppercase">Start new writeup</button>}
-      </div>
+      {writeupStep !== 1 && (
+        <div className="flex flex-wrap items-center justify-between gap-[12px]">
+          <h2 className="font-display text-[clamp(42px,6vw,56px)] uppercase leading-none">New writeup</h2>
+          {editingWriteup && <button type="button" onClick={resetWriteup} className="border-[3px] border-ink px-[12px] py-[9px] text-[11px] font-bold uppercase">Start new writeup</button>}
+        </div>
+      )}
 
       <div className="mt-[20px] grid grid-cols-1 border-[3px] border-ink sm:grid-cols-3">
         <button type="button" onClick={() => setWriteupStep(1)} aria-current={writeupStep === 1 ? "step" : undefined} className={`border-b-[3px] border-ink px-[14px] py-[13px] text-left text-[11px] font-bold uppercase sm:border-b-0 sm:border-r-[3px] ${writeupStep === 1 ? "bg-ink text-white" : "bg-white"}`}>1&nbsp; Add your notes</button>
