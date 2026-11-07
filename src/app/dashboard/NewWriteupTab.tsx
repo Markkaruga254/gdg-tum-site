@@ -43,17 +43,19 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
               <input id="wa" type="number" min={0} value={wf.attendance} onChange={(event) => setWf({ ...wf, attendance: event.target.value })} className="w-full border-[3px] border-ink px-3 py-2" placeholder="e.g. 40" />
             </FormField>
 
-            <FormField label="Link (optional)" id="wl" error={wfErrors.links}>
-              <input id="wl" aria-label="Resource link URL" placeholder="https://" value={wf.links[0]?.url || ""} onChange={(event) => { const links = [...wf.links]; links[0] = { ...links[0], url: event.target.value, title: links[0]?.title || event.target.value }; setWf({ ...wf, links }); }} className="w-full border-[3px] border-ink px-2 py-2" />
-            </FormField>
+            {writeupStep === 1 && (
+              <FormField label="Link (optional)" id="wl" error={wfErrors.links}>
+                <input id="wl" aria-label="Resource link URL" placeholder="https://" value={wf.links[0]?.url || ""} onChange={(event) => { const links = [...wf.links]; links[0] = { ...links[0], url: event.target.value, title: links[0]?.title || event.target.value }; setWf({ ...wf, links }); }} className="w-full border-[3px] border-ink px-2 py-2" />
+              </FormField>
+            )}
           </div>
-          {wf.links.slice(1).map((link: any, offset: number) => (
+          {writeupStep === 1 && wf.links.slice(1).map((link: any, offset: number) => (
             <div key={offset + 1} className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <input aria-label={`Resource ${offset + 2} title`} placeholder="Link title" value={link.title} onChange={(event) => { const links = [...wf.links]; links[offset + 1] = { ...links[offset + 1], title: event.target.value }; setWf({ ...wf, links }); }} className="min-w-0 border-[3px] border-ink px-2 py-2" />
               <input aria-label={`Resource ${offset + 2} URL`} placeholder="URL" value={link.url} onChange={(event) => { const links = [...wf.links]; links[offset + 1] = { ...links[offset + 1], url: event.target.value }; setWf({ ...wf, links }); }} className="min-w-0 border-[3px] border-ink px-2 py-2" />
             </div>
           ))}
-          <button type="button" onClick={() => setWf({ ...wf, links: [...wf.links, { title: "", url: "" }] })} className="justify-self-start border-[3px] border-ink px-3 py-2 text-[11px] font-bold uppercase">+ Add link</button>
+          {writeupStep === 1 && <button type="button" onClick={() => setWf({ ...wf, links: [...wf.links, { title: "", url: "" }] })} className="justify-self-start border-[3px] border-ink px-3 py-2 text-[11px] font-bold uppercase">+ Add link</button>}
           {writeupStep !== 1 && (
             <>
               <div className="border-[3px] border-dashed border-ink bg-white p-[20px] text-center">
