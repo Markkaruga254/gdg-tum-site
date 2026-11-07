@@ -238,7 +238,7 @@ export default function DashboardPage() {
         <Link href="/" aria-label="GDG.TUM home" className="border-r-[3px] border-ink px-[22px] py-[14px] font-display text-[30px] uppercase leading-none tracking-[1px]">
           GDG.TUM
         </Link>
-        <span className="px-[20px] text-[12px] font-bold uppercase tracking-[.5px]">Lead dashboard</span>
+        <span className="px-[20px] text-[12px] font-bold uppercase tracking-[.5px]">{tab === "New writeup" && writeupStep === 1 ? "Lead dashboard · New writeup" : "Lead dashboard"}</span>
         <span className="ml-auto border-l-[3px] border-ink bg-blue px-[20px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] text-white">
           {role === "admin" ? "Admin" : `${track.replaceAll("-", " ")} Track`}
         </span>
