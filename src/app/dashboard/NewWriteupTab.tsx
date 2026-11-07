@@ -56,7 +56,7 @@ export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, s
             <div className="grid gap-2">
               {wf.links.map((link: any, index: number) => (
                 <div key={index} className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                  <input aria-label={`Resource ${index + 1} title`} placeholder="Link title" value={link.title} onChange={(event) => { const links = [...wf.links]; links[index].title = event.target.value; setWf({ ...wf, links }); }} className="min-w-0 border-[3px] border-ink px-2 py-2" />
+                  <input id={index === 0 ? "wl" : undefined} aria-label={`Resource ${index + 1} title`} placeholder="Link title" value={link.title} onChange={(event) => { const links = [...wf.links]; links[index].title = event.target.value; setWf({ ...wf, links }); }} className="min-w-0 border-[3px] border-ink px-2 py-2" />
                   <input aria-label={`Resource ${index + 1} URL`} placeholder="URL" value={link.url} onChange={(event) => { const links = [...wf.links]; links[index].url = event.target.value; setWf({ ...wf, links }); }} className="min-w-0 border-[3px] border-ink px-2 py-2" />
                 </div>
               ))}
