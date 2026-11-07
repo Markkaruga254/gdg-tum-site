@@ -40,30 +40,46 @@ const db = admin.firestore();
 console.log(`Seeding ${projectId} (${process.env.FIRESTORE_EMULATOR_HOST ? "emulator" : "live"})`);
 
 async function main() {
-  const leadCloud = await db.collection("users").add({ name: "[Lead name]", role: "lead", track: "cloud", bio: "[Bio]", photoUrl: "" });
-  const leadCyber = await db.collection("users").add({ name: "[Lead name 2]", role: "lead", track: "cybersecurity", bio: "[Bio]", photoUrl: "" });
+  const leadCloud = await db.collection("users").add({
+    name: "Cloud Track Lead",
+    role: "lead",
+    track: "cloud",
+    bio: "Helps students build and deploy practical cloud projects.",
+    photoUrl: "",
+  });
+  const leadCyber = await db.collection("users").add({
+    name: "Cybersecurity Track Lead",
+    role: "lead",
+    track: "cybersecurity",
+    bio: "Guides hands-on security learning and responsible practice.",
+    photoUrl: "",
+  });
 
   const tracks = [
-    { name: "Cloud", slug: "cloud", color: "blue", description: "[Description]", leadIds: [leadCloud.id] },
-    { name: "Cybersecurity", slug: "cybersecurity", color: "red", description: "[Description]", leadIds: [leadCyber.id] },
-    { name: "Web", slug: "web", color: "green", description: "[Description]", leadIds: [] },
-    { name: "Women in Tech", slug: "women-in-tech", color: "yellow", description: "[Description]", leadIds: [] },
+    { name: "Cloud", slug: "cloud", color: "blue", description: "Explore cloud platforms, infrastructure and deployment.", leadIds: [leadCloud.id] },
+    { name: "Cybersecurity", slug: "cybersecurity", color: "red", description: "Learn to identify risks and build more secure systems.", leadIds: [leadCyber.id] },
+    { name: "Web", slug: "web", color: "green", description: "Design, build and ship useful web experiences.", leadIds: [] },
+    { name: "Women in Tech", slug: "women-in-tech", color: "yellow", description: "Create space for women to learn, collaborate and lead in technology.", leadIds: [] },
   ];
   for (const t of tracks) await db.collection("tracks").doc(t.slug).set(t);
 
   const now = admin.firestore.Timestamp.now();
-  const ev1 = await db.collection("events").add({ title: "[Event name]", trackId: "cloud", date: now, venue: "[Venue]", status: "upcoming", rsvpCount: 0 });
-  const ev2 = await db.collection("events").add({ title: "[Event name 2]", trackId: "web", date: now, venue: "[Venue]", status: "past", attendance: 0 });
-  await db.collection("events").add({ title: "[Event name 3]", trackId: "cybersecurity", date: now, venue: "[Venue]", status: "past", attendance: 0 });
+  const ev1 = await db.collection("events").add({ title: "Cloud fundamentals workshop", trackId: "cloud", date: now, venue: "Main Lab", status: "past", attendance: 24 });
+  const ev2 = await db.collection("events").add({ title: "Cybersecurity essentials", trackId: "cybersecurity", date: now, venue: "Engineering Lab", status: "past", attendance: 18 });
+  await db.collection("events").add({ title: "Web build session", trackId: "web", date: now, venue: "Main Lab", status: "upcoming", rsvpCount: 0 });
 
   await db.collection("writeups").add({
-    eventId: ev2.id, trackId: "web", authorId: leadCloud.id, title: "[Writeup title]",
-    summary: "[Summary]", body: "[Body]", tags: { topics: [], products: [] },
+    eventId: ev2.id, trackId: "cybersecurity", authorId: leadCyber.id, title: "Securing a first web application",
+    summary: "A practical introduction to common web risks and the controls that reduce them.",
+    body: "The session covered input validation, authentication boundaries and safe handling of user data. Students worked through examples and discussed how to test their own applications responsibly.",
+    tags: { topics: ["Application Security"], products: [] },
     status: "published", aiDrafted: true, publishedAt: now,
   });
   await db.collection("writeups").add({
-    eventId: ev1.id, trackId: "cloud", authorId: leadCyber.id, title: "[Writeup title 2]",
-    summary: "[Summary]", body: "[Body]", tags: { topics: [], products: [] },
+    eventId: ev1.id, trackId: "cloud", authorId: leadCloud.id, title: "Cloud fundamentals: choosing the right service",
+    summary: "An introduction to core cloud service models and how to choose an appropriate starting point.",
+    body: "Students compared compute, storage and managed platform services. The discussion focused on matching the service to the workload, understanding operational trade-offs and keeping deployments observable.",
+    tags: { topics: ["Cloud"], products: ["Google Cloud"] },
     status: "published", aiDrafted: false, publishedAt: now,
   });
 

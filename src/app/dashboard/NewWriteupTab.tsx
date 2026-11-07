@@ -2,11 +2,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import FormField from "@/components/form/FormField";
 import ReactMarkdown from "react-markdown";
+import { canManageWriteup } from "@/lib/permissions";
 
 const TOPIC_TAGS = ["cloud", "cybersecurity", "web", "mobile", "ai-ml", "data", "devops", "open-source", "careers"];
 const PRODUCT_TAGS = ["android", "firebase", "flutter", "gemini", "chrome", "google-cloud"];
 
-export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, setMediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, preview, setPreview, writeups, startEditWriteup, unpublish, publishWriteup, deleteWriteup, role, topicTags, setTopicTags, productTags, setProductTags }: any) {
+export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, setMediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, preview, setPreview, writeups, startEditWriteup, unpublish, publishWriteup, deleteWriteup, role, uid, track, topicTags, setTopicTags, productTags, setProductTags }: any) {
   return (
     <section>
                   <div className="flex flex-wrap items-center justify-between gap-[12px]">
@@ -117,14 +118,18 @@ export default function NewWriteupTab({ editingWriteup, setEditingWriteup, wf, s
                     {writeups.map((w: any) => (
                       <div key={w.id} className="border-[3px] border-ink p-3">
                         <div className="font-bold">{w.title} — {w.status}</div>
-                        <div className="mt-2 flex gap-2">
-                          <button onClick={() => startEditWriteup(w)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Edit</button>
-                          {w.status === "published" ? (
-                            <button onClick={() => unpublish(w.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Unpublish</button>
-                          ) : (
-                            <button onClick={() => publishWriteup(w.id)} className="border-[3px] border-ink bg-ink px-3 py-1 text-sm font-bold uppercase text-white">Publish</button>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {canManageWriteup(role, uid, track, w) && (
+                            <>
+                              <button type="button" onClick={() => startEditWriteup(w)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Edit</button>
+                              {w.status === "published" ? (
+                                <button type="button" onClick={() => unpublish(w.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Unpublish</button>
+                              ) : (
+                                <button type="button" onClick={() => publishWriteup(w.id)} className="border-[3px] border-ink bg-ink px-3 py-1 text-sm font-bold uppercase text-white">Publish</button>
+                              )}
+                            </>
                           )}
-                          {role === "admin" && <button onClick={() => deleteWriteup(w.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Delete</button>}
+                          {role === "admin" && <button type="button" onClick={() => deleteWriteup(w.id)} className="border-[3px] border-ink px-3 py-1 text-sm font-bold uppercase">Delete</button>}
                         </div>
                       </div>
                     ))}
