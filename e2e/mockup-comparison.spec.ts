@@ -67,9 +67,11 @@ test("capture approved mockups beside the current public implementation", async 
         if (screen.action === "draft-step2") {
           await implementationPage.getByRole("button", { name: /2 AI draft/ }).click();
           await expect(implementationPage.getByRole("heading", { name: "New writeup" })).toBeVisible();
+          await expect(implementationPage.getByRole("button", { name: "Overview" })).toBeVisible();
           await expect(implementationPage.getByRole("textbox", { name: "Writeup title" })).toHaveValue("Cloud fundamentals: choosing the right service");
         } else {
           await expect(implementationPage.getByAltText("Blue placeholder for a cloud workshop photo")).toBeVisible();
+          await expect(implementationPage.getByRole("button", { name: "Overview" })).toBeHidden();
         }
         await expect(implementationPage.getByRole("button", { name: screen.action === "draft-step1" ? /1 Add your notes/ : /2 AI draft/ })).toHaveAttribute("aria-current", "step");
       }
