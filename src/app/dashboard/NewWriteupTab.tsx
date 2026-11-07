@@ -84,6 +84,7 @@ export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, eve
               <div className="border-[3px] border-dashed border-ink bg-white p-[28px] text-center">
                 <p className="text-[12px] font-bold uppercase">No event photos attached yet</p>
                 <p className="mt-[8px] text-[11px] leading-[1.5]">Save a draft, then use the Media tab to upload event photos. Each photo stays opted out of AI processing unless you select it here.</p>
+                <button type="button" onClick={() => setTab("Media")} className="mt-[14px] border-[3px] border-ink px-[12px] py-[8px] text-[11px] font-bold uppercase">+ Add photos</button>
               </div>
             )}
             <label className="flex items-start gap-[10px] border-[3px] border-ink bg-yellow p-[12px] text-[12px] leading-[1.5]">
