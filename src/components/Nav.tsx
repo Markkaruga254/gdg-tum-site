@@ -76,7 +76,7 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
       ))}
 
       {userName ? (
-        <span className="hidden items-center gap-[6px] border-r-[3px] border-ink px-[20px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] md:flex">
+        <span className={`${home ? "hidden md:flex" : "flex"} items-center gap-[6px] border-r-[3px] border-ink px-[20px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px]`}>
           <span className="max-w-[150px] break-words">{userName}</span>
           <span aria-hidden="true">·</span>
           <button type="button" onClick={() => void signOut()} className="underline underline-offset-2">
