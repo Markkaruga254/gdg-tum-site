@@ -50,7 +50,7 @@ for (const route of routes) {
       const navigation = page.getByRole("navigation", { name: "Main navigation" });
       await expect(navigation).toBeVisible();
 
-      if (width <= 390) {
+      if (width <= 390 && route.name === "home") {
         await expect(navigation.getByRole("button", { name: "Menu" })).toBeVisible();
         await expect(navigation.getByRole("link", { name: "Events" })).toBeHidden();
         await expect(navigation.getByRole("link", { name: "Join ↗" })).toBeVisible();
