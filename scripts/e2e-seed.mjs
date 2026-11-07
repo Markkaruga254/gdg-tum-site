@@ -30,12 +30,18 @@ const tracks = [
   { id: "track-wit", slug: "women-in-tech", name: "Women in Tech", color: "yellow", description: "Community and mentorship track", leadIds: ["u-lead-wit"] },
 ];
 
+const testAccounts = [
+  { id: "e2e-admin", email: "admin@e2e.test", name: "E2E Admin", role: "admin", track: null },
+  { id: "e2e-lead-cloud", email: "lead@e2e.test", name: "E2E Cloud Lead", role: "lead", track: "cloud" },
+];
+
 const users = [
   { id: "u-lead-cloud", name: "Cloud Lead", role: "lead", track: "cloud", photoUrl: "", bio: "", links: [] },
   { id: "u-lead-cyber", name: "Cyber Lead", role: "lead", track: "cybersecurity", photoUrl: "", bio: "", links: [] },
   { id: "u-lead-web", name: "Web Lead", role: "lead", track: "web", photoUrl: "", bio: "", links: [] },
   { id: "u-lead-wit", name: "WIT Lead", role: "lead", track: "women-in-tech", photoUrl: "", bio: "", links: [] },
   { id: "u-member", name: "Member User", role: "member", track: "cloud", photoUrl: "", bio: "", links: [] },
+  ...testAccounts.map(({ id, name, role, track }) => ({ id, name, role, track, photoUrl: "", bio: "", links: [] })),
 ];
 
 const events = [
@@ -60,6 +66,15 @@ const partners = [
 ];
 
 async function main() {
+  for (const account of testAccounts) {
+    await admin.auth().createUser({
+      uid: account.id,
+      email: account.email,
+      password: "e2e-password",
+      displayName: account.name,
+    });
+  }
+
   const batch = db.batch();
 
   for (const t of tracks) batch.set(db.collection("tracks").doc(t.id), t);
@@ -73,7 +88,7 @@ async function main() {
   for (const p of partners) batch.set(db.collection("partners").doc(p.id), p);
 
   await batch.commit();
-  console.log("Seeded tracks, users, events, writeups, media, partners.");
+  console.log("Seeded Auth identities plus tracks, users, events, writeups, media, partners.");
 }
 
 main().catch((e) => {
