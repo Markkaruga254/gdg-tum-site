@@ -51,7 +51,7 @@ test("capture approved mockups beside the current public implementation", async 
       if (screen.auth) {
         await implementationPage.goto("/login?e2e=1", { waitUntil: "domcontentloaded" });
         const accountButton = screen.auth === "admin" ? "Sign in as test admin" : "Sign in as test lead";
-        const accountName = screen.auth === "admin" ? "E2E Admin" : "E2E Cloud Lead";
+        const accountName = screen.auth === "admin" ? "E2E Admin" : "Visual QA Lead";
         await implementationPage.getByRole("button", { name: accountButton }).click();
         await expect(implementationPage.getByText(accountName)).toBeVisible();
       }
