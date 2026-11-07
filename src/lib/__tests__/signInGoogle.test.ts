@@ -37,6 +37,7 @@ import { signInGoogle } from "../auth";
 
 beforeEach(() => {
   vi.resetAllMocks();
+  deleteFieldMock.mockReturnValue({ kind: "deleteField" });
   docMock.mockReturnValue({});
 });
 
