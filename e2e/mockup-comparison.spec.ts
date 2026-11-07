@@ -1,0 +1,68 @@
+import { mkdir } from "node:fs/promises";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+import { test, expect } from "@playwright/test";
+
+const screens = [
+  { name: "home", mockup: "docs/mockups/19-finished-home-populated.html", phoneMockup: "docs/mockups/20-finished-home-phone.html", path: "/" },
+  { name: "lead-profile", mockup: "docs/mockups/02-lead-profile.html", path: "/lead?id=u-lead-cloud" },
+  { name: "gallery", mockup: "docs/mockups/05-gallery.html", path: "/gallery" },
+  { name: "leads", mockup: "docs/mockups/08-leads.html", path: "/leads" },
+  { name: "events", mockup: "docs/mockups/09-events.html", path: "/events" },
+  { name: "event-detail", mockup: "docs/mockups/10-event-detail.html", path: "/event?id=ev-cloud-past" },
+  { name: "tracks", mockup: "docs/mockups/11-tracks.html", path: "/tracks" },
+  { name: "track-detail", mockup: "docs/mockups/12-track-detail.html", path: "/track?slug=cloud" },
+  { name: "writeups", mockup: "docs/mockups/13-writeups.html", path: "/writeups" },
+  { name: "writeup-detail", mockup: "docs/mockups/14-writeup-detail.html", path: "/writeup?id=w-published-cloud" },
+  { name: "blog", mockup: "docs/mockups/15-blog.html", path: "/blog" },
+  { name: "labs", mockup: "docs/mockups/16-labs.html", path: "/labs" },
+  { name: "login", mockup: "docs/mockups/17-login.html", path: "/login" },
+];
+
+test("capture approved mockups beside the current public implementation", async ({ browser }) => {
+  const outputDir = resolve(process.cwd(), "test-results/mockup-review/comparisons");
+  await mkdir(outputDir, { recursive: true });
+
+  for (const screen of screens) {
+    for (const width of [390, 1280]) {
+      const height = width === 390 ? 844 : 1000;
+      const context = await browser.newContext({ viewport: { width, height } });
+      const referencePage = await context.newPage();
+      const implementationPage = await context.newPage();
+
+      const mockupPath = width === 390 && screen.phoneMockup ? screen.phoneMockup : screen.mockup;
+      const mockupUrl = pathToFileURL(resolve(process.cwd(), mockupPath)).href;
+      await referencePage.goto(mockupUrl);
+      await referencePage.evaluate(async () => { await document.fonts.ready; });
+      const reference = await referencePage.screenshot({ fullPage: true });
+
+      await implementationPage.goto(screen.path, { waitUntil: "domcontentloaded" });
+      await expect(implementationPage.locator("main")).toBeVisible();
+      await implementationPage.evaluate(async () => { await document.fonts.ready; });
+      await implementationPage.waitForTimeout(500);
+      const implementation = await implementationPage.screenshot({ fullPage: true });
+
+      const stem = `${screen.name}-${width}`;
+      await referencePage.screenshot({ path: resolve(outputDir, `${stem}-mockup.png`), fullPage: true });
+      await implementationPage.screenshot({ path: resolve(outputDir, `${stem}-implementation.png`), fullPage: true });
+
+      const comparisonPage = await context.newPage();
+      await comparisonPage.setContent(`<!doctype html>
+        <html lang="en">
+          <head><meta charset="utf-8"><style>
+            *{box-sizing:border-box}body{margin:0;padding:12px;font:700 12px Arial,sans-serif;color:#111}
+            main{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+            section{min-width:0;border:2px solid #111;padding:6px}
+            h1{font-size:12px;margin:0 0 6px;text-transform:uppercase}
+            img{display:block;width:100%;height:auto;border-top:1px solid #111}
+          </style></head>
+          <body><main>
+            <section><h1>Approved mockup · ${screen.name} · ${width}px</h1><img alt="Approved mockup" src="data:image/png;base64,${reference.toString("base64")}"></section>
+            <section><h1>Current implementation · ${screen.name} · ${width}px</h1><img alt="Current implementation" src="data:image/png;base64,${implementation.toString("base64")}"></section>
+          </main></body>
+        </html>`);
+      await comparisonPage.screenshot({ path: resolve(outputDir, `${stem}-side-by-side.png`), fullPage: true });
+      await context.close();
+    }
+  }
+});
