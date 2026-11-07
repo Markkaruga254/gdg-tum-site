@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { AnchorHTMLAttributes } from "react";
 
 const navState = vi.hoisted(() => ({
@@ -35,16 +35,35 @@ beforeEach(() => {
 });
 
 describe("canonical navigation", () => {
-  it("renders all public cells and wraps rather than replacing them with a menu", () => {
-    render(<Nav />);
+  it("renders desktop navigation and the compact expandable mobile menu", () => {
+    render(<Nav home />);
     const navigation = screen.getByRole("navigation", { name: "Main navigation" });
     expect(navigation).toHaveClass("flex-wrap");
-    for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Sign in", "Join a track ↗"]) {
+    for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Sign in"]) {
       expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
     }
-    expect(screen.queryByText("Menu")).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Writeups" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Admin" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Join/ })).toBeInTheDocument();
+
+    const menuButton = screen.getByRole("button", { name: "Menu" });
+    expect(menuButton).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(menuButton);
+    expect(menuButton).toHaveAttribute("aria-expanded", "true");
+
+    const mobileMenu = navigation.querySelector("#mobile-navigation");
+    expect(mobileMenu).not.toBeNull();
+    const mobileLinks = within(mobileMenu as HTMLElement);
+    for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Sign in"]) {
+      expect(mobileLinks.getByRole("link", { name: label })).toBeInTheDocument();
+    }
+  });
+
+  it("keeps the full navigation wrapped on non-home phone pages", () => {
+    render(<Nav />);
+    expect(screen.queryByRole("button", { name: "Menu" })).not.toBeInTheDocument();
+    for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Sign in"]) {
+      expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
+    }
+    expect(screen.getByRole("link", { name: "Join a track ↗" })).toBeInTheDocument();
   });
 
   it("marks the current route yellow and adds the descriptor only on home", () => {

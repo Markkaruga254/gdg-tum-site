@@ -1,13 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import { signInGoogle } from "@/lib/auth";
+import { signInGoogle, signInE2E } from "@/lib/auth";
+
+const subscribeToLocation = (callback: () => void) => {
+  window.addEventListener("popstate", callback);
+  return () => window.removeEventListener("popstate", callback);
+};
+
+const getE2EModeSnapshot = () =>
+  process.env.NODE_ENV !== "production" &&
+  process.env.NEXT_PUBLIC_E2E_AUTH_ENABLED === "true" &&
+  new URLSearchParams(window.location.search).get("e2e") === "1";
+
+const getServerE2EModeSnapshot = () => false;
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const e2eMode = useSyncExternalStore(
+    subscribeToLocation,
+    getE2EModeSnapshot,
+    getServerE2EModeSnapshot,
+  );
 
   async function handleSignIn() {
     setLoading(true);
@@ -16,6 +33,19 @@ export default function LoginPage() {
       await signInGoogle();
     } catch {
       setError("Google sign-in could not be completed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleE2ESignIn(role: "admin" | "lead") {
+    setLoading(true);
+    setError(null);
+    try {
+      const email = role === "admin" ? "admin@e2e.test" : "lead@e2e.test";
+      await signInE2E(email, "e2e-password");
+    } catch {
+      setError("The isolated E2E account could not sign in.");
     } finally {
       setLoading(false);
     }
@@ -37,6 +67,27 @@ export default function LoginPage() {
           >
             {loading ? "Signing in…" : "Continue with Google ↗"}
           </button>
+          {e2eMode && (
+            <div className="mt-[18px] border-t-[3px] border-ink pt-[14px]">
+              <p className="mb-[10px] text-[10px] font-bold uppercase">Local E2E accounts</p>
+              <button
+                type="button"
+                onClick={() => void handleE2ESignIn("lead")}
+                disabled={loading}
+                className="mb-[8px] block w-full border-[3px] border-ink px-[12px] py-[10px] text-[11px] font-bold uppercase disabled:opacity-60"
+              >
+                Sign in as test lead
+              </button>
+              <button
+                type="button"
+                onClick={() => void handleE2ESignIn("admin")}
+                disabled={loading}
+                className="block w-full border-[3px] border-ink px-[12px] py-[10px] text-[11px] font-bold uppercase disabled:opacity-60"
+              >
+                Sign in as test admin
+              </button>
+            </div>
+          )}
           <p className="mt-[18px] text-[12px] leading-[1.5]">Not a lead yet? You can still read everything on the site without signing in.</p>
         </section>
       </main>
