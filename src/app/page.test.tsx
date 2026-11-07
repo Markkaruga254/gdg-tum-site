@@ -59,6 +59,24 @@ beforeEach(() => {
   dataMocks.getPosts.mockResolvedValue([]);
   dataMocks.getPartners.mockResolvedValue([]);
   authMocks.onAuthStateChanged.mockImplementation(() => () => {});
+  it("keeps the homepage RSVP label visible while disabled", async () => {
+    dataMocks.getEvents.mockResolvedValue([{
+      id: "event-next",
+      title: "Upcoming workshop",
+      date: { toDate: () => new Date("2026-12-01T10:00:00Z") },
+      venue: "Main Lab",
+      status: "upcoming",
+      trackId: "cloud",
+    }]);
+    galleryMocks.getGalleryPage.mockResolvedValue({ photos: [], nextCursor: null });
+
+    render(<Home />);
+
+    const rsvp = await screen.findByRole("button", { name: "RSVP (coming soon)" });
+    expect(rsvp).toBeDisabled();
+    expect(rsvp).toHaveClass("text-ink");
+  });
+
 });
 
 afterEach(() => {

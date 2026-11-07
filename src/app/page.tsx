@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PartnerCell from "@/components/PartnerCell";
+import { PhotoImage } from "@/components/PhotoCard";
 import TickerBar from "@/components/TickerBar";
 import Tag from "@/components/Tag";
 import SectionHeader from "@/components/SectionHeader";
@@ -160,7 +161,7 @@ export default function Home() {
                 <>
                   <h2 className="font-display text-[38px] leading-[1.05] uppercase mt-[10px] xl:mt-[12px] xl:text-[44px]">{nextEvent.title}</h2>
                   <p className="mt-[4px] text-[14px] xl:text-[15px]">{formatDateTime(nextEvent.date)} · {nextEvent.venue}</p>
-                  <button type="button" disabled className="mt-[18px] w-fit cursor-not-allowed border-[3px] border-ink bg-white px-[18px] py-[10px] text-[12px] font-bold uppercase opacity-60">
+                  <button type="button" disabled className="mt-[18px] w-fit cursor-not-allowed border-[3px] border-ink bg-white px-[18px] py-[10px] text-[12px] font-bold uppercase text-ink opacity-60">
                     RSVP (coming soon)
                   </button>
                 </>
@@ -328,9 +329,7 @@ export default function Home() {
                   href={`/writeup?id=${photos[0].writeupId}`}
                   className="flex h-full min-h-[240px] flex-[2_1_340px] flex-col border-[3px] border-ink xl:min-h-[440px]"
                 >
-                  <div className="h-[200px] overflow-hidden border-b-[3px] border-ink xl:h-[380px]">
-                    <img src={photos[0].url} alt={photos[0].altText} className="h-full w-full object-cover" />
-                  </div>
+                  <PhotoImage url={photos[0].url} altText={photos[0].altText} trackId={photos[0].trackId} className="h-[200px] overflow-hidden border-b-[3px] border-ink xl:h-[380px]" />
                   <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                     {photos[0].caption} &middot;{" "}
                     <Tag label={photos[0].trackId === "women-in-tech" ? "Women in Tech" : photos[0].trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())} color={trackTagColor(photos[0].trackId)} />
@@ -343,9 +342,7 @@ export default function Home() {
                       href={`/writeup?id=${photo.writeupId}`}
                       className={`flex h-full min-h-[160px] flex-col border-[3px] border-ink xl:min-h-[240px] ${index > 1 ? "hidden xl:flex" : ""}`}
                     >
-                      <div className="h-[110px] overflow-hidden border-b-[3px] border-ink xl:h-[150px]">
-                        <img src={photo.url} alt={photo.altText} className="h-full w-full object-cover" />
-                      </div>
+                      <PhotoImage url={photo.url} altText={photo.altText} trackId={photo.trackId} className="h-[110px] overflow-hidden border-b-[3px] border-ink xl:h-[150px]" />
                       <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                         {photo.caption}
                         <Tag label={photo.trackId === "women-in-tech" ? "Women in Tech" : photo.trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())} color={trackTagColor(photo.trackId)} />
