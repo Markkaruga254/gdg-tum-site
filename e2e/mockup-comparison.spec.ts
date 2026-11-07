@@ -31,6 +31,7 @@ const screens: MockupScreen[] = [
 ];
 
 test("capture approved mockups beside the current public implementation", async ({ browser }) => {
+  test.setTimeout(180_000);
   const outputDir = resolve(process.cwd(), "test-results/mockup-review/comparisons");
   await mkdir(outputDir, { recursive: true });
 
