@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI writeup assistant</title>
+</head>
+<body>
+
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;700&display=swap">
+<style>
+body{margin:0;background:#fff}
+a{color:#111;text-decoration:none}a:hover{background:#FBBC04}
+.d{font-family:Anton,sans-serif;font-weight:400;text-transform:uppercase;line-height:1}
+.l{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.t{display:inline-block;padding:4px 10px;font-size:11px;font-weight:700;text-transform:uppercase}
+.f{width:100%;box-sizing:border-box;border:3px solid #111;padding:12px;font-family:inherit;font-size:15px;background:#fff;margin:6px 0 16px}
+.ph{min-height:110px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;text-transform:uppercase;border-bottom:3px solid #111}
+.c{border:3px solid #111;background:#fff}
+</style>
+
+<div style="max-width:1280px;margin:0 auto;border:3px solid #111;font-family:'Space Grotesk',sans-serif;color:#111;background:#fff;box-sizing:border-box">
+<div style="display:flex;flex-wrap:wrap;align-items:center;border-bottom:3px solid #111">
+<a href="#top" class="d" style="padding:14px 22px;border-right:3px solid #111;font-size:30px;letter-spacing:1px">GDG.TUM</a>
+<span class="l" style="padding:0 20px">Lead dashboard &middot; New writeup</span>
+<span class="l" style="margin-left:auto;padding:22px 20px;border-left:3px solid #111;background:#1967D2;color:#fff">Cloud Track</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);border-bottom:3px solid #111">
+<div class="l" style="padding:14px 20px;border-right:3px solid #111">1 &nbsp;Add your notes</div>
+<div class="l" style="padding:14px 20px;border-right:3px solid #111;background:#FBBC04">2 &nbsp;AI draft</div>
+<div class="l" style="padding:14px 20px">3 &nbsp;Review &amp; publish</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:16px 28px;border-bottom:3px solid #111;background:#EA4335">
+<span class="t" style="background:#111;color:#fff">Drafted with AI</span>
+<span style="font-size:14px;font-weight:700">Nothing is published yet. Read it, fix anything wrong, then publish.</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr))">
+<div style="padding:26px 28px;border-right:3px solid #111">
+<label for="ti" class="l">Title</label>
+<input id="ti" class="f" value="[AI-suggested title]">
+<label for="su" class="l">Summary <span style="font-weight:400">(max 40 words)</span></label>
+<textarea id="su" class="f" rows="3">[AI-written summary based only on your notes.]</textarea>
+<label for="bo" class="l">Writeup (Markdown)</label>
+<textarea id="bo" class="f" rows="14">## What we covered
+[Topics taken from your notes.]
+
+## Key takeaways
+- [Point one]
+- [Point two]
+- [Point three]
+
+## Resources
+[Links you provided.]
+
+## What's next
+[Next session, if you mentioned it.]</textarea>
+<div class="l">Tags</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px"><span class="t" style="background:#1967D2;color:#fff">Cloud &times;</span><span class="t" style="background:#34A853;color:#111">DevOps &times;</span><span class="t" style="background:#FBBC04;border:3px solid #111">Firebase &times;</span><span class="t" style="border:3px solid #111">+ Add from list</span></div>
+</div>
+<div style="padding:26px 28px;background:#fafafa">
+<div class="l">Photo captions</div>
+<div style="display:grid;grid-template-columns:110px 1fr;gap:12px;margin:12px 0" class="c"><div class="ph" style="background:#1967D2;color:#fff;border-bottom:0;border-right:3px solid #111;min-height:100px">[Photo]</div><div style="padding:10px"><span class="t" style="background:#111;color:#fff">AI caption</span><input class="f" style="margin:8px 0 6px" value="[Caption describing only what is visible]"><input class="f" style="margin:0;font-size:13px" value="[Alt text]"></div></div>
+<div style="display:grid;grid-template-columns:110px 1fr;gap:12px;margin:12px 0" class="c"><div class="ph" style="background:#EA4335;border-bottom:0;border-right:3px solid #111;min-height:100px">[Photo]</div><div style="padding:10px"><span class="t" style="background:#FBBC04;border:3px solid #111">Edited by you</span><input class="f" style="margin:8px 0 6px" value="[Caption you changed]"><input class="f" style="margin:0;font-size:13px" value="[Alt text]"></div></div>
+<div style="display:grid;grid-template-columns:110px 1fr;gap:12px;margin:12px 0" class="c"><div class="ph" style="background:#34A853;border-bottom:0;border-right:3px solid #111;min-height:100px">[Photo]</div><div style="padding:10px"><span class="t" style="border:3px solid #111">No AI caption</span><input class="f" style="margin:8px 0 6px" placeholder="Write a caption"><input class="f" style="margin:0;font-size:13px" placeholder="Alt text"></div></div>
+<div class="c" style="padding:14px;margin-top:18px;font-size:13px;line-height:1.7;font-weight:700">
+<div class="l" style="margin-bottom:6px">Before you publish</div>
+<label style="display:block"><input type="checkbox"> Names, numbers and dates are correct</label>
+<label style="display:block"><input type="checkbox"> Nothing was invented that you didn't say</label>
+<label style="display:block"><input type="checkbox"> The people in the photos have agreed</label>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px">
+<button type="button" class="l" style="background:#FBBC04;border:3px solid #111;padding:14px 22px;font-family:inherit">Publish &#8599;</button>
+<button type="button" class="l" style="background:#fff;border:3px solid #111;padding:14px 22px;font-family:inherit">Save draft</button>
+<button type="button" class="l" style="background:#fff;border:3px solid #111;padding:14px 22px;font-family:inherit">Regenerate (uses 1 of 10)</button>
+</div>
+</div>
+</div>
+</div>
+
+</body>
+</html>
