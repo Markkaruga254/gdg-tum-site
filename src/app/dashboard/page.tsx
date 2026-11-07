@@ -1,6 +1,7 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { onAuthStateChanged } from "firebase/auth";
@@ -231,10 +232,14 @@ export default function DashboardPage() {
 
   return (
     <>
-      <Nav />
-      <header className="mx-auto flex max-w-[1280px] flex-wrap items-center justify-between gap-[10px] border-b-[3px] border-ink px-[20px] py-[14px]">
-        <span className="text-[12px] font-bold uppercase tracking-[.5px]">Lead dashboard</span>
-        <span className="bg-blue px-[14px] py-[8px] text-[11px] font-bold uppercase text-white">{role === "admin" ? "Admin" : `${track.replaceAll("-", " ")} Track`}</span>
+      <header className="mx-auto flex max-w-[1280px] flex-wrap items-center border-b-[3px] border-ink">
+        <Link href="/" aria-label="GDG.TUM home" className="border-r-[3px] border-ink px-[22px] py-[14px] font-display text-[30px] uppercase leading-none tracking-[1px]">
+          GDG.TUM
+        </Link>
+        <span className="px-[20px] text-[12px] font-bold uppercase tracking-[.5px]">Lead dashboard</span>
+        <span className="ml-auto border-l-[3px] border-ink bg-blue px-[20px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] text-white">
+          {role === "admin" ? "Admin" : `${track.replaceAll("-", " ")} Track`}
+        </span>
       </header>
       <div className="mx-auto grid max-w-[1280px] grid-cols-1 border-x-[3px] border-ink md:grid-cols-[230px_minmax(0,1fr)]">
         <aside className="border-b-[3px] border-ink md:border-b-0 md:border-r-[3px]">
