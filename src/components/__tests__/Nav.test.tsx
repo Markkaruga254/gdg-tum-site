@@ -36,7 +36,7 @@ beforeEach(() => {
 
 describe("canonical navigation", () => {
   it("renders desktop navigation and the compact expandable mobile menu", () => {
-    render(<Nav />);
+    render(<Nav home />);
     const navigation = screen.getByRole("navigation", { name: "Main navigation" });
     expect(navigation).toHaveClass("flex-wrap");
     for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Sign in"]) {
@@ -55,6 +55,15 @@ describe("canonical navigation", () => {
     for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Sign in"]) {
       expect(mobileLinks.getByRole("link", { name: label })).toBeInTheDocument();
     }
+  });
+
+  it("keeps the full navigation wrapped on non-home phone pages", () => {
+    render(<Nav />);
+    expect(screen.queryByRole("button", { name: "Menu" })).not.toBeInTheDocument();
+    for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Sign in"]) {
+      expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
+    }
+    expect(screen.getByRole("link", { name: "Join a track ↗" })).toBeInTheDocument();
   });
 
   it("marks the current route yellow and adds the descriptor only on home", () => {
