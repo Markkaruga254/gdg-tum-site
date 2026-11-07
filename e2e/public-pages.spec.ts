@@ -21,14 +21,15 @@ test("tracks and event detail routes render seeded records", async ({ page }) =>
   await expect(page.getByRole("link", { name: /Read the writeup/ })).toBeVisible();
 });
 
-test("writeups, blog and labs pages render their empty and populated states", async ({ page }) => {
+test("writeups, blog and labs pages render populated and coming-soon states", async ({ page }) => {
   await page.goto("/writeups");
   await expect(page.getByRole("heading", { name: "Writeups" })).toBeVisible();
   await expect(page.getByText("Cloud 101 Recap")).toBeVisible();
 
   await page.goto("/blog");
   await expect(page.getByRole("heading", { name: "Tech blog" })).toBeVisible();
-  await expect(page.getByText("No articles have been published yet.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Building with cloud-native tools" })).toBeVisible();
+  await expect(page.getByText("No articles have been published yet.")).toBeHidden();
 
   await page.goto("/labs");
   await expect(page.getByRole("heading", { name: "Labs", exact: true })).toBeVisible();
