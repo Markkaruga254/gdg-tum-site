@@ -31,6 +31,7 @@ export async function seedFixtures(env) {
     const users = {
       "u-admin": { name: "Fixture Admin", role: "admin", track: null },
       "u-lead-cloud": { name: "Fixture Lead Cloud", role: "lead", track: "cloud" },
+      "u-lead-cloud-secondary": { name: "Fixture Secondary Cloud Lead", role: "lead", track: "cloud" },
       "u-lead-web": { name: "Fixture Lead Web", role: "lead", track: "web" },
       "u-lead-cyber": { name: "Fixture Lead Cyber", role: "lead", track: "cybersecurity" },
       "u-member": { name: "Fixture Member", role: "member", track: null },
@@ -68,6 +69,7 @@ export async function seedFixtures(env) {
 
     await setDoc(doc(db, "media", "m-published"), { writeupId: "w-published-cloud", url: "https://example.invalid/a.jpg", publicId: "fixture/a", caption: "", altText: "", createdBy: "u-lead-cloud" });
     await setDoc(doc(db, "media", "m-draft"), { writeupId: "w-media-draft", url: "https://example.invalid/b.jpg", publicId: "fixture/b", caption: "", altText: "", createdBy: "u-lead-cloud" });
+    await setDoc(doc(db, "media", "m-orphan"), { writeupId: "missing-writeup", url: "https://example.invalid/orphan.jpg", publicId: "fixture/orphan", caption: "", altText: "", createdBy: "u-lead-cloud" });
 
     await setDoc(doc(db, "partners", "partner-u"), { name: "Fixture University", logoUrl: "https://example.invalid/u.png", link: "https://example.invalid/u", type: "university", order: 1, active: true });
     await setDoc(doc(db, "partners", "partner-c"), { name: "Fixture Community", link: "https://example.invalid/c", type: "community", order: 2, active: true });
@@ -81,6 +83,7 @@ export async function seedFixtures(env) {
 const identities = {
   admin: "u-admin",
   leadCloud: "u-lead-cloud",
+  leadCloudSecondary: "u-lead-cloud-secondary",
   leadWeb: "u-lead-web",
   leadCyber: "u-lead-cyber",
   member: "u-member",
