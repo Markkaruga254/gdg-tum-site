@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "npx tsx scripts/seed.ts",
+    "provision:leadership": "npx tsx scripts/provision-production-leadership.ts",
     "typecheck": "tsc --noEmit",
     "test:unit": "vitest run",
     "test": "npm run test:unit",
