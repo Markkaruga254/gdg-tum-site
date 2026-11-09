@@ -45,6 +45,9 @@ export default function EventsPage() {
     { id: "cybersecurity", label: "Cybersecurity" },
     { id: "web", label: "Web" },
     { id: "women-in-tech", label: "Women in Tech" },
+    { id: "ai-ml", label: "AI/ML" },
+    { id: "mobile", label: "Mobile Development" },
+    { id: "hackathons-solutions", label: "Hackathons & Solutions" },
   ];
   const filtered = visible.filter((event) => track === "all" || event.trackId === track);
   const upcoming = filtered
