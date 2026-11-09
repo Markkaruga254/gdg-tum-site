@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
-import { getUserById, getEvents, getWriteups, type AppUserWithId, type EventWithId, type WriteupWithId } from "@/lib/data";
+import { getPublicLeadById, getEvents, getWriteups, type AppUserWithId, type EventWithId, type WriteupWithId } from "@/lib/data";
 import { TRACK_BG_COLORS, trackTagColor } from "@/lib/tracks";
 
 function trackLabel(track: string) {
@@ -34,7 +34,7 @@ function View() {
         return;
       }
       try {
-        const profile = await getUserById(id);
+        const profile = await getPublicLeadById(id);
         if (!active) return;
         setUser(profile);
         if (!profile) return;
