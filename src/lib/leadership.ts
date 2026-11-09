@@ -35,7 +35,7 @@ const leadershipProfiles: Record<string, LeadershipProfile> = {
   },
   "lewis kagiri": {
     leadershipTitle: "AI/ML Track Lead",
-    track: null,
+    track: "ai-ml",
     links: [
       { title: "GitHub", url: "https://github.com/10kwise" },
       { title: "LinkedIn", url: "https://www.linkedin.com/in/lewis-ndegwa-683718294/" },
@@ -43,7 +43,7 @@ const leadershipProfiles: Record<string, LeadershipProfile> = {
   },
   "ian chacha": {
     leadershipTitle: "Mobile Track Lead",
-    track: null,
+    track: "mobile",
     links: [{ title: "GitHub", url: "https://github.com/ianchacha" }],
   },
   "kimberly gift": {
@@ -64,7 +64,7 @@ const leadershipProfiles: Record<string, LeadershipProfile> = {
   },
   "edith karanja": {
     leadershipTitle: "Hackathons & Solutions",
-    track: null,
+    track: "hackathons-solutions",
     links: [
       { title: "GitHub", url: "https://github.com/edithcalm" },
       { title: "LinkedIn", url: "https://www.linkedin.com/in/edith-karanja/" },
