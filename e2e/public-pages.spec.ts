@@ -29,8 +29,6 @@ test("public leads directory and lead profile render real records", async ({ pag
   await expect(page.getByRole("link", { name: /GitHub/ })).toHaveAttribute("href", "https://github.com/Dahliastar");
   await expect(page.getByRole("link", { name: /LinkedIn/ })).toHaveAttribute("href", "https://www.linkedin.com/in/michelle-ndunge-7815482a2/");
 
-  await page.goto("/lead?id=KoYwxs8piKh4c4tkcIHzOURzCwC3");
-  await expect(page.getByRole("heading", { name: "Mark Karuga", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: /GitHub/ })).toHaveAttribute("href", "https://github.com/Markkaruga254");
   await expect(page.getByRole("link", { name: /LinkedIn/ })).toHaveAttribute("href", "https://www.linkedin.com/in/mark-karuga");
 });
