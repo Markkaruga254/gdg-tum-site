@@ -18,6 +18,11 @@ describe("track configuration", () => {
     expect(TRACKS.every((track) => !/\[[^\]]+\]/.test(track.name))).toBe(true);
   });
 
+  it("keeps event categories separate from the seven technical tracks", () => {
+    expect(trackTagColor("chapter")).toBe("blue");
+    expect(TRACKS.some((track) => track.slug === "chapter")).toBe(false);
+  });
+
   it("keeps the approved track tag colors", () => {
     expect(trackTagColor("cloud")).toBe("blue");
     expect(trackTagColor("cybersecurity")).toBe("red");
