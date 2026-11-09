@@ -1,6 +1,6 @@
 import type { Timestamp } from "firebase/firestore";
 
-export type TrackSlug = "cloud" | "cybersecurity" | "web" | "women-in-tech";
+export type TrackSlug = "cloud" | "cybersecurity" | "web" | "women-in-tech" | "ai-ml" | "mobile" | "hackathons-solutions";
 export type TrackColor = "blue" | "red" | "green" | "yellow";
 
 export interface Track {
