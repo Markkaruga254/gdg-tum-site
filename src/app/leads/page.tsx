@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { getEvents, getUsers, getWriteups, type AppUserWithId } from "@/lib/data";
-import { TRACK_BG_COLORS } from "@/lib/tracks";
+import { TRACK_BG_COLORS, trackColor } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
 
 const filters: { id: TrackSlug | "all"; label: string }[] = [
@@ -110,7 +110,8 @@ export default function LeadsPage() {
           <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-[16px] p-[20px]">
             {visibleLeads.map((lead) => {
               const backgroundColor = lead.track ? TRACK_BG_COLORS[lead.track] : "#FBBC04";
-              const textColor = lead.track === "cloud" ? "#fff" : "#111";
+              const color = lead.track ? trackColor(lead.track) : "yellow";
+              const textColor = color === "blue" || color === "red" ? "#fff" : "#111";
               return (
                 <article key={lead.id} className="border-[3px] border-ink bg-white">
                   <div className="flex min-h-[170px] items-center justify-center border-b-[3px] border-ink" style={{ backgroundColor, color: textColor }}>
