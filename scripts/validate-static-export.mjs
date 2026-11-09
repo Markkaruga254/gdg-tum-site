@@ -56,7 +56,8 @@ if (!Array.isArray(indexes.indexes) || !Array.isArray(indexes.fieldOverrides)) {
     if (seen.has(key)) fail(`Duplicate Firestore composite index: ${index.collectionGroup}`);
     seen.add(key);
     for (const field of index.fields) {
-      const validMode = ["ASCENDING", "DESCENDING"].includes(field.order) || field.arrayConfig === "CONTAINS" || Boolean(field.vectorConfig);\n      if (!field.fieldPath || !validMode) {
+      const validMode = ["ASCENDING", "DESCENDING"].includes(field.order) || field.arrayConfig === "CONTAINS" || Boolean(field.vectorConfig);
+      if (!field.fieldPath || !validMode) {
         fail(`Invalid Firestore index field in ${index.collectionGroup}: ${JSON.stringify(field)}`);
       }
     }
