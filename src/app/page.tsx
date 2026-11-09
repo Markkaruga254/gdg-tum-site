@@ -230,7 +230,7 @@ export default function Home() {
               <div className="px-[26px] py-[22px] border-b-[3px] border-ink">No tracks yet.</div>
             ) : (
               orderedTracks.map((t, i) => {
-                const trackLeads = leads.filter((lead) => t.leadIds.includes(lead.id));
+                const trackLeads = leads.filter((lead) => lead.track === t.slug);
                 const last = i === tracks.length - 1;
                 const isYellow = t.color === "yellow";
                 return (
