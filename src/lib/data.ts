@@ -13,6 +13,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { withLeadershipMetadata } from "@/lib/leadership";
+import { TRACKS } from "@/lib/tracks";
 import type {
   Event, Writeup, Track, AppUser, Post, Partner, Media, Ticker,
   TrackSlug,
@@ -91,12 +92,28 @@ export async function getWriteupById(id: string): Promise<WriteupWithId | null> 
 }
 
 export async function getTracks(): Promise<TrackWithId[]> {
-  return getCollection<Track>("tracks");
+  const storedTracks = await getCollection<Track>("tracks");
+  const storedBySlug = new Map(storedTracks.map((track) => [track.slug, track]));
+  return TRACKS.map((config) => {
+    const stored = storedBySlug.get(config.slug);
+    return {
+      id: stored?.id ?? config.slug,
+      name: stored?.name ?? config.name,
+      slug: config.slug,
+      color: stored?.color ?? config.color,
+      description: stored?.description ?? config.description,
+      leadIds: stored?.leadIds ?? [],
+    };
+  });
 }
 
 export async function getTrackBySlug(slug: TrackSlug): Promise<TrackWithId | null> {
   const snaps = await getCollection<Track>("tracks", [where("slug", "==", slug)]);
-  return snaps.length > 0 ? snaps[0] : null;
+  if (snaps.length > 0) return snaps[0];
+  const config = TRACKS.find((track) => track.slug === slug);
+  return config
+    ? { id: config.slug, name: config.name, slug: config.slug, color: config.color, description: config.description, leadIds: [] }
+    : null;
 }
 
 export async function getUsers(role?: AppUser["role"]): Promise<AppUserWithId[]> {
