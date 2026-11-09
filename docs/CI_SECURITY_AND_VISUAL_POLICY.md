@@ -13,7 +13,7 @@ No audit step may use `continue-on-error` or silently ignore a high/critical fin
 
 ## Existing vulnerability debt
 
-The Phase 1 engineering report recorded 20 dependency vulnerabilities in the complete dependency tree, including 4 high-severity findings. The production-only audit recorded the same 4 high findings. The earlier `npm audit fix --force` proposal would downgrade Firebase to 9.14.0 and was deliberately rejected.
+The Phase 1 engineering report recorded 20 dependency vulnerabilities in the complete dependency tree, including 4 high-severity findings. The new strict full-tree audit on this branch reports 21 vulnerabilities (16 moderate, 5 high); its current high-severity report identifies vulnerable @grpc/grpc-js versions pulled through the Firebase dependency tree. The earlier `npm audit fix --force` proposal would downgrade Firebase to 9.14.0 and was deliberately rejected.
 
 The strict audit is expected to remain red until those findings are resolved through compatibility-reviewed dependency updates. Do not lower the severity threshold, skip development dependencies, or add broad audit exceptions to obtain a green check. Review the current npm audit output on the branch before selecting upgrades.
 
