@@ -64,7 +64,7 @@ export default function AdminPage() {
 
   async function refreshUsers(selfUid?: string) {
     const result = await getDocs(collection(db, "users"));
-    const nextUsers = result.docs.map((item) => ({ id: item.id, ...item.data() }));
+    const nextUsers: any[] = result.docs.map((item) => ({ id: item.id, ...item.data() }));
     nextUsers.sort((a, b) => {
       if (a.id === selfUid) return -1;
       if (b.id === selfUid) return 1;
