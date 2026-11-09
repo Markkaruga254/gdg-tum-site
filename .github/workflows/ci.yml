@@ -153,7 +153,7 @@ jobs:
           failed=0
           for check in QUALITY FIRESTORE_RULES BROWSER_E2E PRODUCTION_BUILD; do
             result="${!check}"
-            printf '%-20s %s\\n' "$check" "$result"
+            printf '%-20s %s\n' "$check" "$result"
             if [ "$result" != "success" ]; then
               echo "::error::$check did not succeed (result: $result)"
               failed=1
@@ -193,13 +193,13 @@ jobs:
         run: |
           set -eu
           missing=0
-          for name in \\
-            NEXT_PUBLIC_FIREBASE_API_KEY \\
-            NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN \\
-            NEXT_PUBLIC_FIREBASE_PROJECT_ID \\
-            NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET \\
-            NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID \\
-            NEXT_PUBLIC_FIREBASE_APP_ID \\
+          for name in \
+            NEXT_PUBLIC_FIREBASE_API_KEY \
+            NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN \
+            NEXT_PUBLIC_FIREBASE_PROJECT_ID \
+            NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET \
+            NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID \
+            NEXT_PUBLIC_FIREBASE_APP_ID \
             FIREBASE_SERVICE_ACCOUNT
           do
             if [ -z "${!name:-}" ]; then
