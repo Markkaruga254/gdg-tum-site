@@ -107,8 +107,9 @@ jobs:
       - name: Verify Hosting output
         run: |
           test -s out/index.html
-          node -e 'const fs = require("node:fs"); const config = JSON.parse(fs.readFileSync("firebase.json", "utf8")); if (config.hosting?.public !== "out") { console.error("Firebase Hosting must publish the generated out/ directory"); process.exit(1); }'
-          echo "Static export exists and Firebase Hosting points to out/."
+          test -s out/events.html
+          node -e 'const fs = require("node:fs"); const config = JSON.parse(fs.readFileSync("firebase.json", "utf8")); if (config.hosting?.public !== "out") { console.error("Firebase Hosting must publish the generated out/ directory"); process.exit(1); } if (config.hosting?.cleanUrls !== true) { console.error("Firebase Hosting must enable cleanUrls for extensionless Next.js export routes"); process.exit(1); }'
+          echo "Static export includes the Events route and Firebase Hosting is configured to serve clean URLs."
 
   gate:
     name: Required CI gate
