@@ -38,6 +38,7 @@ import {
   getTrackBySlug,
   getUsers,
   getUserById,
+  getPublicLeadById,
   getPartners,
   getMediaByWriteup,
   getPosts,
@@ -256,9 +257,37 @@ describe("getTrackBySlug", () => {
 });
 
 describe("getUsers", () => {
-  it("queries all users by default", async () => {
+  it("returns only the live Firestore records for the requested role", async () => {
+    const storedLead = makeDoc("u-lead-live", {
+      name: "Live Firestore Lead",
+      role: "lead" as const,
+      track: "cloud" as const,
+      leadershipTitle: "Cloud Track Lead",
+      links: [{ title: "GitHub", url: "https://github.com/live-lead" }],
+    });
+    mocks.getDocs.mockResolvedValue({ docs: [storedLead] });
+    const result = await getUsers("lead");
+    expect(result).toEqual([{
+      id: "u-lead-live",
+      name: "Live Firestore Lead",
+      role: "lead",
+      track: "cloud",
+      leadershipTitle: "Cloud Track Lead",
+      links: [{ title: "GitHub", url: "https://github.com/live-lead" }],
+    }]);
+    expect(mocks.collection).toHaveBeenCalledWith(expect.anything(), "users");
+    expect(mocks.where).toHaveBeenCalledWith("role", "==", "lead");
+  });
+
+  it("returns an empty list when Firestore has no matching records", async () => {
     mocks.getDocs.mockResolvedValue({ docs: [] });
-    await getUsers();
+    expect(await getUsers("lead")).toEqual([]);
+  });
+
+  it("queries all users by default without injecting local roster entries", async () => {
+    const member = makeDoc("u-member", { name: "Member", role: "member" as const });
+    mocks.getDocs.mockResolvedValue({ docs: [member] });
+    expect(await getUsers()).toEqual([{ id: "u-member", name: "Member", role: "member" }]);
     expect(mocks.collection).toHaveBeenCalledWith(expect.anything(), "users");
     expect(mocks.where).not.toHaveBeenCalled();
   });
@@ -276,6 +305,30 @@ describe("getUserById", () => {
     const result = await getUserById("u-1");
     expect(mocks.doc).toHaveBeenCalledWith(expect.anything(), "users", "u-1");
     expect(result).toEqual({ id: "u-1", name: "Alice", role: "lead" });
+  });
+});
+
+describe("getPublicLeadById", () => {
+  it("returns the Firestore user document for a public profile", async () => {
+    mocks.doc.mockReturnValue({});
+    mocks.getDoc.mockResolvedValue(makeDoc("u-lead-live", {
+      name: "Live Firestore Lead",
+      role: "lead" as const,
+      track: "cloud" as const,
+    }));
+    await expect(getPublicLeadById("u-lead-live")).resolves.toEqual({
+      id: "u-lead-live",
+      name: "Live Firestore Lead",
+      role: "lead",
+      track: "cloud",
+    });
+    expect(mocks.doc).toHaveBeenCalledWith(expect.anything(), "users", "u-lead-live");
+  });
+
+  it("returns null when the Firestore profile does not exist", async () => {
+    mocks.doc.mockReturnValue({});
+    mocks.getDoc.mockResolvedValue(makeMissingDoc());
+    await expect(getPublicLeadById("missing-lead")).resolves.toBeNull();
   });
 });
 
