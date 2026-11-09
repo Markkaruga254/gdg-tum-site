@@ -48,4 +48,4 @@ echo "=== Seeding Firestore and Auth test identities ==="
 node scripts/e2e-seed.mjs
 
 echo "=== Running Playwright E2E tests (Playwright webServer starts the dev server) ==="
-npx playwright test
+npx playwright test "$@"
