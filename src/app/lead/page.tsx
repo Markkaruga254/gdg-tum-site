@@ -6,7 +6,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 import { getPublicLeadById, getEvents, getWriteups, type AppUserWithId, type EventWithId, type WriteupWithId } from "@/lib/data";
-import { TRACK_BG_COLORS, trackName, trackTagColor } from "@/lib/tracks";
+import { TRACK_BG_COLORS, trackColor, trackName, trackTagColor } from "@/lib/tracks";
 
 function trackLabel(track: Parameters<typeof trackName>[0]) {
   return trackName(track);
@@ -62,7 +62,8 @@ function View() {
     .sort((a, b) => b.date.toMillis() - a.date.toMillis());
   const studentsReached = pastEvents.reduce((total, event) => total + (event.attendance || 0), 0);
   const heroColor = user.track ? TRACK_BG_COLORS[user.track] : "#FBBC04";
-  const heroTextColor = user.track === "cloud" ? "#fff" : "#111";
+  const color = user.track ? trackColor(user.track) : "yellow";
+  const heroTextColor = color === "blue" || color === "red" ? "#fff" : "#111";
 
   return (
     <>
