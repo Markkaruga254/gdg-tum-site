@@ -8,6 +8,9 @@ describe("track configuration", () => {
       "Cybersecurity",
       "Web",
       "Women in Tech",
+      "AI/ML",
+      "Mobile Development",
+      "Hackathons & Solutions",
     ]);
     expect(trackName("women-in-tech")).toBe("Women in Tech");
     expect(TRACKS.every((track) => !/\[[^\]]+\]/.test(track.name))).toBe(true);
@@ -18,5 +21,8 @@ describe("track configuration", () => {
     expect(trackTagColor("cybersecurity")).toBe("red");
     expect(trackTagColor("web")).toBe("green");
     expect(trackTagColor("women-in-tech")).toBe("yellow");
+    expect(trackName("ai-ml")).toBe("AI/ML");
+    expect(trackName("mobile")).toBe("Mobile Development");
+    expect(trackName("hackathons-solutions")).toBe("Hackathons & Solutions");
   });
 });
