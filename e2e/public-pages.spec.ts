@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 test("public leads directory and lead profile render real records", async ({ page }) => {
   await page.goto("/leads");
   await expect(page.getByRole("heading", { name: "Leads", exact: true })).toBeVisible();
-  await expect(page.getByText("Cloud Lead")).toBeVisible();
+  await expect(page.getByText("Mark Karuga")).toBeVisible();
   await expect(page.getByText("Mitchelle Ndunge")).toBeVisible();
   await expect(page.getByText("Chapter Lead")).toBeVisible();
   for (const name of [
@@ -19,8 +19,8 @@ test("public leads directory and lead profile render real records", async ({ pag
     await expect(page.getByText(name, { exact: true })).toBeVisible();
   }
 
-  await page.goto("/lead?id=u-lead-cloud");
-  await expect(page.getByRole("heading", { name: "Cloud Lead", exact: true })).toBeVisible();
+  await page.goto("/lead?id=KoYwxs8piKh4c4tkcIHzOURzCwC3");
+  await expect(page.getByRole("heading", { name: "Mark Karuga", exact: true })).toBeVisible();
   await expect(page.getByText("Students reached")).toBeVisible();
 
   await page.goto("/lead?id=u-lead-mitchelle");
