@@ -1,4 +1,4 @@
-import type { TrackColor, TrackSlug } from "@/lib/types";
+import type { EventCategory, TrackColor, TrackSlug } from "@/lib/types";
 
 export interface TrackConfig {
   slug: TrackSlug;
@@ -42,6 +42,7 @@ export function trackFilterOptions() {
   ];
 }
 
-export function trackTagColor(slug: TrackSlug): TrackColor {
+export function trackTagColor(slug: EventCategory): TrackColor {
+  if (slug === "chapter") return "blue";
   return trackColor(slug);
 }
