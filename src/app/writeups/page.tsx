@@ -5,15 +5,12 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 import { getTracks, getUsers, getWriteups, type AppUserWithId, type TrackWithId, type WriteupWithId } from "@/lib/data";
-import { trackTagColor } from "@/lib/tracks";
+import { TRACKS, trackTagColor } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
 
 const filters: { id: TrackSlug | "all"; label: string }[] = [
   { id: "all", label: "All" },
-  { id: "cloud", label: "Cloud" },
-  { id: "cybersecurity", label: "Cybersecurity" },
-  { id: "web", label: "Web" },
-  { id: "women-in-tech", label: "Women in Tech" },
+  ...TRACKS.map((item) => ({ id: item.slug, label: item.name })),
 ];
 
 function publishedDate(writeup: WriteupWithId) {
