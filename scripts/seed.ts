@@ -77,7 +77,7 @@ async function main() {
       id: "u-lead-lewis",
       name: "Lewis Kagiri",
       role: "lead",
-      track: null,
+      track: "ai-ml",
       leadershipTitle: "AI/ML Track Lead",
       bio: "",
       photoUrl: "",
@@ -87,7 +87,7 @@ async function main() {
       id: "u-lead-ian",
       name: "Ian Chacha",
       role: "lead",
-      track: null,
+      track: "mobile",
       leadershipTitle: "Mobile Track Lead",
       bio: "",
       photoUrl: "",
@@ -117,7 +117,7 @@ async function main() {
       id: "u-lead-edith",
       name: "Edith Karanja",
       role: "lead",
-      track: null,
+      track: "hackathons-solutions",
       leadershipTitle: "Hackathons & Solutions",
       bio: "",
       photoUrl: "",
@@ -152,6 +152,9 @@ async function main() {
     cybersecurity: [],
     web: [],
     "women-in-tech": [],
+    "ai-ml": [],
+    mobile: [],
+    "hackathons-solutions": [],
   };
   seededLeads.forEach((lead) => {
     if (lead.track) leadIdsByTrack[lead.track].push(lead.id);
@@ -164,6 +167,9 @@ async function main() {
     { name: "Cybersecurity", slug: "cybersecurity", color: "red", description: "Learn to identify risks and build more secure systems.", leadIds: leadIdsByTrack.cybersecurity },
     { name: "Web", slug: "web", color: "green", description: "Design, build and ship useful web experiences.", leadIds: leadIdsByTrack.web },
     { name: "Women in Tech", slug: "women-in-tech", color: "yellow", description: "Create space for women to learn, collaborate and lead in technology.", leadIds: leadIdsByTrack["women-in-tech"] },
+    { name: "AI/ML", slug: "ai-ml", color: "yellow", description: "Explore machine learning and AI by working with data, models and practical applications.", leadIds: leadIdsByTrack["ai-ml"] },
+    { name: "Mobile Development", slug: "mobile", color: "blue", description: "Learn to design and build useful applications for mobile devices.", leadIds: leadIdsByTrack.mobile },
+    { name: "Hackathons & Solutions", slug: "hackathons-solutions", color: "red", description: "Bring people together to solve real problems through collaborative, time-bound building challenges and hackathons.", leadIds: leadIdsByTrack["hackathons-solutions"] },
   ];
   for (const t of tracks) await db.collection("tracks").doc(t.slug).set(t);
 
