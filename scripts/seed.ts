@@ -40,22 +40,118 @@ const db = admin.firestore();
 console.log(`Seeding ${projectId} (${process.env.FIRESTORE_EMULATOR_HOST ? "emulator" : "live"})`);
 
 async function main() {
+  // Club-wide leadership positions are not assigned to one of the four
+  // published tracks. Only the four actual track leads populate track.leadIds.
   const leadDefs = [
-    { name: "Mitchelle Ndunge", role: "lead", track: "cloud", bio: "Chapter lead", photoUrl: "" },
-    { name: "Rooney Odhiambo", role: "lead", track: "cloud", bio: "VC chair", photoUrl: "" },
-    { name: "Mark Karuga", role: "lead", track: "cloud", bio: "Cloud track lead", photoUrl: "" },
-    { name: "Lewis Kagiri", role: "lead", track: "cloud", bio: "AI/ML lead", photoUrl: "" },
-    { name: "Ian Chacha", role: "lead", track: "cloud", bio: "Mobile track lead", photoUrl: "" },
-    { name: "Kimberly Gift", role: "lead", track: "cybersecurity", bio: "Cybersecurity track lead", photoUrl: "" },
-    { name: "Larah Flynn", role: "lead", track: "women-in-tech", bio: "Women in Tech lead", photoUrl: "" },
-    { name: "Edith Karanja", role: "lead", track: "cloud", bio: "Hackathons and solutions", photoUrl: "" },
-    { name: "Sam Ryan", role: "lead", track: "web", bio: "Web development lead", photoUrl: "" },
+    {
+      id: "u-lead-mitchelle",
+      name: "Mitchelle Ndunge",
+      role: "lead",
+      track: null,
+      leadershipTitle: "Chapter Lead",
+      bio: "",
+      photoUrl: "",
+      links: [{ title: "GitHub", url: "https://github.com/Dahliastar" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/michelle-ndunge-7815482a2/" }],
+    },
+    {
+      id: "u-lead-rooney",
+      name: "Rooney Odhiambo",
+      role: "lead",
+      track: null,
+      leadershipTitle: "Vice Chair",
+      bio: "",
+      photoUrl: "",
+      links: [{ title: "GitHub", url: "https://github.com/KabuorJnr" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/rooney-odhiambo-9a26b6256/" }],
+    },
+    {
+      id: "u-lead-mark",
+      name: "Mark Karuga",
+      role: "lead",
+      track: "cloud",
+      leadershipTitle: "Cloud Track Lead",
+      bio: "",
+      photoUrl: "",
+      links: [{ title: "GitHub", url: "https://github.com/Markkaruga254" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/mark-karuga" }],
+    },
+    {
+      id: "u-lead-lewis",
+      name: "Lewis Kagiri",
+      role: "lead",
+      track: null,
+      leadershipTitle: "AI/ML Track Lead",
+      bio: "",
+      photoUrl: "",
+      links: [{ title: "GitHub", url: "https://github.com/10kwise" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/lewis-ndegwa-683718294/" }],
+    },
+    {
+      id: "u-lead-ian",
+      name: "Ian Chacha",
+      role: "lead",
+      track: null,
+      leadershipTitle: "Mobile Track Lead",
+      bio: "",
+      photoUrl: "",
+      links: [{ title: "GitHub", url: "https://github.com/ianchacha" }],
+    },
+    {
+      id: "u-lead-kimberly",
+      name: "Kimberly Gift",
+      role: "lead",
+      track: "cybersecurity",
+      leadershipTitle: "Cybersecurity Track Lead",
+      bio: "",
+      photoUrl: "",
+      links: [{ title: "GitHub", url: "https://github.com/kimmy-sec" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/gift-kimberly-bb784b419/" }],
+    },
+    {
+      id: "u-lead-larah",
+      name: "Larah Flynn",
+      role: "lead",
+      track: "women-in-tech",
+      leadershipTitle: "Women in Tech Lead",
+      bio: "",
+      photoUrl: "",
+      links: [{ title: "GitHub", url: "https://github.com/larah-del" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/larah-flynn-164b993a6/" }],
+    },
+    {
+      id: "u-lead-edith",
+      name: "Edith Karanja",
+      role: "lead",
+      track: null,
+      leadershipTitle: "Hackathons & Solutions",
+      bio: "",
+      photoUrl: "",
+      links: [{ title: "GitHub", url: "https://github.com/edithcalm" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/edith-karanja/" }],
+    },
+    {
+      id: "u-lead-sam",
+      name: "Sam Ryan",
+      role: "lead",
+      track: "web",
+      leadershipTitle: "Web Development Track Lead",
+      bio: "",
+      photoUrl: "",
+      links: [{ title: "GitHub", url: "https://github.com/Ryanking254" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/samryan-adeny-6995a8436/" }],
+    },
   ];
-  const leadRefs = await Promise.all(leadDefs.map((lead) => db.collection("users").add(lead)));
-  const leadIdsByTrack: Record<string, string[]> = { cloud: [], cybersecurity: [], web: [], "women-in-tech": [] };
-  leadDefs.forEach((lead, i) => { leadIdsByTrack[lead.track].push(leadRefs[i].id); });
-  const leadCloud = leadRefs[2];
-  const leadCyber = leadRefs[5];
+
+  // Stable document IDs make repeated demo seeds update the same public profiles
+  // instead of appending duplicate lead records.
+  await Promise.all(leadDefs.map(({ id, ...profile }) =>
+    db.collection("users").doc(id).set(profile)
+  ));
+
+  const leadIdsByTrack: Record<string, string[]> = {
+    cloud: [],
+    cybersecurity: [],
+    web: [],
+    "women-in-tech": [],
+  };
+  leadDefs.forEach((lead) => {
+    if (lead.track) leadIdsByTrack[lead.track].push(lead.id);
+  });
+  const leadCloud = leadDefs.find((lead) => lead.id === "u-lead-mark")!;
+  const leadCyber = leadDefs.find((lead) => lead.id === "u-lead-kimberly")!;
 
   const tracks = [
     { name: "Cloud", slug: "cloud", color: "blue", description: "Explore cloud platforms, infrastructure and deployment.", leadIds: leadIdsByTrack.cloud },
