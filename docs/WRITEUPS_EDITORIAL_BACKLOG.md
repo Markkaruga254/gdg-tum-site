@@ -24,13 +24,13 @@ The Writeups section should document the community's real learning activities an
 
 ## Candidate editorial backlog
 
-The following candidates are based on the October 2026 event records and their linked public event descriptions in `src/lib/gdg-events.ts`. They are **editorial leads, not verified session reports**. A track lead should confirm the actual session content before any recap is published.
+The following candidates are based on the October 2026 event records and their linked public event descriptions in `src/lib/gdg-events.ts`. Unless explicitly marked verified below, they are **editorial leads, not verified session reports**. A track lead must confirm the actual session content before any recap is published.
 
 | Priority | Track | Event / source | Proposed writeup | Format | Verification needed |
 |---|---|---|---|---|---|
-| 1 | Cloud | [Tools of the Trade Workshop: Linux, Git, & Docker](https://gdg.community.dev/events/details/google-gdg-on-campus-technical-university-of-mombasa-mombasa-kenya-presents-tools-of-the-trade-workshop-linux-git-amp-docker/) | Linux, Git and Docker: the developer toolkit, explained through a practical workflow | Companion guide + optional recap | Confirm which tools/demos were actually completed; confirm any Cloud Run exercise |
+| 1 | Cloud | [Cloud Track Week 1: Cloud Fundamentals](https://gdg.community.dev/events/details/google-gdg-on-campus-technical-university-of-mombasa-mombasa-kenya-presents-cloud-track-week-1-cloud-fundamentals/) | Getting Started with Cloud Computing: Inside GDG TUM's Cloud Track Kickoff | Session recap | **Lead-confirmed and drafted** in `docs/writeups/drafts/cloud-track-week-01-cloud-fundamentals.md`; verify final metadata and website rendering before publication |
 | 2 | Cloud | [Docker in Practice: From First Container to Production](https://gdg.community.dev/events/details/google-gdg-on-campus-technical-university-of-mombasa-mombasa-kenya-presents-docker-in-practice-from-first-container-to-production/) | Docker in Practice: from your first container to safer, leaner deployments | Companion guide + optional recap | Confirm exercises, Compose coverage, image optimisation and security topics actually delivered |
-| 3 | Cloud | [Cloud Track Week 1: Cloud Fundamentals](https://gdg.community.dev/events/details/google-gdg-on-campus-technical-university-of-mombasa-mombasa-kenya-presents-cloud-track-week-1-cloud-fundamentals/) | Cloud computing fundamentals: IaaS, PaaS, SaaS and choosing a service | Companion guide + optional recap | Confirm examples, account setup walkthrough and any hands-on work |
+| 3 | Cloud | [Tools of the Trade Workshop: Linux, Git, & Docker](https://gdg.community.dev/events/details/google-gdg-on-campus-technical-university-of-mombasa-mombasa-kenya-presents-tools-of-the-trade-workshop-linux-git-amp-docker/) | Linux, Git and Docker: the developer toolkit, explained through a practical workflow | Companion guide + optional recap | Confirm which tools/demos were actually completed; confirm any Cloud Run exercise |
 | 4 | Web | [Kickstart Your Web Development Journey](https://gdg.community.dev/events/details/google-gdg-on-campus-technical-university-of-mombasa-mombasa-kenya-presents-kickstart-your-web-development-journey/) | How HTML, CSS and JavaScript work together to power the web | Beginner tutorial + optional recap | Confirm the actual examples and exercises used |
 | 5 | Web | [Web Development Essentials Make-Up Session](https://gdg.community.dev/events/details/google-gdg-on-campus-technical-university-of-mombasa-mombasa-kenya-presents-web-development-essentials-make-up-session-1/) | From a static page to an interactive page: a guided HTML/CSS/JS exercise | Practical tutorial + optional recap | Confirm the make-up session content and whether an exercise/project was completed |
 | 6 | AI/ML | [AI/ML Track Launch: Introduction and Python Basics for AI/ML](https://gdg.community.dev/events/details/google-gdg-on-campus-technical-university-of-mombasa-mombasa-kenya-presents-aiml-track-launch-introduction-and-python-basics-for-aiml/) | Python foundations for an AI/ML workflow: data, preprocessing and model training | Beginner guide + optional recap | Confirm Python libraries, demos, datasets and whether model training was performed |
@@ -41,9 +41,13 @@ The following candidates are based on the October 2026 event records and their l
 
 ## First publication candidate
 
+**Cloud Track Week 1 recap**
+
+The lead-confirmed recap is drafted in `docs/writeups/drafts/cloud-track-week-01-cloud-fundamentals.md`. It records the topics and guided Cloud Shell demonstration confirmed by the Cloud Track lead. It is a source draft only; it has not been written to production Firestore or published on the website.
+
 **Docker in Practice: From Your First Container to Safer, Leaner Deployments**
 
-Start with the practical companion guide in `docs/writeups/drafts/docker-in-practice.md`. It teaches Docker concepts and workflows independently. It must not be presented as a factual recap of the October session until the Cloud Track lead confirms what was actually covered.
+The practical companion guide in `docs/writeups/drafts/docker-in-practice.md` teaches Docker concepts and workflows independently. It must not be presented as a factual recap of the October session until the Cloud Track lead confirms what was actually covered.
 
 ## Publication workflow
 
