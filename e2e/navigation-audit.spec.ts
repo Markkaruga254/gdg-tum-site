@@ -31,6 +31,7 @@ test("every same-origin link on the public pages resolves without an HTTP 404", 
 
   for (const route of ROUTES) {
     await page.goto(route);
+    await page.locator("main h1").first().waitFor({ state: "visible", timeout: 15000 });
     const hrefs = await page.locator("a[href]").evaluateAll((links) =>
       links
         .map((link) => (link as HTMLAnchorElement).href)
