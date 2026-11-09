@@ -4,14 +4,14 @@ import { withLeadershipMetadata } from "../leadership";
 describe("withLeadershipMetadata", () => {
   it.each([
     ["Mitchelle Ndunge", "Chapter Lead", null],
-    ["Rooney Odhiambo", "Vice Chair", null],
+    ["Rooney Odhiambo", "VC Chair", null],
     ["Mark Karuga", "Cloud Track Lead", "cloud"],
     ["Lewis Kagiri", "AI/ML Track Lead", null],
     ["Ian Chacha", "Mobile Track Lead", null],
     ["Kimberly Gift", "Cybersecurity Track Lead", "cybersecurity"],
     ["Larah Flynn", "Women in Tech Lead", "women-in-tech"],
     ["Edith Karanja", "Hackathons & Solutions", null],
-    ["Sam Ryan", "Web Development Track Lead", "web"],
+    ["Sam Ryan", "Web Development Track", "web"],
   ] as const)("maps %s to the published role and track", (name, title, track) => {
     const result = withLeadershipMetadata({
       id: "user-1",
