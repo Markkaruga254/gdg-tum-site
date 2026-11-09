@@ -107,7 +107,11 @@ export async function getUsers(role?: AppUser["role"]): Promise<AppUserWithId[]>
 }
 
 export async function getUserById(id: string): Promise<AppUserWithId | null> {
-  const user = await getDocById<AppUser>("users", id);
+  return getDocById<AppUser>("users", id);
+}
+
+export async function getPublicLeadById(id: string): Promise<AppUserWithId | null> {
+  const user = await getUserById(id);
   return user ? withLeadershipMetadata(user) : null;
 }
 
