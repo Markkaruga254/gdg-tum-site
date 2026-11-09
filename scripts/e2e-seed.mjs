@@ -24,7 +24,7 @@ if (!admin.apps.length) {
 const db = getFirestore();
 
 const tracks = [
-  { id: "track-cloud", slug: "cloud", name: "Cloud", color: "blue", description: "Cloud computing and serverless track", leadIds: ["u-lead-cloud"] },
+  { id: "track-cloud", slug: "cloud", name: "Cloud", color: "blue", description: "Cloud computing and serverless track", leadIds: ["KoYwxs8piKh4c4tkcIHzOURzCwC3"] },
   { id: "track-cybersecurity", slug: "cybersecurity", name: "Cybersecurity", color: "red", description: "Application and network security track", leadIds: ["u-lead-cyber"] },
   { id: "track-web", slug: "web", name: "Web", color: "green", description: "Frontend and full-stack web track", leadIds: ["u-lead-web"] },
   { id: "track-wit", slug: "women-in-tech", name: "Women in Tech", color: "yellow", description: "Community and mentorship track", leadIds: ["u-lead-wit"] },
@@ -35,17 +35,16 @@ const tracks = [
 
 const testAccounts = [
   { id: "e2e-admin", email: "admin@e2e.test", name: "E2E Admin", role: "admin", track: null },
-  { id: "u-lead-cloud", email: "lead@e2e.test", name: "Cloud Lead", role: "lead", track: "cloud" },
+  { id: "u-lead-lewis", email: "lead@e2e.test", name: "Lewis Kagiri", role: "lead", track: "ai-ml" },
 ];
 
 const users = [
-  { id: "u-lead-cloud", name: "Cloud Lead", role: "lead", track: "cloud", photoUrl: "", bio: "", links: [] },
   { id: "u-lead-cyber", name: "Cyber Lead", role: "lead", track: "cybersecurity", photoUrl: "", bio: "", links: [] },
   { id: "u-lead-web", name: "Web Lead", role: "lead", track: "web", photoUrl: "", bio: "", links: [] },
   { id: "u-lead-wit", name: "WIT Lead", role: "lead", track: "women-in-tech", photoUrl: "", bio: "", links: [] },
   { id: "u-lead-mitchelle", name: "Mitchelle Ndunge", role: "lead", track: null, leadershipTitle: "Chapter Lead", photoUrl: "", bio: "", links: [{ title: "GitHub", url: "https://github.com/Dahliastar" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/michelle-ndunge-7815482a2/" }] },
   { id: "u-lead-rooney", name: "Rooney Odhiambo", role: "lead", track: null, leadershipTitle: "VC Chair", photoUrl: "", bio: "", links: [{ title: "GitHub", url: "https://github.com/KabuorJnr" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/rooney-odhiambo-9a26b6256/" }] },
-  { id: "u-lead-mark", name: "Mark Karuga", role: "lead", track: "cloud", leadershipTitle: "Cloud Track Lead", photoUrl: "", bio: "", links: [{ title: "GitHub", url: "https://github.com/Markkaruga254" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/mark-karuga" }] },
+  { id: "KoYwxs8piKh4c4tkcIHzOURzCwC3", name: "Mark Karuga", role: "admin", track: "cloud", leadershipTitle: "Cloud Track Lead", photoUrl: "", bio: "", links: [{ title: "GitHub", url: "https://github.com/Markkaruga254" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/mark-karuga" }] },
   { id: "u-lead-kimberly", name: "Kimberly Gift", role: "lead", track: "cybersecurity", leadershipTitle: "Cybersecurity Track Lead", photoUrl: "", bio: "", links: [{ title: "GitHub", url: "https://github.com/kimmy-sec" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/gift-kimberly-bb784b419/" }] },
   { id: "u-lead-larah", name: "Larah Flynn", role: "lead", track: "women-in-tech", leadershipTitle: "Women in Tech Lead", photoUrl: "", bio: "", links: [{ title: "GitHub", url: "https://github.com/larah-del" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/larah-flynn-164b993a6/" }] },
   { id: "u-lead-sam", name: "Sam Ryan", role: "lead", track: "web", leadershipTitle: "Web Development Track", photoUrl: "", bio: "", links: [{ title: "GitHub", url: "https://github.com/Ryanking254" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/samryan-adeny-6995a8436/" }] },
@@ -66,12 +65,12 @@ const events = [
 ];
 
 const writeups = [
-  { id: "w-published-cloud", eventId: "ev-cloud-past", trackId: "cloud", authorId: "u-lead-cloud", title: "Cloud 101 Recap", summary: "A recap of our cloud workshop", body: "# Cloud 101\n\nWe learned about serverless.", attendance: 40, links: [], tags: { topics: ["cloud"], products: [] }, status: "published", publishedAt: new Date("2026-11-07T10:00:00Z"), aiDrafted: false },
-  { id: "w-draft-cloud", eventId: "ev-cloud-past", trackId: "cloud", authorId: "u-lead-cloud", title: "", summary: "", body: "", attendance: "", links: [{ title: "", url: "" }], tags: { topics: [], products: [] }, status: "draft", publishedAt: null, aiDrafted: false },
-  { id: "w-draft-preview-cloud", eventId: "ev-cloud-past", trackId: "cloud", authorId: "u-lead-cloud", title: "Cloud workshop recap", summary: "A short summary of the cloud workshop and what participants learned.", body: "We compared compute, storage and networking options during a hands-on session.\\n\\n## Key Takeaways\\n- Choose services based on workload needs.\\n- Secure identities and permissions from the start.\\n- Monitor cost and performance as you grow.", attendance: 40, links: [{ title: "Cloud workshop slides", url: "https://example.com/e2e-cloud-slides" }], tags: { topics: ["cloud", "devops"], products: ["google-cloud"] }, status: "draft", publishedAt: null, aiDrafted: false },
+  { id: "w-published-cloud", eventId: "ev-cloud-past", trackId: "cloud", authorId: "KoYwxs8piKh4c4tkcIHzOURzCwC3", title: "Cloud 101 Recap", summary: "A recap of our cloud workshop", body: "# Cloud 101\n\nWe learned about serverless.", attendance: 40, links: [], tags: { topics: ["cloud"], products: [] }, status: "published", publishedAt: new Date("2026-11-07T10:00:00Z"), aiDrafted: false },
+  { id: "w-draft-cloud", eventId: "ev-cloud-past", trackId: "cloud", authorId: "KoYwxs8piKh4c4tkcIHzOURzCwC3", title: "", summary: "", body: "", attendance: "", links: [{ title: "", url: "" }], tags: { topics: [], products: [] }, status: "draft", publishedAt: null, aiDrafted: false },
+  { id: "w-draft-preview-cloud", eventId: "ev-cloud-past", trackId: "cloud", authorId: "KoYwxs8piKh4c4tkcIHzOURzCwC3", title: "Cloud workshop recap", summary: "A short summary of the cloud workshop and what participants learned.", body: "We compared compute, storage and networking options during a hands-on session.\\n\\n## Key Takeaways\\n- Choose services based on workload needs.\\n- Secure identities and permissions from the start.\\n- Monitor cost and performance as you grow.", attendance: 40, links: [{ title: "Cloud workshop slides", url: "https://example.com/e2e-cloud-slides" }], tags: { topics: ["cloud", "devops"], products: ["google-cloud"] }, status: "draft", publishedAt: null, aiDrafted: false },
   { id: "w-published-web", eventId: "ev-web-upcoming", trackId: "web", authorId: "u-lead-web", title: "Web Intro", summary: "Web development intro", body: "# Web Intro\n\nIntro to web dev.", attendance: "", links: [], tags: { topics: ["web"], products: [] }, status: "published", publishedAt: new Date("2026-11-06T10:00:00Z"), aiDrafted: false },
-  { id: "w-published-cloud-2", eventId: "ev-cloud-past-2", trackId: "cloud", authorId: "u-lead-cloud", title: "Serverless Functions in Practice", summary: "A hands-on introduction to serverless workflows.", body: "# Serverless Functions\n\nWe built and tested a small serverless workflow.", attendance: 32, links: [], tags: { topics: ["cloud"], products: ["Firebase"] }, status: "published", publishedAt: new Date("2026-11-05T10:00:00Z"), aiDrafted: false },
-  { id: "w-published-cloud-3", eventId: "ev-cloud-past-3", trackId: "cloud", authorId: "u-lead-cloud", title: "Getting Started with Cloud Storage", summary: "A practical session on storing and serving files.", body: "# Cloud Storage\n\nWe explored object storage and access controls.", attendance: 28, links: [], tags: { topics: ["cloud"], products: ["Google Cloud"] }, status: "published", publishedAt: new Date("2026-11-04T10:00:00Z"), aiDrafted: false },
+  { id: "w-published-cloud-2", eventId: "ev-cloud-past-2", trackId: "cloud", authorId: "KoYwxs8piKh4c4tkcIHzOURzCwC3", title: "Serverless Functions in Practice", summary: "A hands-on introduction to serverless workflows.", body: "# Serverless Functions\n\nWe built and tested a small serverless workflow.", attendance: 32, links: [], tags: { topics: ["cloud"], products: ["Firebase"] }, status: "published", publishedAt: new Date("2026-11-05T10:00:00Z"), aiDrafted: false },
+  { id: "w-published-cloud-3", eventId: "ev-cloud-past-3", trackId: "cloud", authorId: "KoYwxs8piKh4c4tkcIHzOURzCwC3", title: "Getting Started with Cloud Storage", summary: "A practical session on storing and serving files.", body: "# Cloud Storage\n\nWe explored object storage and access controls.", attendance: 28, links: [], tags: { topics: ["cloud"], products: ["Google Cloud"] }, status: "published", publishedAt: new Date("2026-11-04T10:00:00Z"), aiDrafted: false },
 ];
 
 function placeholderPhoto(background, foreground = "#fff") {
@@ -80,12 +79,12 @@ function placeholderPhoto(background, foreground = "#fff") {
 }
 
 const media = [
-  { id: "m-cloud-1", writeupId: "w-published-cloud", url: placeholderPhoto("#1967D2"), publicId: "e2e/cloud-photo-1", caption: "Cloud workshop photo", altText: "Blue placeholder for a cloud workshop photo", createdBy: "u-lead-cloud" },
-  { id: "m-cloud-2", writeupId: "w-published-cloud", url: placeholderPhoto("#EA4335", "#111"), publicId: "e2e/cloud-photo-2", caption: "Workshop group photo", altText: "Red placeholder for a workshop group photo", createdBy: "u-lead-cloud" },
-  { id: "m-cloud-3", writeupId: "w-published-cloud", url: placeholderPhoto("#34A853", "#111"), publicId: "e2e/cloud-photo-3", caption: "Cloud lab session", altText: "Green placeholder for a cloud lab session", createdBy: "u-lead-cloud" },
-  { id: "m-draft-1", writeupId: "w-draft-cloud", url: placeholderPhoto("#1967D2"), publicId: "e2e/draft-photo-1", caption: "Cloud workshop photo", altText: "Blue placeholder for a cloud workshop photo", createdBy: "u-lead-cloud" },
-  { id: "m-draft-2", writeupId: "w-draft-cloud", url: placeholderPhoto("#EA4335", "#111"), publicId: "e2e/draft-photo-2", caption: "Workshop group photo", altText: "Red placeholder for a workshop group photo", createdBy: "u-lead-cloud" },
-  { id: "m-draft-3", writeupId: "w-draft-cloud", url: placeholderPhoto("#34A853", "#111"), publicId: "e2e/draft-photo-3", caption: "Cloud lab session", altText: "Green placeholder for a cloud lab session", createdBy: "u-lead-cloud" },
+  { id: "m-cloud-1", writeupId: "w-published-cloud", url: placeholderPhoto("#1967D2"), publicId: "e2e/cloud-photo-1", caption: "Cloud workshop photo", altText: "Blue placeholder for a cloud workshop photo", createdBy: "KoYwxs8piKh4c4tkcIHzOURzCwC3" },
+  { id: "m-cloud-2", writeupId: "w-published-cloud", url: placeholderPhoto("#EA4335", "#111"), publicId: "e2e/cloud-photo-2", caption: "Workshop group photo", altText: "Red placeholder for a workshop group photo", createdBy: "KoYwxs8piKh4c4tkcIHzOURzCwC3" },
+  { id: "m-cloud-3", writeupId: "w-published-cloud", url: placeholderPhoto("#34A853", "#111"), publicId: "e2e/cloud-photo-3", caption: "Cloud lab session", altText: "Green placeholder for a cloud lab session", createdBy: "KoYwxs8piKh4c4tkcIHzOURzCwC3" },
+  { id: "m-draft-1", writeupId: "w-draft-cloud", url: placeholderPhoto("#1967D2"), publicId: "e2e/draft-photo-1", caption: "Cloud workshop photo", altText: "Blue placeholder for a cloud workshop photo", createdBy: "KoYwxs8piKh4c4tkcIHzOURzCwC3" },
+  { id: "m-draft-2", writeupId: "w-draft-cloud", url: placeholderPhoto("#EA4335", "#111"), publicId: "e2e/draft-photo-2", caption: "Workshop group photo", altText: "Red placeholder for a workshop group photo", createdBy: "KoYwxs8piKh4c4tkcIHzOURzCwC3" },
+  { id: "m-draft-3", writeupId: "w-draft-cloud", url: placeholderPhoto("#34A853", "#111"), publicId: "e2e/draft-photo-3", caption: "Cloud lab session", altText: "Green placeholder for a cloud lab session", createdBy: "KoYwxs8piKh4c4tkcIHzOURzCwC3" },
   { id: "m-web-1", writeupId: "w-published-web", url: placeholderPhoto("#FBBC04", "#111"), publicId: "e2e/web-photo-1", caption: "Web workshop", altText: "Yellow placeholder for a web workshop", createdBy: "u-lead-web" },
   { id: "m-web-2", writeupId: "w-published-web", url: placeholderPhoto("#1967D2"), publicId: "e2e/web-photo-2", caption: "Web development session", altText: "Blue placeholder for a web development session", createdBy: "u-lead-web" },
   { id: "m-web-3", writeupId: "w-published-web", url: placeholderPhoto("#EA4335", "#111"), publicId: "e2e/web-photo-3", caption: "Web community", altText: "Red placeholder for a web community photo", createdBy: "u-lead-web" },
