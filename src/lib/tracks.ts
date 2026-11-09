@@ -27,7 +27,8 @@ export const TRACK_BG_COLORS: Record<TrackSlug, string> = {
   "hackathons-solutions": "#EA4335",
 };
 
-export function trackName(slug: TrackSlug): string {
+export function trackName(slug: EventCategory): string {
+  if (slug === "chapter") return "Chapter Events";
   return TRACKS.find((track) => track.slug === slug)?.name ?? slug;
 }
 
