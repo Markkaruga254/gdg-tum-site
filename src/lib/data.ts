@@ -121,6 +121,14 @@ export async function getUsers(role?: AppUser["role"]): Promise<AppUserWithId[]>
   return getCollection<AppUser>("users", constraints);
 }
 
+export async function getLeadershipUsers(): Promise<AppUserWithId[]> {
+  const users = await getUsers();
+  return users.filter((user) =>
+    user.role === "lead" ||
+    (user.role === "admin" && Boolean(user.track && user.leadershipTitle)),
+  );
+}
+
 export async function getUserById(id: string): Promise<AppUserWithId | null> {
   return getDocById<AppUser>("users", id);
 }
