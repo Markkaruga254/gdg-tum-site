@@ -22,10 +22,19 @@ test("tracks and event detail routes render seeded records", async ({ page }) =>
   await page.goto("/tracks");
   await expect(page.getByRole("heading", { name: "Tracks" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cloud" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "AI/ML" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Mobile Development" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Hackathons & Solutions" })).toBeVisible();
 
   await page.goto("/track?slug=cloud");
   await expect(page.getByRole("heading", { name: "Cloud" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Cloud Lead ↗" })).toBeVisible();
+
+  await page.goto("/track?slug=hackathons-solutions");
+  await expect(page.getByRole("heading", { name: "Hackathons & Solutions" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "How to take part in a hackathon" })).toBeVisible();
+  await expect(page.getByText("Watch for announcements")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Edith Karanja/ })).toBeVisible();
 
   await page.goto("/event?id=ev-cloud-past");
   await expect(page.getByRole("heading", { name: "Cloud 101 Workshop" })).toBeVisible();
