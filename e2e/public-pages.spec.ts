@@ -4,10 +4,18 @@ test("public leads directory and lead profile render real records", async ({ pag
   await page.goto("/leads");
   await expect(page.getByRole("heading", { name: "Leads" })).toBeVisible();
   await expect(page.getByText("Cloud Lead")).toBeVisible();
+  await expect(page.getByText("Mitchelle Ndunge")).toBeVisible();
+  await expect(page.getByText("Chapter Lead")).toBeVisible();
 
   await page.goto("/lead?id=u-lead-cloud");
   await expect(page.getByRole("heading", { name: "Cloud Lead" })).toBeVisible();
   await expect(page.getByText("Students reached")).toBeVisible();
+
+  await page.goto("/lead?id=u-lead-mitchelle");
+  await expect(page.getByRole("heading", { name: "Mitchelle Ndunge" })).toBeVisible();
+  await expect(page.getByText("Chapter Lead · 2026/27")).toBeVisible();
+  await expect(page.getByRole("link", { name: /GitHub/ })).toHaveAttribute("href", "https://github.com/Dahliastar");
+  await expect(page.getByRole("link", { name: /LinkedIn/ })).toHaveAttribute("href", "https://www.linkedin.com/in/michelle-ndunge-7815482a2/");
 });
 
 test("tracks and event detail routes render seeded records", async ({ page }) => {
