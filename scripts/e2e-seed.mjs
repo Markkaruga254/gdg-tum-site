@@ -25,9 +25,9 @@ const db = getFirestore();
 
 const tracks = [
   { id: "track-cloud", slug: "cloud", name: "Cloud", color: "blue", description: "Cloud computing and serverless track", leadIds: ["KoYwxs8piKh4c4tkcIHzOURzCwC3"] },
-  { id: "track-cybersecurity", slug: "cybersecurity", name: "Cybersecurity", color: "red", description: "Application and network security track", leadIds: ["u-lead-cyber"] },
-  { id: "track-web", slug: "web", name: "Web", color: "green", description: "Frontend and full-stack web track", leadIds: ["u-lead-web"] },
-  { id: "track-wit", slug: "women-in-tech", name: "Women in Tech", color: "yellow", description: "Community and mentorship track", leadIds: ["u-lead-wit"] },
+  { id: "track-cybersecurity", slug: "cybersecurity", name: "Cybersecurity", color: "red", description: "Application and network security track", leadIds: ["u-lead-kimberly"] },
+  { id: "track-web", slug: "web", name: "Web", color: "green", description: "Frontend and full-stack web track", leadIds: ["u-lead-sam"] },
+  { id: "track-wit", slug: "women-in-tech", name: "Women in Tech", color: "yellow", description: "Community and mentorship track", leadIds: ["u-lead-larah"] },
   { id: "track-ai-ml", slug: "ai-ml", name: "AI/ML", color: "yellow", description: "Machine learning and artificial intelligence track", leadIds: ["u-lead-lewis"] },
   { id: "track-mobile", slug: "mobile", name: "Mobile Development", color: "blue", description: "Mobile application development track", leadIds: ["u-lead-ian"] },
   { id: "track-hackathons-solutions", slug: "hackathons-solutions", name: "Hackathons & Solutions", color: "red", description: "Collaborative hackathons and problem-solving track", leadIds: ["u-lead-edith"] },
@@ -39,9 +39,6 @@ const testAccounts = [
 ];
 
 const users = [
-  { id: "u-lead-cyber", name: "Cyber Lead", role: "lead", track: "cybersecurity", photoUrl: "", bio: "", links: [] },
-  { id: "u-lead-web", name: "Web Lead", role: "lead", track: "web", photoUrl: "", bio: "", links: [] },
-  { id: "u-lead-wit", name: "WIT Lead", role: "lead", track: "women-in-tech", photoUrl: "", bio: "", links: [] },
   { id: "u-lead-mitchelle", name: "Mitchelle Ndunge", role: "lead", track: null, leadershipTitle: "Chapter Lead", photoUrl: "", bio: "", links: [{ title: "GitHub", url: "https://github.com/Dahliastar" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/michelle-ndunge-7815482a2/" }] },
   { id: "u-lead-rooney", name: "Rooney Odhiambo", role: "lead", track: null, leadershipTitle: "VC Chair", photoUrl: "", bio: "", links: [{ title: "GitHub", url: "https://github.com/KabuorJnr" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/rooney-odhiambo-9a26b6256/" }] },
   { id: "KoYwxs8piKh4c4tkcIHzOURzCwC3", name: "Mark Karuga", role: "admin", track: "cloud", leadershipTitle: "Cloud Track Lead", photoUrl: "", bio: "", links: [{ title: "GitHub", url: "https://github.com/Markkaruga254" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/mark-karuga" }] },
