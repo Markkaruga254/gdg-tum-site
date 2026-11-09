@@ -257,38 +257,37 @@ describe("getTrackBySlug", () => {
 });
 
 describe("getUsers", () => {
-  it("includes the canonical public roster when Firestore has no lead records", async () => {
-    mocks.getDocs.mockResolvedValue({ docs: [] });
-    const result = await getUsers("lead");
-    expect(result).toHaveLength(9);
-    expect(result.map((lead) => lead.name)).toContain("Mitchelle Ndunge");
-    expect(result.map((lead) => lead.name)).toContain("Mark Karuga");
-    expect(result.find((lead) => lead.name === "Mark Karuga")).toMatchObject({
-      id: "u-lead-mark",
+  it("returns only the live Firestore records for the requested role", async () => {
+    const storedLead = makeDoc("u-lead-live", {
+      name: "Live Firestore Lead",
+      role: "lead" as const,
+      track: "cloud" as const,
       leadershipTitle: "Cloud Track Lead",
-      track: "cloud",
-      links: [
-        { title: "GitHub", url: "https://github.com/Markkaruga254" },
-        { title: "LinkedIn", url: "https://www.linkedin.com/in/mark-karuga" },
-      ],
+      links: [{ title: "GitHub", url: "https://github.com/live-lead" }],
     });
+    mocks.getDocs.mockResolvedValue({ docs: [storedLead] });
+    const result = await getUsers("lead");
+    expect(result).toEqual([{
+      id: "u-lead-live",
+      name: "Live Firestore Lead",
+      role: "lead",
+      track: "cloud",
+      leadershipTitle: "Cloud Track Lead",
+      links: [{ title: "GitHub", url: "https://github.com/live-lead" }],
+    }]);
     expect(mocks.collection).toHaveBeenCalledWith(expect.anything(), "users");
     expect(mocks.where).toHaveBeenCalledWith("role", "==", "lead");
   });
 
-  it("keeps stored Firestore IDs and avoids duplicate roster entries", async () => {
-    mocks.getDocs.mockResolvedValue({
-      docs: [makeDoc("firestore-mark-id", { name: "Mark Karuga", role: "lead", track: "cloud" })],
-    });
-    const result = await getUsers("lead");
-    expect(result.filter((lead) => lead.name === "Mark Karuga")).toHaveLength(1);
-    expect(result.find((lead) => lead.name === "Mark Karuga")?.id).toBe("firestore-mark-id");
+  it("returns an empty list when Firestore has no matching records", async () => {
+    mocks.getDocs.mockResolvedValue({ docs: [] });
+    expect(await getUsers("lead")).toEqual([]);
   });
 
-  it("queries all users by default", async () => {
-    mocks.getDocs.mockResolvedValue({ docs: [] });
-    const result = await getUsers();
-    expect(result).toHaveLength(9);
+  it("queries all users by default without injecting local roster entries", async () => {
+    const member = makeDoc("u-member", { name: "Member", role: "member" as const });
+    mocks.getDocs.mockResolvedValue({ docs: [member] });
+    expect(await getUsers()).toEqual([{ id: "u-member", name: "Member", role: "member" }]);
     expect(mocks.collection).toHaveBeenCalledWith(expect.anything(), "users");
     expect(mocks.where).not.toHaveBeenCalled();
   });
@@ -310,19 +309,26 @@ describe("getUserById", () => {
 });
 
 describe("getPublicLeadById", () => {
-  it("returns a canonical public profile when its Firestore document is missing", async () => {
+  it("returns the Firestore user document for a public profile", async () => {
+    mocks.doc.mockReturnValue({});
+    mocks.getDoc.mockResolvedValue(makeDoc("u-lead-live", {
+      name: "Live Firestore Lead",
+      role: "lead" as const,
+      track: "cloud" as const,
+    }));
+    await expect(getPublicLeadById("u-lead-live")).resolves.toEqual({
+      id: "u-lead-live",
+      name: "Live Firestore Lead",
+      role: "lead",
+      track: "cloud",
+    });
+    expect(mocks.doc).toHaveBeenCalledWith(expect.anything(), "users", "u-lead-live");
+  });
+
+  it("returns null when the Firestore profile does not exist", async () => {
     mocks.doc.mockReturnValue({});
     mocks.getDoc.mockResolvedValue(makeMissingDoc());
-    const result = await getPublicLeadById("u-lead-mitchelle");
-    expect(result).toMatchObject({
-      id: "u-lead-mitchelle",
-      name: "Mitchelle Ndunge",
-      leadershipTitle: "Chapter Lead",
-      links: [
-        { title: "GitHub", url: "https://github.com/Dahliastar" },
-        { title: "LinkedIn", url: "https://www.linkedin.com/in/michelle-ndunge-7815482a2/" },
-      ],
-    });
+    await expect(getPublicLeadById("missing-lead")).resolves.toBeNull();
   });
 });
 
