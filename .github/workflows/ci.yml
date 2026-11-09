@@ -7,75 +7,96 @@ on:
     branches: [main]
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
 
 jobs:
-  test:
+  quality:
+    name: Code quality and unit tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: "24"
-          cache: "npm"
-
+          cache: npm
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
-
-      - name: Lint
+      - name: ESLint
         run: npm run lint
-
-      - name: Typecheck
+      - name: TypeScript
         run: npm run typecheck
-
-      - name: Unit tests (Vitest)
+      - name: Unit tests
         run: npm run test:unit
-
-      - name: Dependency audit (reporting only)
-        run: npm audit --omit=dev
+      - name: Dependency audit (informational)
+        run: npm audit --omit=dev --audit-level=high
         continue-on-error: true
 
-      - name: Setup Java (Firestore emulator)
-        uses: actions/setup-java@v4
+  firestore-rules:
+    name: Firestore authorization tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          distribution: "temurin"
-          java-version: 21
-
+          node-version: "24"
+          cache: npm
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
       - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-
-      - name: Firestore security-rules tests
+        run: npm install --global firebase-tools@15.35.0
+      - name: Test Firestore security rules
         run: npm run test:rules
         env:
           FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
           FIREBASE_PROJECT_ID: demo-gdg-tum-site
 
+  browser-e2e:
+    name: Functional browser tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Install Firebase CLI
+        run: npm install --global firebase-tools@15.35.0
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
-
-      - name: End-to-end tests
+      - name: Run functional E2E tests
         run: npm run test:e2e:ci
 
-      - name: Upload responsive review screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
+  production-build:
+    name: Production build and export smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          name: responsive-review
-          path: test-results/mockup-review/
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: Production build (static export)
+          node-version: "24"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Build static export
         env:
-          # Placeholder client config: prerendering is client-shell only
-          # (useEffect never runs at build time), so Firebase isn't contacted.
-          # Production deployment rebuilds with the production Firebase configuration below.
           NEXT_PUBLIC_FIREBASE_API_KEY: ci-placeholder
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ci-placeholder.firebaseapp.com
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-gdg-tum-site
@@ -83,16 +104,44 @@ jobs:
           NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "1"
           NEXT_PUBLIC_FIREBASE_APP_ID: "1:1:web:ci-placeholder"
         run: npm run build
+      - name: Verify Hosting output
+        run: |
+          test -s out/index.html
+          node -e 'const fs = require("node:fs"); const config = JSON.parse(fs.readFileSync("firebase.json", "utf8")); if (config.hosting?.public !== "out") { console.error("Firebase Hosting must publish the generated out/ directory"); process.exit(1); }'
+          echo "Static export exists and Firebase Hosting points to out/."
 
-      - name: Upload static export
-        uses: actions/upload-artifact@v4
-        with:
-          name: static-export
-          path: out/
+  gate:
+    name: Required CI gate
+    if: always()
+    needs:
+      - quality
+      - firestore-rules
+      - browser-e2e
+      - production-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all core validation jobs
+        env:
+          QUALITY: ${{ needs.quality.result }}
+          FIRESTORE_RULES: ${{ needs.firestore-rules.result }}
+          BROWSER_E2E: ${{ needs.browser-e2e.result }}
+          PRODUCTION_BUILD: ${{ needs.production-build.result }}
+        run: |
+          set -eu
+          failed=0
+          for check in QUALITY FIRESTORE_RULES BROWSER_E2E PRODUCTION_BUILD; do
+            result="${!check}"
+            printf '%-20s %s\n' "$check" "$result"
+            if [ "$result" != "success" ]; then
+              echo "::error::$check did not succeed (result: $result)"
+              failed=1
+            fi
+          done
+          exit "$failed"
 
   deploy:
     name: Deploy to Firebase
-    needs: test
+    needs: gate
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
@@ -102,13 +151,13 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
-          cache: "npm"
+          cache: npm
 
       - name: Validate production Firebase configuration
         env:
@@ -176,7 +225,7 @@ jobs:
         run: npm run build
 
       - name: Install Firebase CLI
-        run: npm install -g firebase-tools
+        run: npm install --global firebase-tools@15.35.0
 
       - name: Deploy to Firebase
         env:
@@ -185,4 +234,3 @@ jobs:
         run: |
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$GOOGLE_APPLICATION_CREDENTIALS"
           firebase deploy --only hosting,firestore:rules,firestore:indexes --project gdg-tum-site --non-interactive
-
