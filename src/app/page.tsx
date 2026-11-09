@@ -23,7 +23,7 @@ import {
   type AppUserWithId,
 } from "@/lib/data";
 import { getGalleryPage, type Photo } from "@/lib/gallery";
-import { trackTagColor } from "@/lib/tracks";
+import { trackName, trackTagColor } from "@/lib/tracks";
 
 const COLOR_CLASS: Record<string, string> = {
   blue: "bg-blue",
@@ -119,7 +119,7 @@ export default function Home() {
   const held = listed.filter((e) => e.status === "past").length;
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
   const activeOrderedPartners = [...partners].filter((p) => p.active).sort((a, b) => a.order - b.order);
-  const trackOrder = ["cloud", "cybersecurity", "web", "women-in-tech"];
+  const trackOrder = ["cloud", "cybersecurity", "web", "women-in-tech", "ai-ml", "mobile", "hackathons-solutions"];
   const orderedTracks = [...tracks].sort((a, b) => trackOrder.indexOf(a.slug) - trackOrder.indexOf(b.slug));
   const partnerTypes = [...new Set(activeOrderedPartners.map((p) => p.type))];
 
@@ -189,7 +189,7 @@ export default function Home() {
             writeups.slice(0, 3).map((w, i) => {
               const num = String(i + 1).padStart(2, "0");
               const isRed = i === 1;
-              const trackLabel = w.trackId === "women-in-tech" ? "Women in Tech" : w.trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+              const trackLabel = trackName(w.trackId);
               const publishedDate = w.publishedAt?.toDate
                 ? w.publishedAt.toDate().toLocaleDateString(undefined, { day: "numeric", month: "short" })
                 : "";
@@ -218,8 +218,8 @@ export default function Home() {
         {/* Tracks block */}
         <section id="tracks" className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] border-b-[3px] border-ink">
           <div className="bg-yellow px-[20px] py-[26px] xl:border-r-[3px] xl:px-[32px] xl:py-[36px]">
-            <h2 className="block font-display text-[56px] font-normal uppercase leading-[.95] xl:hidden">Four tracks. One club.</h2>
-            <h2 className="hidden font-display text-[72px] font-normal uppercase leading-[.95] xl:block">Four<br />tracks.<br />One<br />club.</h2>
+            <h2 className="block font-display text-[56px] font-normal uppercase leading-[.95] xl:hidden">Seven tracks. One club.</h2>
+            <h2 className="hidden font-display text-[72px] font-normal uppercase leading-[.95] xl:block">Seven<br />tracks.<br />One<br />club.</h2>
             <p className="mt-[18px] hidden text-[15px] leading-[1.5] xl:block">
               Each track is led by a student lead who runs sessions, posts writeups and builds a public portfolio.
             </p>
@@ -230,7 +230,7 @@ export default function Home() {
               <div className="px-[26px] py-[22px] border-b-[3px] border-ink">No tracks yet.</div>
             ) : (
               orderedTracks.map((t, i) => {
-                const trackLeads = leads.filter((lead) => t.leadIds.includes(lead.id));
+                const trackLeads = leads.filter((lead) => lead.track === t.slug);
                 const last = i === tracks.length - 1;
                 const isYellow = t.color === "yellow";
                 return (
@@ -332,7 +332,7 @@ export default function Home() {
                   <PhotoImage url={photos[0].url} altText={photos[0].altText} trackId={photos[0].trackId} className="h-[200px] overflow-hidden border-b-[3px] border-ink xl:h-[380px]" />
                   <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                     {photos[0].caption} &middot;{" "}
-                    <Tag label={photos[0].trackId === "women-in-tech" ? "Women in Tech" : photos[0].trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())} color={trackTagColor(photos[0].trackId)} />
+                    <Tag label={trackName(photos[0].trackId)} color={trackTagColor(photos[0].trackId)} />
                   </div>
                 </a>
                 <div className="flex-[3_1_340px] grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-[16px]">
@@ -345,7 +345,7 @@ export default function Home() {
                       <PhotoImage url={photo.url} altText={photo.altText} trackId={photo.trackId} className="h-[110px] overflow-hidden border-b-[3px] border-ink xl:h-[150px]" />
                       <div className="border-t-[3px] border-ink px-[12px] py-[10px] text-[13px] font-bold bg-white flex flex-col gap-1">
                         {photo.caption}
-                        <Tag label={photo.trackId === "women-in-tech" ? "Women in Tech" : photo.trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase())} color={trackTagColor(photo.trackId)} />
+                        <Tag label={trackName(photo.trackId)} color={trackTagColor(photo.trackId)} />
                       </div>
                     </a>
                   ))}

@@ -4,16 +4,45 @@ test("public leads directory and lead profile render real records", async ({ pag
   await page.goto("/leads");
   await expect(page.getByRole("heading", { name: "Leads" })).toBeVisible();
   await expect(page.getByText("Cloud Lead")).toBeVisible();
+  await expect(page.getByText("Mitchelle Ndunge")).toBeVisible();
+  await expect(page.getByText("Chapter Lead")).toBeVisible();
 
   await page.goto("/lead?id=u-lead-cloud");
   await expect(page.getByRole("heading", { name: "Cloud Lead" })).toBeVisible();
   await expect(page.getByText("Students reached")).toBeVisible();
+
+  await page.goto("/lead?id=u-lead-mitchelle");
+  await expect(page.getByRole("heading", { name: "Mitchelle Ndunge" })).toBeVisible();
+  await expect(page.getByText("Chapter Lead · 2026/27")).toBeVisible();
+  await expect(page.getByRole("link", { name: /GitHub/ })).toHaveAttribute("href", "https://github.com/Dahliastar");
+  await expect(page.getByRole("link", { name: /LinkedIn/ })).toHaveAttribute("href", "https://www.linkedin.com/in/michelle-ndunge-7815482a2/");
 });
 
 test("tracks and event detail routes render seeded records", async ({ page }) => {
   await page.goto("/tracks");
-  await expect(page.getByRole("heading", { name: "Tracks" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Seven tracks. One club." })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cloud" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "AI/ML" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Mobile Development" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Hackathons & Solutions" })).toBeVisible();
+
+  await page.goto("/track?slug=cloud");
+  await expect(page.getByRole("heading", { name: "Cloud" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Cloud Lead ↗" })).toBeVisible();
+
+  await page.goto("/track?slug=ai-ml");
+  await expect(page.getByRole("heading", { name: "AI/ML" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Lewis Kagiri/ })).toBeVisible();
+
+  await page.goto("/track?slug=mobile");
+  await expect(page.getByRole("heading", { name: "Mobile Development" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Ian Chacha/ })).toBeVisible();
+
+  await page.goto("/track?slug=hackathons-solutions");
+  await expect(page.getByRole("heading", { name: "Hackathons & Solutions" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "How to take part in a hackathon" })).toBeVisible();
+  await expect(page.getByText("Watch for announcements")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Edith Karanja/ })).toBeVisible();
 
   await page.goto("/event?id=ev-cloud-past");
   await expect(page.getByRole("heading", { name: "Cloud 101 Workshop" })).toBeVisible();

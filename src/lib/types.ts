@@ -1,6 +1,6 @@
 import type { Timestamp } from "firebase/firestore";
 
-export type TrackSlug = "cloud" | "cybersecurity" | "web" | "women-in-tech";
+export type TrackSlug = "cloud" | "cybersecurity" | "web" | "women-in-tech" | "ai-ml" | "mobile" | "hackathons-solutions";
 export type TrackColor = "blue" | "red" | "green" | "yellow";
 
 export interface Track {
@@ -49,7 +49,10 @@ export interface AppUser {
   id: string;
   name: string;
   role: "admin" | "lead" | "member";
-  track: TrackSlug;
+  /** Set when the person leads one of the published tracks. */
+  track?: TrackSlug | null;
+  /** Public-facing position; supports chapter and cross-track leadership roles. */
+  leadershipTitle?: string;
   photoUrl?: string;
   bio?: string;
   links?: { title: string; url: string }[];

@@ -8,11 +8,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 import { getEventById, getWriteupById, getMediaByWriteup, type EventWithId, type TickerWithId, type WriteupWithId, type MediaWithId } from "@/lib/data";
-import { trackTagColor } from "@/lib/tracks";
-
-function trackName(track: string) {
-  return track === "women-in-tech" ? "Women in Tech" : track[0].toUpperCase() + track.slice(1);
-}
+import { trackName, trackTagColor } from "@/lib/tracks";
 
 function EventDetail() {
   const params = useSearchParams();

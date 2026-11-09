@@ -7,10 +7,10 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 import { getWriteupById, getUserById, getWriteups, getMediaByWriteup, getEventById, type WriteupWithId, type AppUserWithId, type MediaWithId, type EventWithId } from "@/lib/data";
-import { trackTagColor } from "@/lib/tracks";
+import { trackName, trackTagColor } from "@/lib/tracks";
 
-function trackLabel(track: string) {
-  return track === "women-in-tech" ? "Women in Tech" : track[0].toUpperCase() + track.slice(1);
+function trackLabel(track: Parameters<typeof trackName>[0]) {
+  return trackName(track);
 }
 
 function View() {

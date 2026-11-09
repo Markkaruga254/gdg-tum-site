@@ -201,11 +201,30 @@ describe("getWriteupById", () => {
 });
 
 describe("getTracks", () => {
-  it("queries all tracks", async () => {
+  it("returns all canonical tracks and preserves stored document IDs", async () => {
     mocks.getDocs.mockResolvedValue({ docs: [makeDoc("t-1", { slug: "cloud", name: "Cloud" })] });
     const result = await getTracks();
+
     expect(mocks.collection).toHaveBeenCalledWith(expect.anything(), "tracks");
-    expect(result).toEqual([{ id: "t-1", slug: "cloud", name: "Cloud" }]);
+    expect(result).toHaveLength(7);
+    expect(result.map((track) => track.slug)).toEqual([
+      "cloud",
+      "cybersecurity",
+      "web",
+      "women-in-tech",
+      "ai-ml",
+      "mobile",
+      "hackathons-solutions",
+    ]);
+    expect(result[0]).toMatchObject({
+      id: "t-1",
+      slug: "cloud",
+      name: "Cloud",
+      color: "blue",
+      description: expect.any(String),
+      leadIds: [],
+    });
+    expect(result.slice(1).every((track) => track.id === track.slug)).toBe(true);
   });
 });
 
@@ -217,7 +236,19 @@ describe("getTrackBySlug", () => {
     expect(result).toEqual({ id: "t-1", slug: "cloud", name: "Cloud" });
   });
 
-  it("returns null when no matching slug", async () => {
+  it("returns canonical track metadata when the track is not stored yet", async () => {
+    mocks.getDocs.mockResolvedValue({ docs: [] });
+    const result = await getTrackBySlug("ai-ml");
+    expect(result).toMatchObject({
+      id: "ai-ml",
+      slug: "ai-ml",
+      name: "AI/ML",
+      color: "yellow",
+      leadIds: [],
+    });
+  });
+
+  it("returns null for an unknown slug", async () => {
     mocks.getDocs.mockResolvedValue({ docs: [] });
     const result = await getTrackBySlug("nonexistent" as TrackSlug);
     expect(result).toBeNull();

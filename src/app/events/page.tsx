@@ -16,9 +16,11 @@ function eventDate(value: EventWithId["date"]) {
 }
 
 function trackLabel(value: string) {
-  return value === "women-in-tech"
-    ? "Women in Tech"
-    : value.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  if (value === "women-in-tech") return "Women in Tech";
+  if (value === "ai-ml") return "AI/ML";
+  if (value === "mobile") return "Mobile Development";
+  if (value === "hackathons-solutions") return "Hackathons & Solutions";
+  return value.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 export default function EventsPage() {
@@ -45,6 +47,9 @@ export default function EventsPage() {
     { id: "cybersecurity", label: "Cybersecurity" },
     { id: "web", label: "Web" },
     { id: "women-in-tech", label: "Women in Tech" },
+    { id: "ai-ml", label: "AI/ML" },
+    { id: "mobile", label: "Mobile Development" },
+    { id: "hackathons-solutions", label: "Hackathons & Solutions" },
   ];
   const filtered = visible.filter((event) => track === "all" || event.trackId === track);
   const upcoming = filtered
