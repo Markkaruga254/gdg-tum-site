@@ -6,7 +6,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 import { getUserById, getEvents, getWriteups, type AppUserWithId, type EventWithId, type WriteupWithId } from "@/lib/data";
-import { trackTagColor } from "@/lib/tracks";
+import { TRACK_BG_COLORS, trackTagColor } from "@/lib/tracks";
 
 function trackLabel(track: string) {
   return track === "women-in-tech" ? "Women in Tech" : track[0].toUpperCase() + track.slice(1);
@@ -39,8 +39,8 @@ function View() {
         setUser(profile);
         if (!profile) return;
         const [eventResults, writeupResults] = await Promise.all([
-          getEvents({ trackId: profile.track }).catch(() => []),
-          getWriteups({ status: "published" }).then((items) => items.filter((item) => item.authorId === id)).catch(() => []),
+          profile.track ? getEvents({ trackId: profile.track }) : Promise.resolve([]),
+          getWriteups({ status: "published", authorId: id }),
         ]);
         if (!active) return;
         setEvents(eventResults);
@@ -57,9 +57,12 @@ function View() {
   if (loading) return <><Nav /><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]">Loading profile…</main><Footer /></>;
   if (!user) return <><Nav /><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]"><h1 className="font-display text-[56px] uppercase">Profile not found</h1><a href="/leads" className="mt-4 inline-block underline">Back to leads</a></main><Footer /></>;
 
+  const roleTitle = user.leadershipTitle || (user.track ? `${trackLabel(user.track)} Track Lead` : "GDG TUM Lead");
   const pastEvents = events.filter((event) => event.status === "past")
     .sort((a, b) => b.date.toMillis() - a.date.toMillis());
   const studentsReached = pastEvents.reduce((total, event) => total + (event.attendance || 0), 0);
+  const heroColor = user.track ? TRACK_BG_COLORS[user.track] : "#FBBC04";
+  const heroTextColor = user.track === "cloud" ? "#fff" : "#111";
 
   return (
     <>
@@ -67,7 +70,7 @@ function View() {
       <main className="mx-auto max-w-[1280px]">
         <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[minmax(0,1fr)_380px]">
           <div className="px-[26px] py-[34px] md:px-[42px] md:py-[44px]">
-            <Tag label={`${trackLabel(user.track)} Track Lead · 2026/27`} color={trackTagColor(user.track)} />
+            <Tag label={`${roleTitle} · 2026/27`} color={user.track ? trackTagColor(user.track) : "yellow"} />
             <h1 className="mt-[22px] font-display text-[clamp(60px,9vw,112px)] uppercase leading-[.9]">{user.name}</h1>
             <p className="mt-[20px] max-w-[620px] text-[17px] leading-[1.6]">{user.bio || "Building skills, sharing knowledge and helping students learn by doing."}</p>
             <div className="mt-[24px] flex flex-wrap gap-[10px]">
@@ -78,11 +81,11 @@ function View() {
               ))}
             </div>
           </div>
-          <div className="flex min-h-[300px] items-center justify-center border-t-[3px] border-ink bg-blue md:border-l-[3px] md:border-t-0">
+          <div className="flex min-h-[300px] items-center justify-center border-t-[3px] border-ink md:border-l-[3px] md:border-t-0" style={{ backgroundColor: heroColor, color: heroTextColor }}>
             {user.photoUrl ? (
               <img src={user.photoUrl} alt={user.name} className="h-full min-h-[320px] max-h-[460px] w-full object-cover" />
             ) : (
-              <span className="font-bold text-[12px] uppercase text-white">Photo</span>
+              <span className="font-display text-[44px] uppercase">{user.name.split(" ").map((part) => part[0]).join("").slice(0, 2)}</span>
             )}
           </div>
         </section>
