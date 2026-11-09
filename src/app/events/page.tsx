@@ -16,6 +16,7 @@ function eventDate(value: EventWithId["date"]) {
 }
 
 function trackLabel(value: string) {
+  if (value === "chapter") return "Chapter Events";
   if (value === "women-in-tech") return "Women in Tech";
   if (value === "ai-ml") return "AI/ML";
   if (value === "mobile") return "Mobile Development";
@@ -50,6 +51,7 @@ export default function EventsPage() {
     { id: "ai-ml", label: "AI/ML" },
     { id: "mobile", label: "Mobile Development" },
     { id: "hackathons-solutions", label: "Hackathons & Solutions" },
+    { id: "chapter", label: "Chapter Events" },
   ];
   const filtered = visible.filter((event) => track === "all" || event.trackId === track);
   const upcoming = filtered
@@ -92,7 +94,7 @@ export default function EventsPage() {
           </p>
         </header>
 
-        <nav className="flex flex-wrap border-b-[3px] border-ink" aria-label="Filter events by track">
+        <nav className="flex flex-wrap border-b-[3px] border-ink" aria-label="Filter events by category">
           {[{ id: "all", label: "All" }, ...tracks].map((item) => (
             <button
               key={item.id}

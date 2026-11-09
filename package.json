@@ -15,7 +15,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ci": "bash scripts/e2e-run.sh",
     "emulator": "firebase emulators:start --only firestore --project demo-gdg-tum-site",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-gdg-tum-site \"node scripts/test-rules.mjs\""
+    "test:rules": "firebase emulators:exec --only firestore --project demo-gdg-tum-site \"node scripts/test-rules.mjs\"",
+    "import:gdg-events": "npx tsx scripts/import-gdg-events.ts"
   },
   "dependencies": {
     "firebase": "^11.0.0",

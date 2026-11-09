@@ -1,4 +1,4 @@
-import type { TrackColor, TrackSlug } from "@/lib/types";
+import type { EventCategory, TrackColor, TrackSlug } from "@/lib/types";
 
 export interface TrackConfig {
   slug: TrackSlug;
@@ -27,7 +27,8 @@ export const TRACK_BG_COLORS: Record<TrackSlug, string> = {
   "hackathons-solutions": "#EA4335",
 };
 
-export function trackName(slug: TrackSlug): string {
+export function trackName(slug: EventCategory): string {
+  if (slug === "chapter") return "Chapter Events";
   return TRACKS.find((track) => track.slug === slug)?.name ?? slug;
 }
 
@@ -42,6 +43,7 @@ export function trackFilterOptions() {
   ];
 }
 
-export function trackTagColor(slug: TrackSlug): TrackColor {
+export function trackTagColor(slug: EventCategory): TrackColor {
+  if (slug === "chapter") return "blue";
   return trackColor(slug);
 }

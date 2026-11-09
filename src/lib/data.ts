@@ -16,6 +16,7 @@ import { TRACKS } from "@/lib/tracks";
 import type {
   Event, Writeup, Track, AppUser, Post, Partner, Media, Ticker,
   TrackSlug,
+  EventCategory,
 } from "@/lib/types";
 
 export type EventWithId = Event & { id: string };
@@ -55,7 +56,7 @@ export async function getEvents({
   trackId,
   status,
   orderAsc,
-}: { trackId?: TrackSlug; status?: Event["status"]; orderAsc?: boolean } = {}): Promise<EventWithId[]> {
+}: { trackId?: EventCategory; status?: Event["status"]; orderAsc?: boolean } = {}): Promise<EventWithId[]> {
   const constraints: QueryConstraint[] = [orderBy("date", orderAsc ? "asc" : "desc")];
   if (trackId) constraints.push(where("trackId", "==", trackId));
   if (status) constraints.push(where("status", "==", status));
