@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
-import { getTrackBySlug, getUsers, getEvents, getWriteups, type TrackWithId, type EventWithId, type WriteupWithId, type AppUserWithId } from "@/lib/data";
+import { getTrackBySlug, getLeadershipUsers, getEvents, getWriteups, type TrackWithId, type EventWithId, type WriteupWithId, type AppUserWithId } from "@/lib/data";
 import { TRACK_BG_COLORS, trackTagColor } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
 
@@ -41,7 +41,7 @@ function View() {
         }
         setTrack(current);
         const [leadResults, eventResults, writeupResults] = await Promise.all([
-          getUsers("lead").then((users) => users.filter((lead) => lead.track === current.slug)),
+          getLeadershipUsers().then((users) => users.filter((lead) => lead.track === current.slug)),
           getEvents({ trackId: current.slug }),
           getWriteups({ status: "published", trackId: current.slug }),
         ]);
