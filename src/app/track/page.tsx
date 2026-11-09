@@ -83,6 +83,30 @@ function View() {
 
         {error && <p role="alert" className="border-b-[3px] border-ink bg-red px-[26px] py-[16px] font-bold">{error}</p>}
 
+        {track.slug === "hackathons-solutions" && (
+          <section className="border-b-[3px] border-ink">
+            <div className="border-y-[3px] border-ink bg-yellow px-[26px] py-[18px]">
+              <h2 className="text-[14px] font-bold uppercase">How to take part in a hackathon</h2>
+            </div>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
+              {[
+                ["01 · Watch for announcements", "Check the Events page and GDG TUM announcements for the challenge, dates, venue, eligibility and registration instructions."],
+                ["02 · Register", "Follow the registration link shared with that specific event and complete the required details before its deadline."],
+                ["03 · Find or form a team", "Join a team through the event's team-matching instructions, or register with your own team if the rules allow it. Check team-size requirements first."],
+                ["04 · Understand the challenge", "Read the problem statement, judging criteria, permitted tools and submission requirements. Ask the organisers if anything is unclear."],
+                ["05 · Build and collaborate", "Plan a small, demonstrable solution, divide tasks, document your work and keep your team communicating throughout the event."],
+                ["06 · Submit and present", "Submit the project using the event's official process before the deadline. Prepare a short demo and explain the problem, solution and what your team built."]
+              ].map(([title, description]) => (
+                <article key={title} className="border-b-[3px] border-r-[3px] border-ink p-[22px]">
+                  <h3 className="font-bold uppercase">{title}</h3>
+                  <p className="mt-[8px] text-[14px] leading-[1.55]">{description}</p>
+                </article>
+              ))}
+            </div>
+            <p className="px-[26px] py-[18px] text-[13px] leading-[1.5]">Every hackathon can have different rules and registration steps. The official event announcement is the source of truth; this page explains the usual participation journey and does not replace event-specific instructions.</p>
+          </section>
+        )}
+
         <section>
           <div className="flex flex-wrap items-center justify-between gap-[10px] border-y-[3px] border-ink px-[26px] py-[18px]">
             <h2 className="text-[14px] font-bold uppercase">Upcoming events</h2>
