@@ -7,75 +7,87 @@ on:
     branches: [main]
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
-  test:
+  quality:
+    name: Code quality
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: "24"
-          cache: "npm"
-
+          cache: npm
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
-
-      - name: Lint
+      - name: ESLint
         run: npm run lint
-
-      - name: Typecheck
+      - name: TypeScript
         run: npm run typecheck
-
-      - name: Unit tests (Vitest)
+      - name: Unit tests
         run: npm run test:unit
 
-      - name: Dependency audit (reporting only)
-        run: npm audit --omit=dev
-        continue-on-error: true
-
-      - name: Setup Java (Firestore emulator)
-        uses: actions/setup-java@v4
+  security:
+    name: Dependency security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          distribution: "temurin"
-          java-version: 21
+          node-version: "24"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Audit all dependencies (high and critical block)
+        run: npm audit --audit-level=high
+      - name: Review pull-request dependency changes
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
 
+  firestore-rules:
+    name: Firestore authorization tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
       - name: Install Firebase CLI
-        run: npm install -g firebase-tools
-
-      - name: Firestore security-rules tests
+        run: npm install --global firebase-tools
+      - name: Test Firestore security rules
         run: npm run test:rules
         env:
           FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
           FIREBASE_PROJECT_ID: demo-gdg-tum-site
 
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: End-to-end tests
-        run: npm run test:e2e:ci
-
-      - name: Upload responsive review screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
+  production-build:
+    name: Production build and export validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          name: responsive-review
-          path: test-results/mockup-review/
-          if-no-files-found: ignore
-          retention-days: 7
-
-      - name: Production build (static export)
+          node-version: "24"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Build static export
         env:
-          # Placeholder client config: prerendering is client-shell only
-          # (useEffect never runs at build time), so Firebase isn't contacted.
-          # Production deployment rebuilds with the production Firebase configuration below.
           NEXT_PUBLIC_FIREBASE_API_KEY: ci-placeholder
           NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ci-placeholder.firebaseapp.com
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-gdg-tum-site
@@ -83,16 +95,115 @@ jobs:
           NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "1"
           NEXT_PUBLIC_FIREBASE_APP_ID: "1:1:web:ci-placeholder"
         run: npm run build
-
+      - name: Validate exported routes, assets and Firestore indexes
+        run: node scripts/validate-static-export.mjs
       - name: Upload static export
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: static-export
           path: out/
+          if-no-files-found: error
+          retention-days: 7
+
+  browser-e2e:
+    name: Browser end-to-end tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Install Firebase CLI
+        run: npm install --global firebase-tools
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Run functional browser tests
+        run: npm run test:e2e:ci
+      - name: Upload Playwright diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-e2e-results
+          path: |
+            test-results/
+            playwright-report/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  visual-baseline-review:
+    name: Approved-mockup comparison and baseline review
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+      - name: Install Firebase CLI
+        run: npm install --global firebase-tools
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Capture approved mockups, implementation screenshots and pixel-difference reports
+        run: npm run test:visual:ci
+      - name: Upload visual review evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mockup-visual-review
+          path: test-results/mockup-review/comparisons/
+          if-no-files-found: error
+          retention-days: 14
+
+  gate:
+    name: Required CI gate
+    if: always()
+    needs:
+      - quality
+      - security
+      - firestore-rules
+      - production-build
+      - browser-e2e
+      - visual-baseline-review
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every validation job to succeed
+        env:
+          QUALITY: ${{ needs.quality.result }}
+          SECURITY: ${{ needs.security.result }}
+          FIRESTORE_RULES: ${{ needs.firestore-rules.result }}
+          PRODUCTION_BUILD: ${{ needs.production-build.result }}
+          BROWSER_E2E: ${{ needs.browser-e2e.result }}
+          VISUAL_REVIEW: ${{ needs.visual-baseline-review.result }}
+        run: |
+          set -eu
+          failed=0
+          for check in QUALITY SECURITY FIRESTORE_RULES PRODUCTION_BUILD BROWSER_E2E VISUAL_REVIEW; do
+            result="${!check}"
+            printf '%-20s %s\\n' "$check" "$result"
+            if [ "$result" != "success" ]; then
+              echo "::error::$check did not succeed (result: $result)"
+              failed=1
+            fi
+          done
+          exit "$failed"
 
   deploy:
     name: Deploy to Firebase
-    needs: test
+    needs: gate
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
