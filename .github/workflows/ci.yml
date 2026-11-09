@@ -68,7 +68,7 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
       - name: Install Firebase CLI
-        run: npm install --global firebase-tools
+        run: npm install --global firebase-tools@15.35.0
       - name: Test Firestore security rules
         run: npm run test:rules
         env:
@@ -122,7 +122,7 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
       - name: Install Firebase CLI
-        run: npm install --global firebase-tools
+        run: npm install --global firebase-tools@15.35.0
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
       - name: Run functional browser tests
@@ -154,7 +154,7 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
       - name: Install Firebase CLI
-        run: npm install --global firebase-tools
+        run: npm install --global firebase-tools@15.35.0
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
       - name: Capture approved mockups, implementation screenshots and pixel-difference reports
