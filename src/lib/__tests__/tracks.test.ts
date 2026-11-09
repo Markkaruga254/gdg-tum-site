@@ -20,7 +20,8 @@ describe("track configuration", () => {
 
   it("keeps event categories separate from the seven technical tracks", () => {
     expect(trackTagColor("chapter")).toBe("blue");
-    expect(TRACKS.some((track) => track.slug === "chapter")).toBe(false);
+    expect(trackName("chapter")).toBe("Chapter Events");
+    expect(TRACKS.map((track) => track.slug)).not.toContain("chapter");
   });
 
   it("keeps the approved track tag colors", () => {
