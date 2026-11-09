@@ -186,7 +186,13 @@ test("capture approved mockups beside the current public implementation", async 
         resolve(outputDir, `${stem}-viewport-diff.png`),
         Buffer.from(pixelReport.heatmapDataUrl.split(",")[1], "base64"),
       );
-      const { heatmapDataUrl: _heatmapDataUrl, ...metricSummary } = pixelReport;
+      const metricSummary = {
+        width: pixelReport.width,
+        height: pixelReport.height,
+        changedPixels: pixelReport.changedPixels,
+        totalPixels: pixelReport.totalPixels,
+        changedRatio: pixelReport.changedRatio,
+      };
       await writeFile(
         resolve(outputDir, `${stem}-viewport-diff.json`),
         JSON.stringify({ screen: screen.name, viewport: width, thresholdPerChannel: 24, ...metricSummary }, null, 2),
