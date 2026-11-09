@@ -82,7 +82,33 @@ test("capture approved mockups beside the current public implementation", async 
       }
       if (screen.name === "admin") {
         await expect(implementationPage.getByRole("heading", { name: "Admin", exact: true })).toBeVisible();
+        await expect(implementationPage.getByRole("button", { name: "Tracks", exact: true })).toHaveCount(0);
+        await expect(implementationPage.getByText("Bio", { exact: true })).toHaveCount(0);
+        await expect(implementationPage.getByText("Photo URL", { exact: true })).toHaveCount(0);
+        const firstUserRow = implementationPage.getByTestId("admin-user-row").first();
+        await expect(firstUserRow).toBeVisible();
+        const adminColumns = await firstUserRow.evaluate((element) =>
+          getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length,
+        );
+        expect(adminColumns).toBe(4);
       }
+
+      if (screen.name === "dashboard-new-writeup" && width === 390) {
+        await expect(implementationPage.getByTestId("dashboard-sidebar")).toBeVisible();
+        const dashboardColumns = await implementationPage.getByTestId("dashboard-layout").evaluate((element) =>
+          getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length,
+        );
+        expect(dashboardColumns).toBe(2);
+      }
+
+      if (screen.name === "dashboard-ai-before" && width === 390) {
+        await expect(implementationPage.getByTestId("dashboard-sidebar")).toHaveCount(0);
+        const stepColumns = await implementationPage.getByTestId("writeup-stepper").evaluate((element) =>
+          getComputedStyle(element).gridTemplateColumns.trim().split(/\s+/).length,
+        );
+        expect(stepColumns).toBe(3);
+      }
+
       await implementationPage.evaluate(async () => { await document.fonts.ready; });
       await implementationPage.waitForTimeout(500);
       const implementation = await implementationPage.screenshot({ fullPage: true });

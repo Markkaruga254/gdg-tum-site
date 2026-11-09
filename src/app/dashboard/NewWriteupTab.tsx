@@ -19,10 +19,10 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
         </div>
       )}
 
-      <div className="mt-[20px] grid grid-cols-1 border-[3px] border-ink sm:grid-cols-3">
-        <button type="button" onClick={() => setWriteupStep(1)} aria-current={writeupStep === 1 ? "step" : undefined} className={`border-b-[3px] border-ink px-[14px] py-[13px] text-left text-[11px] font-bold uppercase sm:border-b-0 sm:border-r-[3px] ${writeupStep === 1 ? "bg-ink text-white" : "bg-white"}`}>1&nbsp; Add your notes</button>
-        <button type="button" onClick={() => setWriteupStep(2)} aria-current={writeupStep === 2 ? "step" : undefined} className={`border-b-[3px] border-ink px-[14px] py-[13px] text-left text-[11px] font-bold uppercase sm:border-b-0 sm:border-r-[3px] ${writeupStep === 2 ? "bg-yellow" : "bg-white"}`}>2&nbsp; AI draft</button>
-        <button type="button" onClick={() => setWriteupStep(3)} aria-current={writeupStep === 3 ? "step" : undefined} className={`px-[14px] py-[13px] text-left text-[11px] font-bold uppercase ${writeupStep === 3 ? "bg-yellow" : "bg-white"}`}>3&nbsp; Review &amp; publish</button>
+      <div data-testid="writeup-stepper" className="mt-[20px] grid grid-cols-3 border-[3px] border-ink">
+        <button type="button" onClick={() => setWriteupStep(1)} aria-current={writeupStep === 1 ? "step" : undefined} className={`min-w-0 border-r-[3px] border-ink px-[6px] py-[10px] text-left text-[9px] font-bold uppercase leading-[1.3] break-words sm:px-[14px] sm:py-[13px] sm:text-[11px] ${writeupStep === 1 ? "bg-ink text-white" : "bg-white"}`}>1&nbsp; Add your notes</button>
+        <button type="button" onClick={() => setWriteupStep(2)} aria-current={writeupStep === 2 ? "step" : undefined} className={`min-w-0 border-r-[3px] border-ink px-[6px] py-[10px] text-left text-[9px] font-bold uppercase leading-[1.3] break-words sm:px-[14px] sm:py-[13px] sm:text-[11px] ${writeupStep === 2 ? "bg-yellow" : "bg-white"}`}>2&nbsp; AI draft</button>
+        <button type="button" onClick={() => setWriteupStep(3)} aria-current={writeupStep === 3 ? "step" : undefined} className={`min-w-0 px-[6px] py-[10px] text-left text-[9px] font-bold uppercase leading-[1.3] break-words sm:px-[14px] sm:py-[13px] sm:text-[11px] ${writeupStep === 3 ? "bg-yellow" : "bg-white"}`}>3&nbsp; Review &amp; publish</button>
       </div>
 
       <form onSubmit={(event) => { event.preventDefault(); saveWriteup(false); }} className="mt-[20px] grid grid-cols-1 gap-0 border-[3px] border-ink lg:grid-cols-2">
@@ -38,7 +38,7 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
             <textarea id="wb" value={wf.body} onChange={(event) => setWf({ ...wf, body: event.target.value })} className="min-h-[150px] w-full border-[3px] border-ink px-3 py-2" rows={8} placeholder="Your notes go here. The AI only uses what you write." />
           </FormField>
 
-          <div className="grid grid-cols-1 gap-[14px] sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-[8px] sm:gap-[14px]">
             <FormField label="Attendance" id="wa" error={wfErrors.attendance}>
               <input id="wa" type="number" min={0} value={wf.attendance} onChange={(event) => setWf({ ...wf, attendance: event.target.value })} className="w-full border-[3px] border-ink px-3 py-2" placeholder="000" />
             </FormField>
