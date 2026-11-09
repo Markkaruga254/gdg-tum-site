@@ -37,6 +37,7 @@ import {
   getTracks,
   getTrackBySlug,
   getUsers,
+  getLeadershipUsers,
   getUserById,
   getPublicLeadById,
   getPartners,
@@ -296,6 +297,26 @@ describe("getUsers", () => {
     mocks.getDocs.mockResolvedValue({ docs: [] });
     await getUsers("lead");
     expect(mocks.where).toHaveBeenCalledWith("role", "==", "lead");
+  });
+});
+
+
+describe("getLeadershipUsers", () => {
+  it("includes leads and admins only when they have an explicit track leadership assignment", async () => {
+    mocks.getDocs.mockResolvedValue({
+      docs: [
+        makeDoc("lead-1", { name: "Track Lead", role: "lead", track: "web" }),
+        makeDoc("admin-1", { name: "Admin Track Lead", role: "admin", track: "cloud", leadershipTitle: "Cloud Track Lead" }),
+        makeDoc("admin-2", { name: "Chapter Admin", role: "admin" }),
+        makeDoc("member-1", { name: "Member", role: "member", track: "mobile", leadershipTitle: "Mobile Track Lead" }),
+        makeDoc("admin-3", { name: "Untitled Admin", role: "admin", track: "ai-ml" }),
+      ],
+    });
+
+    await expect(getLeadershipUsers()).resolves.toEqual([
+      { id: "lead-1", name: "Track Lead", role: "lead", track: "web" },
+      { id: "admin-1", name: "Admin Track Lead", role: "admin", track: "cloud", leadershipTitle: "Cloud Track Lead" },
+    ]);
   });
 });
 
