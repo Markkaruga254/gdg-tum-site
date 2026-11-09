@@ -120,7 +120,7 @@ export default function LeadsPage() {
                   <div className="p-[16px]">
                     <h2 className="text-[20px] font-bold">{lead.name}</h2>
                     <p className="my-[4px] text-[12px] font-bold uppercase">{roleLabel(lead)}</p>
-                    <p className="mb-[14px] text-[14px] leading-[1.5]">{lead.bio || "Bio coming soon."}</p>
+                    {lead.bio && <p className="mb-[14px] text-[14px] leading-[1.5]">{lead.bio}</p>}
                     <p className="mb-[14px] text-[12px] font-bold uppercase">
                       {lead.track ? eventCounts[lead.track] || 0 : 0} events · {writeupCounts[lead.id] || 0} writeups
                     </p>
