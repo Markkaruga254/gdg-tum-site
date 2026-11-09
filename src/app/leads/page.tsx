@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
-import { getEvents, getUsers, getWriteups, type AppUserWithId } from "@/lib/data";
+import { getEvents, getLeadershipUsers, getWriteups, type AppUserWithId } from "@/lib/data";
 import { TRACK_BG_COLORS, trackColor } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
 
@@ -42,7 +42,7 @@ export default function LeadsPage() {
     (async () => {
       try {
         const [users, events, writeups] = await Promise.all([
-          getUsers(),
+          getLeadershipUsers(),
           getEvents(),
           getWriteups({ status: "published" }),
         ]);
