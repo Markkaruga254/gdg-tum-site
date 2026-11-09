@@ -58,9 +58,9 @@ export async function seedFixtures(env) {
     await setDoc(doc(db, "events", "ev-cyber"), { title: "Fixture Cyber Event", trackId: "cybersecurity", status: "upcoming", venue: "Fixture" });
     await setDoc(doc(db, "events", "ev-cancelled"), { title: "Fixture Cancelled Event", trackId: "cloud", status: "cancelled", venue: "Fixture", cancelledBy: "u-lead-web", cancelledAt: new Date() });
 
-    await setDoc(doc(db, "writeups", "w-published-cloud"), { title: "Fixture Published", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "published", publishedAt: new Date(), tags: { topics: [], products: [] } });
+    await setDoc(doc(db, "writeups", "w-published-cloud"), { title: "Fixture Published", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "published", publishedAt: new Date(), tags: { topics: [], products: [] }, aiDrafted: false, reviewed: true, reviewedBy: "u-lead-cloud", reviewedAt: new Date() });
     await setDoc(doc(db, "writeups", "w-draft-cloud"), { title: "Fixture Draft", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "draft", tags: { topics: [], products: [] } });
-    await setDoc(doc(db, "writeups", "w-flip-cloud"), { title: "Fixture Flip Published", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "published", publishedAt: new Date(), tags: { topics: [], products: [] } });
+    await setDoc(doc(db, "writeups", "w-flip-cloud"), { title: "Fixture Flip Published", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", body: "Fixture", status: "published", publishedAt: new Date(), tags: { topics: [], products: [] }, aiDrafted: false, reviewed: true, reviewedBy: "u-lead-cloud", reviewedAt: new Date() });
     await setDoc(doc(db, "writeups", "w-draft-web"), { title: "Fixture Web Draft", eventId: "ev-web", trackId: "web", authorId: "u-lead-web", body: "Fixture", status: "draft", tags: { topics: [], products: [] } });
 
     // Dedicated draft writeup that no other test mutates, used by media tests

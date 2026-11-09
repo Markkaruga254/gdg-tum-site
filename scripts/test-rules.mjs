@@ -7,7 +7,7 @@
 // Positive and negative paths are both exercised. Every denial uses a real
 // Firestore predicate; the suite must not pass because a rule expression throws.
 import {
-  addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where,
+  addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where, writeBatch,
 } from "firebase/firestore";
 import {
   actors, expectAllowed, expectDenied, freshActor, loadTestEnv,
@@ -142,13 +142,24 @@ await expectDenied(() => getDoc(doc(member, "writeups", "w-draft-cloud")), "a me
 await expectAllowed(() => getDoc(doc(leadCloud, "writeups", "w-draft-cloud")), "the author reads their own draft");
 await expectAllowed(() => getDoc(doc(admin, "writeups", "w-draft-web")), "admin reads any draft");
 await expectAllowed(() => addDoc(collection(leadCloud, "writeups"), { title: "D", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", status: "draft", body: "b", tags: { topics: [], products: [] } }), "cloud lead creates a cloud draft for themselves");
-await expectAllowed(() => addDoc(collection(leadCloud, "writeups"), { title: "P", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", status: "published", body: "b", tags: { topics: [], products: [] } }), "cloud lead creates a cloud writeup as published");
+await expectDenied(() => addDoc(collection(leadCloud, "writeups"), { title: "P", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", status: "published", body: "b", tags: { topics: [], products: [] } }), "lead cannot create a published writeup without final review");
+await expectDenied(() => addDoc(collection(leadCloud, "writeups"), { title: "AI", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", status: "published", body: "b", aiDrafted: true, reviewed: true, reviewedBy: "u-lead-cloud", reviewedAt: serverTimestamp(), tags: { topics: [], products: [] } }), "AI-assisted writeup cannot publish without an AI review");
+await expectAllowed(() => addDoc(collection(leadCloud, "writeups"), { title: "P", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", status: "published", body: "b", tags: { topics: [], products: [] }, aiDrafted: false, reviewed: true, reviewedBy: "u-lead-cloud", reviewedAt: serverTimestamp() }), "cloud lead creates a published writeup after final review");
+await expectAllowed(() => addDoc(collection(leadCloud, "writeups"), { title: "AI", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", status: "published", body: "b", tags: { topics: [], products: [] }, aiDrafted: true, aiReviewed: true, aiReviewedBy: "u-lead-cloud", aiReviewedAt: serverTimestamp(), reviewed: true, reviewedBy: "u-lead-cloud", reviewedAt: serverTimestamp() }), "cloud lead publishes AI-assisted content only after both reviews");
+await expectAllowed(() => setDoc(doc(leadCloud, "writeups", "w-ai-review"), { title: "AI reviewed", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", status: "published", body: "Original AI-assisted body", tags: { topics: [], products: [] }, aiDrafted: true, aiReviewed: true, aiReviewedBy: "u-lead-cloud", aiReviewedAt: serverTimestamp(), reviewed: true, reviewedBy: "u-lead-cloud", reviewedAt: serverTimestamp() }), "lead creates a fully reviewed AI-assisted writeup");
+await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-ai-review"), { body: "changed without AI review" }), "published AI-assisted content cannot change without fresh AI and final review");
+await expectAllowed(() => updateDoc(doc(leadCloud, "writeups", "w-ai-review"), { body: "changed after review", aiReviewed: true, aiReviewedBy: "u-lead-cloud", aiReviewedAt: serverTimestamp(), reviewed: true, reviewedBy: "u-lead-cloud", reviewedAt: serverTimestamp() }), "lead can update published AI-assisted content after both fresh reviews");
+await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-ai-review"), { aiDrafted: false }), "AI-assisted disclosure cannot be removed from a writeup");
 await expectDenied(() => addDoc(collection(leadCloud, "writeups"), { title: "D", eventId: "ev-web", trackId: "web", authorId: "u-lead-cloud", status: "draft", body: "b", tags: { topics: [], products: [] } }), "lead cannot create in another track");
 await expectDenied(() => addDoc(collection(leadCloud, "writeups"), { title: "D", eventId: "ev-cloud", trackId: "cloud", authorId: "u-member", status: "draft", body: "b", tags: { topics: [], products: [] } }), "lead cannot attribute a writeup to someone else");
 await expectDenied(() => addDoc(collection(member, "writeups"), { title: "D", eventId: "ev-cloud", trackId: "cloud", authorId: "u-member", status: "draft", body: "b", tags: { topics: [], products: [] } }), "member cannot create a writeup");
-await expectAllowed(() => addDoc(collection(admin, "writeups"), { title: "A", eventId: "ev-web", trackId: "web", authorId: "u-lead-web", status: "published", body: "b", tags: { topics: [], products: [] } }), "admin creates a published writeup credited to a lead");
+await expectAllowed(() => addDoc(collection(admin, "writeups"), { title: "A", eventId: "ev-web", trackId: "web", authorId: "u-lead-web", status: "published", body: "b", tags: { topics: [], products: [] }, aiDrafted: false, reviewed: true, reviewedBy: "u-admin", reviewedAt: serverTimestamp() }), "admin creates a published writeup credited to a lead after review");
 await expectAllowed(() => updateDoc(doc(leadCloud, "writeups", "w-draft-cloud"), { body: "edited" }), "author edits their draft body");
-await expectAllowed(() => updateDoc(doc(leadCloud, "writeups", "w-draft-cloud"), { status: "published" }), "lead publishes their own draft");
+await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-draft-cloud"), { status: "published" }), "lead cannot publish a draft without a final review");
+await expectAllowed(() => updateDoc(doc(leadCloud, "writeups", "w-draft-cloud"), { status: "published", reviewed: true, reviewedBy: "u-lead-cloud", reviewedAt: serverTimestamp() }), "lead publishes their own draft after recording final review");
+await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-published-cloud"), { body: "changed without review" }), "published content cannot change without a fresh review");
+await expectAllowed(() => updateDoc(doc(leadCloud, "writeups", "w-published-cloud"), { body: "changed after review", reviewed: true, reviewedBy: "u-lead-cloud", reviewedAt: serverTimestamp() }), "lead can update published content after a fresh final review");
+await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-published-cloud"), { aiDrafted: true, aiReviewed: false }), "published writeup cannot be relabelled AI-assisted without AI review");
 await expectAllowed(() => updateDoc(doc(leadCloud, "writeups", "w-flip-cloud"), { status: "draft" }), "lead unpublishes their own writeup");
 await updateDoc(doc(admin, "users", "u-lead-cloud"), { track: "web" });
 await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-flip-cloud"), { body: "lead no longer owns this track" }), "former track lead cannot update their old writeup");
@@ -156,7 +167,7 @@ await updateDoc(doc(admin, "users", "u-lead-cloud"), { track: "cloud" });
 await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-draft-cloud"), { authorId: "u-lead-web" }), "author cannot reassign attribution");
 await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-draft-cloud"), { trackId: "web" }), "author cannot move a writeup to another track");
 await expectDenied(() => updateDoc(doc(leadWeb, "writeups", "w-draft-cloud"), { body: "vandal" }), "a lead cannot edit another author's draft");
-await expectAllowed(() => updateDoc(doc(admin, "writeups", "w-draft-web"), { status: "published" }), "admin publishes another author's draft");
+await expectAllowed(() => updateDoc(doc(admin, "writeups", "w-draft-web"), { status: "published", reviewed: true, reviewedBy: "u-admin", reviewedAt: serverTimestamp() }), "admin publishes another author's draft after final review");
 await expectAllowed(() => deleteDoc(doc(admin, "writeups", "w-draft-web")), "admin deletes a writeup");
 await expectDenied(() => deleteDoc(doc(leadCloud, "writeups", "w-flip-cloud")), "author cannot delete their own writeup");
 await expectDenied(() => deleteDoc(doc(anon, "writeups", "w-published-cloud")), "anonymous cannot delete a writeup");
@@ -176,12 +187,22 @@ await expectDenied(() => getDoc(doc(leadCloudSecondary, "media", "m-draft")), "a
 await expectAllowed(() => getDoc(doc(admin, "media", "m-orphan")), "admin can read media even if its parent writeup was removed");
 await expectDenied(() => getDoc(doc(anon, "media", "m-orphan")), "anonymous cannot read media whose parent writeup is missing");
     await expectAllowed(() => getDocs(query(collection(anon, "media"), where("writeupId", "==", "w-published-cloud"))), "anonymous lists media for a published writeup");
-await expectAllowed(() => addDoc(collection(admin, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-admin" }), "admin creates media on a published writeup");
-await expectAllowed(() => addDoc(collection(leadCloud, "media"), { writeupId: "w-draft-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-lead-cloud" }), "cloud lead creates media on their own cloud draft");
-await expectAllowed(() => updateDoc(doc(admin, "media", "m-published"), { caption: "hello" }), "admin captions media");
+await expectDenied(() => addDoc(collection(admin, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-admin" }), "admin cannot add media to a published writeup without unpublishing");
+await expectAllowed(() => {
+  const batch = writeBatch(leadCloud);
+  batch.set(doc(collection(leadCloud, "media")), { writeupId: "w-draft-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-lead-cloud" });
+  batch.update(doc(leadCloud, "writeups", "w-draft-cloud"), { reviewed: false, reviewedBy: null, reviewedAt: null });
+  return batch.commit();
+}, "cloud lead creates media and invalidates the parent draft review atomically");
+await expectDenied(() => updateDoc(doc(admin, "media", "m-published"), { caption: "hello" }), "admin cannot edit captions on a published writeup");
 await expectDenied(() => updateDoc(doc(admin, "media", "m-published"), { writeupId: "w-draft-web" }), "admin cannot reparent existing media");
-await expectAllowed(() => deleteDoc(doc(admin, "media", "m-published")), "admin deletes media");
-await expectAllowed(() => updateDoc(doc(leadCloud, "media", "m-draft"), { caption: "edited" }), "writeup author captions their own draft's media");
+await expectDenied(() => deleteDoc(doc(admin, "media", "m-published")), "admin cannot remove media from a published writeup without deleting the writeup");
+await expectAllowed(() => {
+  const batch = writeBatch(leadCloud);
+  batch.update(doc(leadCloud, "media", "m-draft"), { caption: "edited" });
+  batch.update(doc(leadCloud, "writeups", "w-draft-cloud"), { reviewed: false, reviewedBy: null, reviewedAt: null });
+  return batch.commit();
+}, "writeup author captions draft media and invalidates the parent review atomically");
 await expectDenied(() => addDoc(collection(leadCloudSecondary, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/x.jpg", createdBy: "u-lead-cloud-secondary" }), "same-track lead cannot create media for another author", { clean: true });
 await expectDenied(() => updateDoc(doc(leadCloudSecondary, "media", "m-draft"), { caption: "not the author" }), "same-track lead cannot update another author's media", { clean: true });
 await expectDenied(() => deleteDoc(doc(leadCloudSecondary, "media", "m-draft")), "same-track lead cannot delete another author's media", { clean: true });
@@ -190,6 +211,18 @@ await expectDenied(() => addDoc(collection(anon, "media"), { writeupId: "w-publi
 await expectDenied(() => addDoc(collection(leadCloud, "media"), { writeupId: "w-draft-web", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-lead-cloud" }), "cloud lead cannot create media on a web writeup", { clean: true });
 await expectDenied(() => updateDoc(doc(leadWeb, "media", "m-draft"), { caption: "vandal" }), "web lead cannot caption cloud lead's draft media", { clean: true });
 await expectDenied(() => deleteDoc(doc(member, "media", "m-published")), "member cannot delete media");
+await expectAllowed(() => {
+  const batch = writeBatch(leadCloud);
+  batch.delete(doc(leadCloud, "media", "m-draft"));
+  batch.update(doc(leadCloud, "writeups", "w-draft-cloud"), { reviewed: false, reviewedBy: null, reviewedAt: null });
+  return batch.commit();
+}, "writeup author removes draft media and invalidates the parent review atomically");
+await expectAllowed(() => {
+  const batch = writeBatch(admin);
+  batch.delete(doc(admin, "media", "m-published"));
+  batch.delete(doc(admin, "writeups", "w-published-cloud"));
+  return batch.commit();
+}, "admin deletes a published writeup and its media records atomically");
 
 // ---- posts ---------------------------------------------------------------
 section("posts — public read, no client writes (news bot uses Admin SDK)");

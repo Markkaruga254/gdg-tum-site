@@ -30,6 +30,15 @@ service cloud.firestore {
     function writeupPath(writeupId) { return /databases/$(database)/documents/writeups/$(writeupId); }
     function writeupExists(writeupId) { return exists(writeupPath(writeupId)); }
     function writeupData(writeupId) { return get(writeupPath(writeupId)).data; }
+    function canEditDraftMedia(writeupId) {
+      let before = get(writeupPath(writeupId)).data;
+      let after = getAfter(writeupPath(writeupId)).data;
+      return (isAdmin() || before.get("authorId", "") == request.auth.uid)
+        && before.get("status", "") == "draft"
+        && after.get("status", "") == "draft"
+        && after.get("reviewed", false) == false
+        && (!after.get("aiDrafted", false) || after.get("aiReviewed", false) == false);
+    }
     function isWriteupAuthor(writeupId) {
       return isSignedIn() && writeupExists(writeupId)
         && writeupData(writeupId).get("authorId", "") == request.auth.uid;
@@ -99,22 +108,131 @@ service cloud.firestore {
       allow read, write: if isSignedIn() && (request.auth.uid == uid || isAdmin());
     }
 
+    function hasRequiredWriteupReview(data) {
+      return data.get("status", "draft") != "published" || (
+        data.get("reviewed", false) == true
+        && data.get("reviewedBy", "") is string
+        && data.get("reviewedBy", "").size() > 0
+        && data.get("reviewedAt", null) is timestamp
+        && (!data.get("aiDrafted", false) || (
+          data.get("aiReviewed", false) == true
+          && data.get("aiReviewedBy", "") is string
+          && data.get("aiReviewedBy", "").size() > 0
+          && data.get("aiReviewedAt", null) is timestamp
+        ))
+      );
+    }
+
+    function writeupContentChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        "eventId", "title", "summary", "body", "attendance", "links", "tags"
+      ]);
+    }
+
+    function requiresFreshWriteupReview() {
+      return request.resource.data.get("status", "draft") == "published"
+        && (
+          resource.data.get("status", "draft") != "published"
+          || writeupContentChanged()
+        );
+    }
+
+    function hasFreshWriteupReview() {
+      return (
+        !writeupContentChanged()
+        || !request.resource.data.get("reviewed", false)
+        || (
+          request.resource.data.get("reviewedBy", "") == request.auth.uid
+          && request.resource.data.get("reviewedAt", null) == request.time
+        )
+      ) && (
+        !requiresFreshWriteupReview()
+        || (
+          request.resource.data.get("reviewed", false) == true
+          && request.resource.data.get("reviewedBy", "") == request.auth.uid
+          && request.resource.data.get("reviewedAt", null) == request.time
+        )
+      );
+    }
+
+    function requiresFreshAIWriteupReview() {
+      return request.resource.data.get("status", "draft") == "published"
+        && request.resource.data.get("aiDrafted", false)
+        && (
+          !resource.data.get("aiDrafted", false)
+          || writeupContentChanged()
+        );
+    }
+
+    function hasFreshAIWriteupReview() {
+      return (
+        !writeupContentChanged()
+        || !request.resource.data.get("aiReviewed", false)
+        || (
+          request.resource.data.get("aiReviewedBy", "") == request.auth.uid
+          && request.resource.data.get("aiReviewedAt", null) == request.time
+        )
+      ) && (
+        !requiresFreshAIWriteupReview()
+        || (
+          request.resource.data.get("aiReviewed", false) == true
+          && request.resource.data.get("aiReviewedBy", "") == request.auth.uid
+          && request.resource.data.get("aiReviewedAt", null) == request.time
+        )
+      );
+    }
+
+    function hasCallerReviewOnCreate(data) {
+      return (
+        !data.get("reviewed", false)
+        || (
+          data.get("reviewedBy", "") == request.auth.uid
+          && data.get("reviewedAt", null) == request.time
+        )
+      ) && (
+        !data.get("aiReviewed", false)
+        || (
+          data.get("aiReviewedBy", "") == request.auth.uid
+          && data.get("aiReviewedAt", null) == request.time
+        )
+      ) && (
+        data.get("status", "draft") != "published"
+        || (
+          data.get("reviewed", false) == true
+          && data.get("reviewedBy", "") == request.auth.uid
+          && data.get("reviewedAt", null) == request.time
+          && (!data.get("aiDrafted", false) || (
+            data.get("aiReviewed", false) == true
+            && data.get("aiReviewedBy", "") == request.auth.uid
+            && data.get("aiReviewedAt", null) == request.time
+          ))
+        )
+      );
+    }
+
     match /writeups/{id} {
       allow read: if resource.data.get("status", "") == "published"
         || (isSignedIn() && (resource.data.get("authorId", "") == request.auth.uid || isAdmin()));
-      allow create: if isSignedIn() && (
-        isAdmin()
-        || (isLeadOf(request.resource.data.trackId)
-          && request.resource.data.authorId == request.auth.uid
-          && request.resource.data.status in ["draft", "published"])
-      );
-      allow update: if request.resource.data.authorId == resource.data.authorId
+      allow create: if isSignedIn()
+        && request.resource.data.status in ["draft", "published"]
+        && hasRequiredWriteupReview(request.resource.data)
+        && hasCallerReviewOnCreate(request.resource.data)
+        && (
+          isAdmin()
+          || (isLeadOf(request.resource.data.trackId)
+            && request.resource.data.authorId == request.auth.uid)
+        );
+      allow update: if isSignedIn()
+        && request.resource.data.authorId == resource.data.authorId
         && request.resource.data.trackId == resource.data.trackId
+        && request.resource.data.status in ["draft", "published"]
+        && (!resource.data.get("aiDrafted", false) || request.resource.data.get("aiDrafted", false))
+        && hasRequiredWriteupReview(request.resource.data)
+        && hasFreshWriteupReview()
+        && hasFreshAIWriteupReview()
         && (isAdmin() || (
-          isSignedIn()
-          && isLeadOf(resource.data.trackId)
+          isLeadOf(resource.data.trackId)
           && resource.data.authorId == request.auth.uid
-          && request.resource.data.status in ["draft", "published"]
         ));
       allow delete: if isAdmin();
     }
@@ -126,11 +244,20 @@ service cloud.firestore {
           || isWriteupAuthor(resource.data.writeupId)
         )
       );
-      allow create: if isSignedIn() && canManageMedia(request.resource.data.writeupId);
+      // Published writeups are immutable from the media editor. Unpublish first,
+      // then update captions, alt text, uploads or removals and review again.
+      allow create: if isSignedIn()
+        && canEditDraftMedia(request.resource.data.writeupId);
       allow update: if isSignedIn()
         && request.resource.data.writeupId == resource.data.writeupId
-        && canManageMedia(resource.data.writeupId);
-      allow delete: if isSignedIn() && canManageMedia(resource.data.writeupId);
+        && canEditDraftMedia(resource.data.writeupId);
+      // Admins may remove media records as part of deleting a parent writeup.
+      // Individual media removal from a draft must invalidate its parent review.
+      allow delete: if isSignedIn()
+        && (
+          (isAdmin() && !existsAfter(writeupPath(resource.data.writeupId)))
+          || canEditDraftMedia(resource.data.writeupId)
+        );
     }
 
     match /partners/{id} {
