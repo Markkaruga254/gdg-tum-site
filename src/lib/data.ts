@@ -12,7 +12,6 @@ import {
   type DocumentData,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { getPublicLeadershipRoster, withLeadershipMetadata } from "@/lib/leadership";
 import { TRACKS } from "@/lib/tracks";
 import type {
   Event, Writeup, Track, AppUser, Post, Partner, Media, Ticker,
@@ -119,22 +118,7 @@ export async function getTrackBySlug(slug: TrackSlug): Promise<TrackWithId | nul
 export async function getUsers(role?: AppUser["role"]): Promise<AppUserWithId[]> {
   const constraints: QueryConstraint[] = [];
   if (role) constraints.push(where("role", "==", role));
-  const storedUsers = await getCollection<AppUser>("users", constraints);
-
-  // The public roster must render even when the corresponding Firestore user
-  // documents have not been provisioned. Stored records retain their real IDs
-  // and operational fields; canonical records fill only missing roster entries.
-  const mergedUsers = [...storedUsers];
-  if (!role || role === "lead") {
-    const knownNames = new Set(storedUsers.map((user) => user.name.trim().toLowerCase()));
-    for (const leader of getPublicLeadershipRoster()) {
-      if (!knownNames.has(leader.name.trim().toLowerCase())) {
-        mergedUsers.push(leader);
-      }
-    }
-  }
-
-  return mergedUsers.map(withLeadershipMetadata);
+  return getCollection<AppUser>("users", constraints);
 }
 
 export async function getUserById(id: string): Promise<AppUserWithId | null> {
@@ -142,11 +126,7 @@ export async function getUserById(id: string): Promise<AppUserWithId | null> {
 }
 
 export async function getPublicLeadById(id: string): Promise<AppUserWithId | null> {
-  const storedUser = await getUserById(id);
-  if (storedUser) return withLeadershipMetadata(storedUser);
-
-  const rosterUser = getPublicLeadershipRoster().find((leader) => leader.id === id);
-  return rosterUser ? withLeadershipMetadata(rosterUser) : null;
+  return getUserById(id);
 }
 
 export async function getPartners(): Promise<PartnerWithId[]> {
