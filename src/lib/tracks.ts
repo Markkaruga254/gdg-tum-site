@@ -7,6 +7,19 @@ export interface TrackConfig {
   description: string;
 }
 
+/**
+ * Temporary public-profile fallback for the Cloud Track lead.
+ * Firestore remains the primary source; this is used only if that record
+ * cannot be loaded or is absent from the leadership query.
+ */
+export const TRACK_LEAD_FALLBACKS: Partial<Record<TrackSlug, { id: string; name: string; leadershipTitle: string }>> = {
+  cloud: {
+    id: "KoYwxs8piKh4c4tkcIHzOURzCwC3",
+    name: "Mark Karuga",
+    leadershipTitle: "Cloud Track Lead",
+  },
+};
+
 export const TRACKS: TrackConfig[] = [
   { slug: "cloud", name: "Cloud", color: "blue", description: "Explore cloud platforms, infrastructure and deployment." },
   { slug: "cybersecurity", name: "Cybersecurity", color: "red", description: "Learn to identify risks and build more secure systems." },
