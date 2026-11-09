@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 const routes = [
   { name: "home", path: "/" },
   { name: "leads", path: "/leads" },
-  { name: "lead-profile", path: "/lead?id=u-lead-cloud" },
+  { name: "lead-profile", path: "/lead?id=KoYwxs8piKh4c4tkcIHzOURzCwC3" },
   { name: "events", path: "/events" },
   { name: "event-detail", path: "/event?id=ev-cloud-past" },
   { name: "tracks", path: "/tracks" },
