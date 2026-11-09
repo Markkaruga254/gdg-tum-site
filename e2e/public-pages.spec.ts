@@ -20,7 +20,7 @@ test("public leads directory and lead profile render real records", async ({ pag
 
 test("tracks and event detail routes render seeded records", async ({ page }) => {
   await page.goto("/tracks");
-  await expect(page.getByRole("heading", { name: "Tracks" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Seven tracks. One club." })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cloud" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "AI/ML" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Mobile Development" })).toBeVisible();
