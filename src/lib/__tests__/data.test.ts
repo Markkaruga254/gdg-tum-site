@@ -38,6 +38,7 @@ import {
   getTrackBySlug,
   getUsers,
   getUserById,
+  getPublicLeadById,
   getPartners,
   getMediaByWriteup,
   getPosts,
@@ -256,9 +257,38 @@ describe("getTrackBySlug", () => {
 });
 
 describe("getUsers", () => {
+  it("includes the canonical public roster when Firestore has no lead records", async () => {
+    mocks.getDocs.mockResolvedValue({ docs: [] });
+    const result = await getUsers("lead");
+    expect(result).toHaveLength(9);
+    expect(result.map((lead) => lead.name)).toContain("Mitchelle Ndunge");
+    expect(result.map((lead) => lead.name)).toContain("Mark Karuga");
+    expect(result.find((lead) => lead.name === "Mark Karuga")).toMatchObject({
+      id: "u-lead-mark",
+      leadershipTitle: "Cloud Track Lead",
+      track: "cloud",
+      links: [
+        { title: "GitHub", url: "https://github.com/Markkaruga254" },
+        { title: "LinkedIn", url: "https://www.linkedin.com/in/mark-karuga" },
+      ],
+    });
+    expect(mocks.collection).toHaveBeenCalledWith(expect.anything(), "users");
+    expect(mocks.where).toHaveBeenCalledWith("role", "==", "lead");
+  });
+
+  it("keeps stored Firestore IDs and avoids duplicate roster entries", async () => {
+    mocks.getDocs.mockResolvedValue({
+      docs: [makeDoc("firestore-mark-id", { name: "Mark Karuga", role: "lead", track: "cloud" })],
+    });
+    const result = await getUsers("lead");
+    expect(result.filter((lead) => lead.name === "Mark Karuga")).toHaveLength(1);
+    expect(result.find((lead) => lead.name === "Mark Karuga")?.id).toBe("firestore-mark-id");
+  });
+
   it("queries all users by default", async () => {
     mocks.getDocs.mockResolvedValue({ docs: [] });
-    await getUsers();
+    const result = await getUsers();
+    expect(result).toHaveLength(9);
     expect(mocks.collection).toHaveBeenCalledWith(expect.anything(), "users");
     expect(mocks.where).not.toHaveBeenCalled();
   });
@@ -276,6 +306,23 @@ describe("getUserById", () => {
     const result = await getUserById("u-1");
     expect(mocks.doc).toHaveBeenCalledWith(expect.anything(), "users", "u-1");
     expect(result).toEqual({ id: "u-1", name: "Alice", role: "lead" });
+  });
+});
+
+describe("getPublicLeadById", () => {
+  it("returns a canonical public profile when its Firestore document is missing", async () => {
+    mocks.doc.mockReturnValue({});
+    mocks.getDoc.mockResolvedValue(makeMissingDoc());
+    const result = await getPublicLeadById("u-lead-mitchelle");
+    expect(result).toMatchObject({
+      id: "u-lead-mitchelle",
+      name: "Mitchelle Ndunge",
+      leadershipTitle: "Chapter Lead",
+      links: [
+        { title: "GitHub", url: "https://github.com/Dahliastar" },
+        { title: "LinkedIn", url: "https://www.linkedin.com/in/michelle-ndunge-7815482a2/" },
+      ],
+    });
   });
 });
 
