@@ -11,6 +11,9 @@ export const TRACKS: TrackConfig[] = [
   { slug: "cybersecurity", name: "Cybersecurity", color: "red" },
   { slug: "web", name: "Web", color: "green" },
   { slug: "women-in-tech", name: "Women in Tech", color: "yellow" },
+  { slug: "ai-ml", name: "AI/ML", color: "yellow" },
+  { slug: "mobile", name: "Mobile Development", color: "blue" },
+  { slug: "hackathons-solutions", name: "Hackathons & Solutions", color: "red" },
 ];
 
 export const TRACK_BG_COLORS: Record<TrackSlug, string> = {
@@ -18,6 +21,9 @@ export const TRACK_BG_COLORS: Record<TrackSlug, string> = {
   cybersecurity: "#EA4335",
   web: "#34A853",
   "women-in-tech": "#FBBC04",
+  "ai-ml": "#FBBC04",
+  mobile: "#1967D2",
+  "hackathons-solutions": "#EA4335",
 };
 
 export function trackName(slug: TrackSlug): string {
