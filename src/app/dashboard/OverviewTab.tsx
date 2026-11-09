@@ -1,5 +1,6 @@
 "use client";
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import Link from "next/link";
 import { canManageWriteup } from "@/lib/permissions";
 
 export default function OverviewTab({ events, writeups, setTab, startEditWriteup, startNewWriteup, unpublish, publishWriteup, deleteWriteup, role, uid, track }: any) {
@@ -9,7 +10,7 @@ export default function OverviewTab({ events, writeups, setTab, startEditWriteup
       <p className="mt-[12px] text-[14px] leading-[1.5]">Your track workspace. Manage events, publish writeups and keep your community updated.</p>
       <div className="mt-[24px] grid grid-cols-2 border-l-[3px] border-t-[3px] border-ink sm:grid-cols-3">
         <div className="border-b-[3px] border-r-[3px] border-ink p-[18px]"><p className="font-display text-[48px] leading-none">{events.length}</p><p className="mt-[8px] text-[11px] font-bold uppercase">Events</p></div>
-        <div className="border-b-[3px] border-r-[3px] border-ink bg-yellow p-[18px]"><p className="font-display text-[48px] leading-none">{writeups.length}</p><p className="mt-[8px] text-[11px] font-bold uppercase">Your writeups</p></div>
+        <div className="border-b-[3px] border-r-[3px] border-ink bg-yellow p-[18px]"><p className="font-display text-[48px] leading-none">{writeups.length}</p><p className="mt-[8px] text-[11px] font-bold uppercase">{role === "admin" ? "All writeups" : "Your writeups"}</p></div>
         <div className="border-b-[3px] border-r-[3px] border-ink p-[18px]"><p className="font-display text-[48px] leading-none">{writeups.filter((item: any) => item.status === "published").length}</p><p className="mt-[8px] text-[11px] font-bold uppercase">Published</p></div>
       </div>
       <div className="mt-[22px] flex flex-wrap gap-[10px]">
@@ -18,7 +19,7 @@ export default function OverviewTab({ events, writeups, setTab, startEditWriteup
       </div>
       <details className="mt-[24px] border-[3px] border-ink">
         <summary className="cursor-pointer bg-ink px-[16px] py-[12px] text-[12px] font-bold uppercase text-white">
-          My writeups ({writeups.length})
+          {role === "admin" ? "All writeups" : "My writeups"} ({writeups.length})
         </summary>
         <div className="grid gap-0">
           {writeups.length === 0 && <p className="p-[16px] text-[13px]">You have not created any writeups yet.</p>}
@@ -26,7 +27,7 @@ export default function OverviewTab({ events, writeups, setTab, startEditWriteup
             <div key={writeup.id} className={`flex flex-wrap items-center justify-between gap-[12px] border-b-[3px] border-ink p-[14px] ${index % 2 === 1 ? "bg-[#f7f7f7]" : "bg-white"}`}>
               <div className="min-w-0">
                 <p className="text-[13px] font-bold">{writeup.title}</p>
-                <p className="mt-[4px] text-[10px] font-bold uppercase text-[#555]">{writeup.status} · {writeup.trackId || "General"}</p>
+                <p className="mt-[4px] text-[10px] font-bold uppercase text-[#555]">{writeup.status} · {writeup.trackId || "General"} · {writeup.reviewed ? "Final review complete" : "Final review needed"}{writeup.aiDrafted ? (writeup.aiReviewed ? " · AI reviewed" : " · AI review needed") : ""}</p>
               </div>
               <div className="flex flex-wrap gap-[7px]">
                 {canManageWriteup(role, uid, track, writeup) && (
@@ -35,10 +36,11 @@ export default function OverviewTab({ events, writeups, setTab, startEditWriteup
                     {writeup.status === "published" ? (
                       <button type="button" onClick={() => unpublish(writeup.id)} className="border-[2px] border-ink px-[10px] py-[7px] text-[10px] font-bold uppercase">Unpublish</button>
                     ) : (
-                      <button type="button" onClick={() => publishWriteup(writeup.id)} className="border-[2px] border-ink bg-ink px-[10px] py-[7px] text-[10px] font-bold uppercase text-white">Publish</button>
+                      <button type="button" onClick={() => publishWriteup(writeup.id)} disabled={!writeup.reviewed || (writeup.aiDrafted && !writeup.aiReviewed)} title={!writeup.reviewed ? "Open Edit and complete the final review before publishing." : writeup.aiDrafted && !writeup.aiReviewed ? "Review the AI-assisted text before publishing." : "Publish this reviewed writeup"} className="border-[2px] border-ink bg-ink px-[10px] py-[7px] text-[10px] font-bold uppercase text-white disabled:cursor-not-allowed disabled:opacity-40">Publish</button>
                     )}
                   </>
                 )}
+                {writeup.status === "published" && <Link href={`/writeup?id=${encodeURIComponent(writeup.id)}`} target="_blank" rel="noreferrer" className="border-[2px] border-ink px-[10px] py-[7px] text-[10px] font-bold uppercase">View live ↗</Link>}
                 {role === "admin" && <button type="button" onClick={() => deleteWriteup(writeup.id)} className="border-[2px] border-ink px-[10px] py-[7px] text-[10px] font-bold uppercase">Delete</button>}
               </div>
             </div>

@@ -68,7 +68,7 @@ function View() {
         <header className="border-b-[3px] border-ink px-[26px] py-[34px]">
           <div className="flex flex-wrap items-center gap-[10px]">
             <Tag label={trackLabel(writeup.trackId)} color={trackTagColor(writeup.trackId)} />
-            {writeup.aiDrafted && <Tag label={`Drafted with AI, reviewed by ${author?.name || "the lead"}`} color="ink" />}
+            {writeup.aiDrafted && <Tag label={writeup.aiReviewed ? "AI-assisted · lead reviewed" : "AI-assisted · review status not recorded"} color="ink" />}
           </div>
           <h1 className="mt-[16px] max-w-[1000px] font-display text-[clamp(52px,7vw,96px)] uppercase leading-[.94]">{writeup.title}</h1>
           <p className="mt-[18px] text-[13px] font-bold uppercase">
