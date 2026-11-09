@@ -1,6 +1,7 @@
 import type { Timestamp } from "firebase/firestore";
 
 export type TrackSlug = "cloud" | "cybersecurity" | "web" | "women-in-tech" | "ai-ml" | "mobile" | "hackathons-solutions";
+export type EventCategory = TrackSlug | "chapter";
 export type TrackColor = "blue" | "red" | "green" | "yellow";
 
 export interface Track {
@@ -17,10 +18,11 @@ export interface Track {
 export interface Event {
   id: string;
   title: string;
-  trackId: TrackSlug;
+  trackId: EventCategory;
   date: Timestamp;
   venue: string;
   description?: string;
+  sourceUrl?: string;
   status: "upcoming" | "live" | "past" | "cancelled";
   cancelledBy?: string;
   cancelledAt?: Timestamp;
