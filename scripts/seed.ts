@@ -40,8 +40,8 @@ const db = admin.firestore();
 console.log(`Seeding ${projectId} (${process.env.FIRESTORE_EMULATOR_HOST ? "emulator" : "live"})`);
 
 async function main() {
-  // Club-wide leadership positions are not assigned to one of the four
-  // published tracks. Only the four actual track leads populate track.leadIds.
+  // Chapter-wide leadership positions remain unassigned; each track lead is
+  // attached to the corresponding published track.
   const leadDefs = [
     {
       id: "u-lead-mitchelle",
