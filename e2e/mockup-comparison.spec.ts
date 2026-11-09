@@ -15,7 +15,7 @@ type MockupScreen = {
 
 const screens: MockupScreen[] = [
   { name: "home", mockup: "docs/mockups/19-finished-home-populated.html", phoneMockup: "docs/mockups/20-finished-home-phone.html", path: "/" },
-  { name: "lead-profile", mockup: "docs/mockups/02-lead-profile.html", path: "/lead?id=u-lead-cloud" },
+  { name: "lead-profile", mockup: "docs/mockups/02-lead-profile.html", path: "/lead?id=KoYwxs8piKh4c4tkcIHzOURzCwC3" },
   { name: "gallery", mockup: "docs/mockups/05-gallery.html", path: "/gallery" },
   { name: "leads", mockup: "docs/mockups/08-leads.html", path: "/leads" },
   { name: "events", mockup: "docs/mockups/09-events.html", path: "/events" },
@@ -53,7 +53,7 @@ test("capture approved mockups beside the current public implementation", async 
       if (screen.auth) {
         await implementationPage.goto("/login?e2e=1", { waitUntil: "domcontentloaded" });
         const accountButton = screen.auth === "admin" ? "Sign in as test admin" : "Sign in as test lead";
-        const accountName = screen.auth === "admin" ? "E2E Admin" : "Cloud Lead";
+        const accountName = screen.auth === "admin" ? "E2E Admin" : "Lewis Kagiri";
         await implementationPage.getByRole("button", { name: accountButton }).click();
         await expect(implementationPage.getByText(accountName)).toBeVisible();
       }
