@@ -6,7 +6,7 @@ import Footer from "@/components/Footer";
 import { getTracks, getUsers, type AppUserWithId, type TrackWithId } from "@/lib/data";
 import { TRACK_BG_COLORS } from "@/lib/tracks";
 
-const order = ["cloud", "cybersecurity", "web", "women-in-tech"];
+const order = ["cloud", "cybersecurity", "web", "women-in-tech", "ai-ml", "mobile", "hackathons-solutions"];
 
 export default function TracksPage() {
   const [tracks, setTracks] = useState<TrackWithId[]>([]);
@@ -35,7 +35,7 @@ export default function TracksPage() {
       <Nav />
       <main className="mx-auto max-w-[1280px]">
         <header className="border-b-[3px] border-ink bg-yellow px-[26px] py-[34px] text-ink">
-          <h1 className="font-display text-[clamp(60px,9vw,120px)] uppercase leading-none">Four tracks. One club.</h1>
+          <h1 className="font-display text-[clamp(60px,9vw,120px)] uppercase leading-none">Seven tracks. One club.</h1>
           <p className="mt-[14px] max-w-[600px] text-[17px] leading-[1.5]">Pick a track, learn with others and build in public.</p>
         </header>
 
