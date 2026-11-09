@@ -23,6 +23,9 @@ describe("track configuration", () => {
     expect(trackTagColor("cybersecurity")).toBe("red");
     expect(trackTagColor("web")).toBe("green");
     expect(trackTagColor("women-in-tech")).toBe("yellow");
+    expect(trackTagColor("ai-ml")).toBe("yellow");
+    expect(trackTagColor("mobile")).toBe("blue");
+    expect(trackTagColor("hackathons-solutions")).toBe("red");
     expect(trackName("ai-ml")).toBe("AI/ML");
     expect(trackName("mobile")).toBe("Mobile Development");
     expect(trackName("hackathons-solutions")).toBe("Hackathons & Solutions");
