@@ -49,7 +49,7 @@ export interface AppUser {
   id: string;
   name: string;
   role: "admin" | "lead" | "member";
-  /** Only set when the person leads one of the four published tracks. */
+  /** Set when the person leads one of the published tracks. */
   track?: TrackSlug | null;
   /** Public-facing position; supports chapter and cross-track leadership roles. */
   leadershipTitle?: string;
