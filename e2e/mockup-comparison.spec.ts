@@ -1,4 +1,4 @@
-import { mkdir } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { test, expect } from "@playwright/test";
@@ -112,12 +112,85 @@ test("capture approved mockups beside the current public implementation", async 
       await implementationPage.evaluate(async () => { await document.fonts.ready; });
       await implementationPage.waitForTimeout(500);
       const implementation = await implementationPage.screenshot({ fullPage: true });
+      const referenceViewport = await referencePage.screenshot({ animations: "disabled" });
+      const implementationViewport = await implementationPage.screenshot({ animations: "disabled" });
 
       const stem = `${screen.name}-${width}`;
       await referencePage.screenshot({ path: resolve(outputDir, `${stem}-mockup.png`), fullPage: true });
       await implementationPage.screenshot({ path: resolve(outputDir, `${stem}-implementation.png`), fullPage: true });
 
       const comparisonPage = await context.newPage();
+      const pixelReport = await comparisonPage.evaluate(async ({ referencePng, implementationPng }) => {
+        const decode = async (value: string) => {
+          const image = new Image();
+          image.src = `data:image/png;base64,${value}`;
+          await image.decode();
+          return image;
+        };
+        const [referenceImage, implementationImage] = await Promise.all([
+          decode(referencePng),
+          decode(implementationPng),
+        ]);
+        if (
+          referenceImage.naturalWidth !== implementationImage.naturalWidth ||
+          referenceImage.naturalHeight !== implementationImage.naturalHeight
+        ) {
+          throw new Error("Mockup and implementation viewport screenshots have different dimensions");
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = referenceImage.naturalWidth;
+        canvas.height = referenceImage.naturalHeight;
+        const context = canvas.getContext("2d", { willReadFrequently: true });
+        if (!context) throw new Error("Canvas 2D context is unavailable");
+        context.drawImage(referenceImage, 0, 0);
+        const referencePixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(implementationImage, 0, 0);
+        const implementationPixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+        const heatmap = context.createImageData(canvas.width, canvas.height);
+        let changedPixels = 0;
+        for (let i = 0; i < referencePixels.length; i += 4) {
+          const delta = Math.max(
+            Math.abs(referencePixels[i] - implementationPixels[i]),
+            Math.abs(referencePixels[i + 1] - implementationPixels[i + 1]),
+            Math.abs(referencePixels[i + 2] - implementationPixels[i + 2]),
+          );
+          if (delta > 24) {
+            changedPixels++;
+            heatmap.data[i] = 234;
+            heatmap.data[i + 1] = 67;
+            heatmap.data[i + 2] = 53;
+            heatmap.data[i + 3] = 255;
+          } else {
+            heatmap.data[i] = 255;
+            heatmap.data[i + 1] = 255;
+            heatmap.data[i + 2] = 255;
+            heatmap.data[i + 3] = 255;
+          }
+        }
+        context.putImageData(heatmap, 0, 0);
+        const totalPixels = canvas.width * canvas.height;
+        return {
+          width: canvas.width,
+          height: canvas.height,
+          changedPixels,
+          totalPixels,
+          changedRatio: changedPixels / totalPixels,
+          heatmapDataUrl: canvas.toDataURL("image/png"),
+        };
+      }, {
+        referencePng: referenceViewport.toString("base64"),
+        implementationPng: implementationViewport.toString("base64"),
+      });
+      await writeFile(
+        resolve(outputDir, `${stem}-viewport-diff.png`),
+        Buffer.from(pixelReport.heatmapDataUrl.split(",")[1], "base64"),
+      );
+      const { heatmapDataUrl: _heatmapDataUrl, ...metricSummary } = pixelReport;
+      await writeFile(
+        resolve(outputDir, `${stem}-viewport-diff.json`),
+        JSON.stringify({ screen: screen.name, viewport: width, thresholdPerChannel: 24, ...metricSummary }, null, 2),
+      );
       await comparisonPage.setContent(`<!doctype html>
         <html lang="en">
           <head><meta charset="utf-8"><style>
