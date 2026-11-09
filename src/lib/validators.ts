@@ -47,18 +47,46 @@ export function validateEvent(form: EventForm, role: string): Record<string, str
 export function validateWriteup(form: WriteupForm, publish: boolean): Record<string, string> {
   const errors: Record<string, string> = {};
   if (!form.title.trim()) errors.title = "Title required";
+  else if (form.title.trim().length > 140) errors.title = "Title must be 140 characters or fewer.";
   if (!form.eventId) errors.eventId = "Event required";
-  if (form.summary.trim().split(/\s+/).filter(Boolean).length > 40) errors.summary = "Summary must be 40 words or fewer.";
+
+  const summary = form.summary.trim();
+  const summaryWords = summary.split(/\s+/).filter(Boolean).length;
+  if (summaryWords > 40) errors.summary = "Summary must be 40 words or fewer.";
+  else if (publish && !summary) errors.summary = "Summary required to publish";
+
   if (publish && !form.body.trim()) errors.body = "Body required to publish";
-  if (form.attendance && Number(form.attendance) < 0) errors.attendance = "Attendance must be non-negative";
+  else if (form.body.length > 100000) errors.body = "Article body must be 100,000 characters or fewer.";
+
+  if (form.attendance.trim()) {
+    const attendance = Number(form.attendance);
+    if (!Number.isInteger(attendance) || attendance < 0) {
+      errors.attendance = "Attendance must be a non-negative whole number";
+    }
+  }
+
   const linkError = validateLinks(form.links);
   if (linkError) errors.links = linkError;
   return errors;
 }
 
 export function validateLinks(links: WriteupLink[]): string | null {
-  const bad = links.some((l) => l.url && !URL_RE.test(l.url));
-  return bad ? "Links must start with http(s)://" : null;
+  for (const link of links) {
+    const title = link.title.trim();
+    const url = link.url.trim();
+    if (!title && !url) continue;
+    if (!title || !url) return "Each resource link needs both a title and a URL.";
+    if (title.length > 120 || url.length > 2048) return "Link titles must be 120 characters or fewer and URLs 2,048 characters or fewer.";
+    try {
+      const parsed = new URL(url);
+      if (!["http:", "https:"].includes(parsed.protocol) || !parsed.hostname) {
+        return "Links must be valid http(s) URLs.";
+      }
+    } catch {
+      return "Links must be valid http(s) URLs.";
+    }
+  }
+  return null;
 }
 
 export function trackColor(slug: TrackSlug | string, tracks: { slug: string; color: string }[]): string {

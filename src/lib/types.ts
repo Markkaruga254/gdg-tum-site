@@ -44,6 +44,14 @@ export interface Writeup {
   tags: { topics: string[]; products: string[] };
   status: "draft" | "published";
   aiDrafted: boolean;
+  /** True only after the lead has reviewed AI-assisted text. */
+  aiReviewed?: boolean;
+  aiReviewedBy?: string | null;
+  aiReviewedAt?: Timestamp | null;
+  /** True only after the lead confirms the final article is publication-ready. */
+  reviewed?: boolean;
+  reviewedBy?: string | null;
+  reviewedAt?: Timestamp | null;
   publishedAt?: Timestamp;
 }
 

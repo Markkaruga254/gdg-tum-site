@@ -71,14 +71,14 @@ describe("validateWriteup", () => {
 
   it("rejects negative attendance", () => {
     expect(validateWriteup({ ...base, attendance: "-3" }, false)).toEqual({
-      attendance: "Attendance must be non-negative",
+      attendance: "Attendance must be a non-negative whole number",
     });
   });
 
   it("rejects non-http links", () => {
     expect(
       validateWriteup({ ...base, links: [{ title: "x", url: "ftp://example.invalid" }] }, false),
-    ).toEqual({ links: "Links must start with http(s)://" });
+    ).toEqual({ links: "Links must be valid http(s) URLs." });
   });
 
   it("allows empty url links and https", () => {
@@ -102,6 +102,37 @@ describe("validateWriteup", () => {
     });
   });
 
+  it("requires a summary when publishing", () => {
+    expect(validateWriteup({ ...base, summary: "" }, true)).toEqual({
+      summary: "Summary required to publish",
+    });
+  });
+
+  it("rejects titles over 140 characters", () => {
+    expect(validateWriteup({ ...base, title: "x".repeat(141) }, false)).toEqual({
+      title: "Title must be 140 characters or fewer.",
+    });
+  });
+
+  it("rejects fractional and non-numeric attendance", () => {
+    expect(validateWriteup({ ...base, attendance: "1.5" }, false)).toEqual({
+      attendance: "Attendance must be a non-negative whole number",
+    });
+    expect(validateWriteup({ ...base, attendance: "many" }, false)).toEqual({
+      attendance: "Attendance must be a non-negative whole number",
+    });
+  });
+
+  it("requires a title and URL for partially completed resource links", () => {
+    expect(validateWriteup({ ...base, links: [{ title: "Slides", url: "" }] }, false)).toEqual({
+      links: "Each resource link needs both a title and a URL.",
+    });
+  });
+
+  it("rejects malformed http URLs", () => {
+    expect(validateLinks([{ title: "Broken", url: "https://" }])).toBe("Links must be valid http(s) URLs.");
+  });
+
   it("requires eventId and title", () => {
     expect(validateWriteup({ ...base, eventId: "", title: "" }, false)).toEqual({
       eventId: "Event required",
@@ -118,7 +149,7 @@ describe("validateLinks", () => {
 
   it("returns an error message for invalid links", () => {
     expect(validateLinks([{ title: "a", url: "javascript:alert(1)" }])).toBe(
-      "Links must start with http(s)://",
+      "Links must be valid http(s) URLs.",
     );
   });
 });
