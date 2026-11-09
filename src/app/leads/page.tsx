@@ -13,12 +13,15 @@ const filters: { id: TrackSlug | "all"; label: string }[] = [
   { id: "cybersecurity", label: "Cybersecurity" },
   { id: "web", label: "Web" },
   { id: "women-in-tech", label: "Women in Tech" },
+  { id: "ai-ml", label: "AI/ML" },
+  { id: "mobile", label: "Mobile" },
+  { id: "hackathons-solutions", label: "Hackathons & Solutions" },
 ];
 
-const trackOrder: TrackSlug[] = ["cloud", "cybersecurity", "web", "women-in-tech"];
+const trackOrder: TrackSlug[] = ["cloud", "cybersecurity", "web", "women-in-tech", "ai-ml", "mobile", "hackathons-solutions"];
 
 function trackName(track: TrackSlug) {
-  return track === "women-in-tech" ? "Women in Tech" : track[0].toUpperCase() + track.slice(1);
+  return track === "women-in-tech" ? "Women in Tech" : track === "ai-ml" ? "AI/ML" : track === "hackathons-solutions" ? "Hackathons & Solutions" : track === "mobile" ? "Mobile Development" : track[0].toUpperCase() + track.slice(1);
 }
 
 function roleLabel(lead: AppUserWithId) {
