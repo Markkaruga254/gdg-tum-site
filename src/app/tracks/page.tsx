@@ -47,7 +47,7 @@ export default function TracksPage() {
         ) : (
           <div className="grid gap-[16px] p-[20px]" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(min(380px, 100%), 1fr))" }}>
             {sortedTracks.map((track, index) => {
-              const trackLeads = leads.filter((lead) => track.leadIds.includes(lead.id));
+              const trackLeads = leads.filter((lead) => lead.track === track.slug);
               const textColor = track.color === "blue" ? "#fff" : "#111";
               return (
                 <article key={track.id} style={{ backgroundColor: TRACK_BG_COLORS[track.slug], color: textColor }} className="border-[3px] border-ink p-[26px]">
