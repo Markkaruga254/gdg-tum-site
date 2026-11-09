@@ -15,8 +15,14 @@ const filters: { id: TrackSlug | "all"; label: string }[] = [
   { id: "women-in-tech", label: "Women in Tech" },
 ];
 
+const trackOrder: TrackSlug[] = ["cloud", "cybersecurity", "web", "women-in-tech"];
+
 function trackName(track: TrackSlug) {
   return track === "women-in-tech" ? "Women in Tech" : track[0].toUpperCase() + track.slice(1);
+}
+
+function roleLabel(lead: AppUserWithId) {
+  return lead.leadershipTitle || (lead.track ? `${trackName(lead.track)} Track Lead` : "GDG TUM Lead");
 }
 
 export default function LeadsPage() {
@@ -29,6 +35,7 @@ export default function LeadsPage() {
   const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL;
 
   useEffect(() => {
+    let active = true;
     (async () => {
       try {
         const [users, events, writeups] = await Promise.all([
@@ -36,6 +43,7 @@ export default function LeadsPage() {
           getEvents(),
           getWriteups({ status: "published" }),
         ]);
+        if (!active) return;
         setLeads(users);
         setEventCounts(events.filter((event) => event.status === "past").reduce<Record<string, number>>((counts, event) => {
           counts[event.trackId] = (counts[event.trackId] || 0) + 1;
@@ -46,17 +54,22 @@ export default function LeadsPage() {
           return counts;
         }, {}));
       } catch {
-        setError("We could not load the track leads. Please try again later.");
+        if (active) setError("We could not load the track leads. Please try again later.");
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     })();
+    return () => { active = false; };
   }, []);
 
-  const trackOrder: TrackSlug[] = ["cloud", "cybersecurity", "web", "women-in-tech"];
   const visibleLeads = leads
     .filter((lead) => filter === "all" || lead.track === filter)
-    .sort((a, b) => trackOrder.indexOf(a.track) - trackOrder.indexOf(b.track));
+    .sort((a, b) => {
+      if (!a.track && !b.track) return a.name.localeCompare(b.name);
+      if (!a.track) return -1;
+      if (!b.track) return 1;
+      return trackOrder.indexOf(a.track) - trackOrder.indexOf(b.track);
+    });
 
   return (
     <>
@@ -93,10 +106,11 @@ export default function LeadsPage() {
         ) : (
           <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-[16px] p-[20px]">
             {visibleLeads.map((lead) => {
+              const backgroundColor = lead.track ? TRACK_BG_COLORS[lead.track] : "#FBBC04";
               const textColor = lead.track === "cloud" ? "#fff" : "#111";
               return (
                 <article key={lead.id} className="border-[3px] border-ink bg-white">
-                  <div className="flex min-h-[170px] items-center justify-center border-b-[3px] border-ink" style={{ backgroundColor: TRACK_BG_COLORS[lead.track], color: textColor }}>
+                  <div className="flex min-h-[170px] items-center justify-center border-b-[3px] border-ink" style={{ backgroundColor, color: textColor }}>
                     {lead.photoUrl ? (
                       <img src={lead.photoUrl} alt={lead.name} className="h-[170px] w-full object-cover" />
                     ) : (
@@ -105,10 +119,12 @@ export default function LeadsPage() {
                   </div>
                   <div className="p-[16px]">
                     <h2 className="text-[20px] font-bold">{lead.name}</h2>
-                    <p className="my-[4px] text-[12px] font-bold uppercase">{trackName(lead.track)} Track Lead</p>
+                    <p className="my-[4px] text-[12px] font-bold uppercase">{roleLabel(lead)}</p>
                     <p className="mb-[14px] text-[14px] leading-[1.5]">{lead.bio || "Bio coming soon."}</p>
-                    <p className="mb-[14px] text-[12px] font-bold uppercase">{eventCounts[lead.track] || 0} events · {writeupCounts[lead.id] || 0} writeups</p>
-                    <a href={`/lead?id=${lead.id}`} className="inline-block border-[3px] border-ink px-[20px] py-[12px] text-[12px] font-bold uppercase">View profile ↗</a>
+                    <p className="mb-[14px] text-[12px] font-bold uppercase">
+                      {lead.track ? eventCounts[lead.track] || 0 : 0} events · {writeupCounts[lead.id] || 0} writeups
+                    </p>
+                    <a href={`/lead?id=${encodeURIComponent(lead.id)}`} className="inline-block border-[3px] border-ink px-[20px] py-[12px] text-[12px] font-bold uppercase">View profile ↗</a>
                   </div>
                 </article>
               );
