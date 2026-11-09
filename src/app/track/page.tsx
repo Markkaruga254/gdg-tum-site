@@ -6,7 +6,7 @@ import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 import { getTrackBySlug, getLeadershipUsers, getEvents, getWriteups, type TrackWithId, type EventWithId, type WriteupWithId, type AppUserWithId } from "@/lib/data";
-import { TRACK_BG_COLORS, trackTagColor } from "@/lib/tracks";
+import { TRACK_BG_COLORS, TRACK_LEAD_FALLBACKS, trackTagColor } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
 
 function dateLabel(value: EventWithId["date"]) {
@@ -40,15 +40,28 @@ function View() {
           return;
         }
         setTrack(current);
-        const [leadResults, eventResults, writeupResults] = await Promise.all([
+        const [leadResult, eventResult, writeupResult] = await Promise.allSettled([
           getLeadershipUsers().then((users) => users.filter((lead) => lead.track === current.slug)),
           getEvents({ trackId: current.slug }),
           getWriteups({ status: "published", trackId: current.slug }),
         ]);
         if (!active) return;
-        setLeads(leadResults);
-        setEvents(eventResults.filter((event) => event.status !== "cancelled"));
-        setWriteups(writeupResults);
+
+        const leadResults = leadResult.status === "fulfilled" ? leadResult.value : [];
+        const fallbackLead = TRACK_LEAD_FALLBACKS[current.slug];
+        setLeads(leadResults.length > 0
+          ? leadResults
+          : fallbackLead
+            ? [{ ...fallbackLead, role: "admin", track: current.slug }]
+            : []);
+        setEvents(eventResult.status === "fulfilled"
+          ? eventResult.value.filter((event) => event.status !== "cancelled")
+          : []);
+        setWriteups(writeupResult.status === "fulfilled" ? writeupResult.value : []);
+
+        if ([leadResult, eventResult, writeupResult].some((result) => result.status === "rejected")) {
+          setError("Some track information could not be loaded.");
+        }
       } catch {
         if (active) setError("Some track information could not be loaded.");
       } finally {
