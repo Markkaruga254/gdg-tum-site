@@ -12,9 +12,10 @@
     "test:unit": "vitest run",
     "test": "npm run test:unit",
     "test:e2e": "playwright test",
-    "test:e2e:ci": "bash scripts/e2e-run.sh",
+    "test:e2e:ci": "bash scripts/e2e-run.sh --grep-invert \"capture approved mockups beside the current public implementation\"",
     "emulator": "firebase emulators:start --only firestore --project demo-gdg-tum-site",
-    "test:rules": "firebase emulators:exec --only firestore --project demo-gdg-tum-site \"node scripts/test-rules.mjs\""
+    "test:rules": "firebase emulators:exec --only firestore --project demo-gdg-tum-site \"node scripts/test-rules.mjs\"",
+    "test:visual:ci": "bash scripts/e2e-run.sh --grep \"capture approved mockups beside the current public implementation\""
   },
   "dependencies": {
     "firebase": "^11.0.0",
