@@ -137,9 +137,15 @@ async function main() {
 
   // Stable document IDs make repeated demo seeds update the same public profiles
   // instead of appending duplicate lead records.
-  await Promise.all(leadDefs.map(({ id, ...profile }) =>
-    db.collection("users").doc(id).set(profile)
-  ));
+  const seededLeads = await Promise.all(leadDefs.map(async ({ id, ...profile }) => {
+    const existing = await db.collection("users").where("name", "==", profile.name).get();
+    if (existing.size > 1) {
+      refuse(`multiple user records found for "${profile.name}"; resolve duplicates before seeding`);
+    }
+    const ref = existing.empty ? db.collection("users").doc(id) : existing.docs[0].ref;
+    await ref.set(profile, { merge: true });
+    return { ...profile, id: ref.id };
+  }));
 
   const leadIdsByTrack: Record<string, string[]> = {
     cloud: [],
@@ -147,11 +153,11 @@ async function main() {
     web: [],
     "women-in-tech": [],
   };
-  leadDefs.forEach((lead) => {
+  seededLeads.forEach((lead) => {
     if (lead.track) leadIdsByTrack[lead.track].push(lead.id);
   });
-  const leadCloud = leadDefs.find((lead) => lead.id === "u-lead-mark")!;
-  const leadCyber = leadDefs.find((lead) => lead.id === "u-lead-kimberly")!;
+  const leadCloud = seededLeads.find((lead) => lead.name === "Mark Karuga")!;
+  const leadCyber = seededLeads.find((lead) => lead.name === "Kimberly Gift")!;
 
   const tracks = [
     { name: "Cloud", slug: "cloud", color: "blue", description: "Explore cloud platforms, infrastructure and deployment.", leadIds: leadIdsByTrack.cloud },
