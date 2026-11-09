@@ -72,7 +72,7 @@ function View() {
           <div className="px-[26px] py-[34px] md:px-[42px] md:py-[44px]">
             <Tag label={`${roleTitle} · 2026/27`} color={user.track ? trackTagColor(user.track) : "yellow"} />
             <h1 className="mt-[22px] font-display text-[clamp(60px,9vw,112px)] uppercase leading-[.9]">{user.name}</h1>
-            <p className="mt-[20px] max-w-[620px] text-[17px] leading-[1.6]">{user.bio || "Building skills, sharing knowledge and helping students learn by doing."}</p>
+            {user.bio && <p className="mt-[20px] max-w-[620px] text-[17px] leading-[1.6]">{user.bio}</p>}
             <div className="mt-[24px] flex flex-wrap gap-[10px]">
               {user.links?.map((link) => (
                 <a key={link.url} href={link.url} target="_blank" rel="noopener noreferrer" className="border-[3px] border-ink px-[16px] py-[10px] text-[12px] font-bold uppercase underline underline-offset-4">
