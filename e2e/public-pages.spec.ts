@@ -23,6 +23,10 @@ test("tracks and event detail routes render seeded records", async ({ page }) =>
   await expect(page.getByRole("heading", { name: "Tracks" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Cloud" })).toBeVisible();
 
+  await page.goto("/track?slug=cloud");
+  await expect(page.getByRole("heading", { name: "Cloud" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Cloud Lead ↗" })).toBeVisible();
+
   await page.goto("/event?id=ev-cloud-past");
   await expect(page.getByRole("heading", { name: "Cloud 101 Workshop" })).toBeVisible();
   await expect(page.getByText("Attended")).toBeVisible();
