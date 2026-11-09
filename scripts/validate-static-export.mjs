@@ -27,7 +27,7 @@ function fail(message) {
 
 if (!existsSync(outputDir) || !statSync(outputDir).isDirectory()) {
   fail("Next.js static export directory out/ does not exist.");
-  process.exit();
+  process.exit(1);
 }
 
 for (const route of requiredRoutes) {
