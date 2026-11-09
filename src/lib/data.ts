@@ -12,6 +12,7 @@ import {
   type DocumentData,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { withLeadershipMetadata } from "@/lib/leadership";
 import type {
   Event, Writeup, Track, AppUser, Post, Partner, Media, Ticker,
   TrackSlug,
@@ -101,11 +102,13 @@ export async function getTrackBySlug(slug: TrackSlug): Promise<TrackWithId | nul
 export async function getUsers(role?: AppUser["role"]): Promise<AppUserWithId[]> {
   const constraints: QueryConstraint[] = [];
   if (role) constraints.push(where("role", "==", role));
-  return getCollection<AppUser>("users", constraints);
+  const users = await getCollection<AppUser>("users", constraints);
+  return users.map(withLeadershipMetadata);
 }
 
 export async function getUserById(id: string): Promise<AppUserWithId | null> {
-  return getDocById<AppUser>("users", id);
+  const user = await getDocById<AppUser>("users", id);
+  return user ? withLeadershipMetadata(user) : null;
 }
 
 export async function getPartners(): Promise<PartnerWithId[]> {
