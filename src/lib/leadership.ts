@@ -18,7 +18,7 @@ const leadershipProfiles: Record<string, LeadershipProfile> = {
     ],
   },
   "rooney odhiambo": {
-    leadershipTitle: "Vice Chair",
+    leadershipTitle: "VC Chair",
     track: null,
     links: [
       { title: "GitHub", url: "https://github.com/KabuorJnr" },
@@ -71,7 +71,7 @@ const leadershipProfiles: Record<string, LeadershipProfile> = {
     ],
   },
   "sam ryan": {
-    leadershipTitle: "Web Development Track Lead",
+    leadershipTitle: "Web Development Track",
     track: "web",
     links: [
       { title: "GitHub", url: "https://github.com/Ryanking254" },
