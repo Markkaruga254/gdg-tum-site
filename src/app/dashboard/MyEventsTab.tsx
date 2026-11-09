@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import FormField from "@/components/form/FormField";
 import type { EventForm } from "@/lib/validators";
+import { TRACKS } from "@/lib/tracks";
 
 export default function MyEventsTab({ events, role, eventForm, setEventForm, eventErrors, saveEvent, saving, editingEvent, setEditingEvent, startEditEvent, cancelEvent, deleteEvent }: any) {
   return (
@@ -28,7 +29,7 @@ export default function MyEventsTab({ events, role, eventForm, setEventForm, eve
                     {role === "admin" && (
                       <FormField label="Track" id="etr" error={eventErrors.trackId}>
                         <select id="etr" value={eventForm.trackId} onChange={(e) => setEventForm({ ...eventForm, trackId: e.target.value })} className="border-[3px] border-ink px-3 py-2">
-                          <option value="">select</option><option value="cloud">cloud</option><option value="cybersecurity">cybersecurity</option><option value="web">web</option><option value="women-in-tech">women-in-tech</option>
+                          <option value="">select</option>{TRACKS.map((track) => <option key={track.slug} value={track.slug}>{track.name}</option>)}
                         </select>
                       </FormField>
                     )}
