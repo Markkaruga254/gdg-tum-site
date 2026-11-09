@@ -227,7 +227,7 @@ async function main() {
 
   for (const entry of resolvedLeads) {
     const snap = await entry.ref.get();
-    if (!snap.exists()) fail(`Verification failed for user document ${entry.ref.id}.`);
+    if (!snap.exists) fail(`Verification failed for user document ${entry.ref.id}.`);
     if (snap.get("name") !== entry.lead.name) fail(`Verification failed for name on user document ${entry.ref.id}.`);
     if (snap.get("track") !== entry.lead.track) fail(`Verification failed for track on user document ${entry.ref.id}.`);
     if (snap.get("leadershipTitle") !== entry.lead.leadershipTitle) fail(`Verification failed for title on user document ${entry.ref.id}.`);
@@ -238,7 +238,7 @@ async function main() {
     const snap = await entry.ref.get();
     const expected = entry.data.leadIds as string[];
     const actual = snap.get("leadIds") as string[] | undefined;
-    if (!snap.exists() || !actual || expected.some((id) => !actual.includes(id)) || actual.length !== expected.length) {
+    if (!snap.exists || !actual || expected.some((id) => !actual.includes(id)) || actual.length !== expected.length) {
       fail(`Track verification failed for ${entry.ref.id}.`);
     }
   }
