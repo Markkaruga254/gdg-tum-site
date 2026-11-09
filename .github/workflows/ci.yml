@@ -193,7 +193,7 @@ jobs:
           failed=0
           for check in QUALITY SECURITY FIRESTORE_RULES PRODUCTION_BUILD BROWSER_E2E VISUAL_REVIEW; do
             result="${!check}"
-            printf '%-20s %s\\n' "$check" "$result"
+            printf '%-20s %s\n' "$check" "$result"
             if [ "$result" != "success" ]; then
               echo "::error::$check did not succeed (result: $result)"
               failed=1
