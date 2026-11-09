@@ -42,12 +42,12 @@ export default function LeadsPage() {
     (async () => {
       try {
         const [users, events, writeups] = await Promise.all([
-          getUsers("lead"),
+          getUsers(),
           getEvents(),
           getWriteups({ status: "published" }),
         ]);
         if (!active) return;
-        setLeads(users);
+        // Admin accounts appear in the public leadership roster only when they have an explicit track and title.\n        setLeads(users.filter((user) =>\n          user.role === "lead" || (user.role === "admin" && Boolean(user.track && user.leadershipTitle)),\n        ));
         setEventCounts(events.filter((event) => event.status === "past").reduce<Record<string, number>>((counts, event) => {
           counts[event.trackId] = (counts[event.trackId] || 0) + 1;
           return counts;
