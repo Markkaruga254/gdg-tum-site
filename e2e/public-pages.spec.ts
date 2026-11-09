@@ -22,15 +22,14 @@ test("public leads directory and lead profile render real records", async ({ pag
   await page.goto("/lead?id=KoYwxs8piKh4c4tkcIHzOURzCwC3");
   await expect(page.getByRole("heading", { name: "Mark Karuga", exact: true })).toBeVisible();
   await expect(page.getByText("Students reached")).toBeVisible();
+  await expect(page.getByRole("link", { name: /GitHub/ })).toHaveAttribute("href", "https://github.com/Markkaruga254");
+  await expect(page.getByRole("link", { name: /LinkedIn/ })).toHaveAttribute("href", "https://www.linkedin.com/in/mark-karuga");
 
   await page.goto("/lead?id=u-lead-mitchelle");
   await expect(page.getByRole("heading", { name: "Mitchelle Ndunge", exact: true })).toBeVisible();
   await expect(page.getByText("Chapter Lead · 2026/27")).toBeVisible();
   await expect(page.getByRole("link", { name: /GitHub/ })).toHaveAttribute("href", "https://github.com/Dahliastar");
   await expect(page.getByRole("link", { name: /LinkedIn/ })).toHaveAttribute("href", "https://www.linkedin.com/in/michelle-ndunge-7815482a2/");
-
-  await expect(page.getByRole("link", { name: /GitHub/ })).toHaveAttribute("href", "https://github.com/Markkaruga254");
-  await expect(page.getByRole("link", { name: /LinkedIn/ })).toHaveAttribute("href", "https://www.linkedin.com/in/mark-karuga");
 });
 
 test("tracks and event detail routes render seeded records", async ({ page }) => {
