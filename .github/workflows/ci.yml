@@ -104,11 +104,33 @@ jobs:
           NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "1"
           NEXT_PUBLIC_FIREBASE_APP_ID: "1:1:web:ci-placeholder"
         run: npm run build
-      - name: Verify Hosting output
+      - name: Verify every exported page and Firebase Hosting config
         run: |
-          test -s out/index.html
-          node -e 'const fs = require("node:fs"); const config = JSON.parse(fs.readFileSync("firebase.json", "utf8")); if (config.hosting?.public !== "out") { console.error("Firebase Hosting must publish the generated out/ directory"); process.exit(1); }'
-          echo "Static export exists and Firebase Hosting points to out/."
+          node <<'NODE'
+          const fs = require("node:fs");
+          const routes = [
+            "index", "events", "tracks", "gallery", "blog", "leads",
+            "writeups", "labs", "login", "admin", "dashboard",
+            "event", "track", "writeup", "lead"
+          ];
+          const missing = routes
+            .map((route) => `out/${route}.html`)
+            .filter((file) => !fs.existsSync(file) || fs.statSync(file).size === 0);
+          if (missing.length) {
+            console.error("Missing or empty exported route files:", missing.join(", "));
+            process.exit(1);
+          }
+          const config = JSON.parse(fs.readFileSync("firebase.json", "utf8"));
+          if (config.hosting?.public !== "out") {
+            console.error("Firebase Hosting must publish the generated out/ directory");
+            process.exit(1);
+          }
+          if (config.hosting?.cleanUrls !== true) {
+            console.error("Firebase Hosting must enable cleanUrls for extensionless Next.js export routes");
+            process.exit(1);
+          }
+          console.log(`Verified ${routes.length} exported page files and Firebase clean URL configuration.`);
+          NODE
 
   gate:
     name: Required CI gate
