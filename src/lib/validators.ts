@@ -1,4 +1,4 @@
-export type TrackSlug = "cloud" | "cybersecurity" | "web" | "women-in-tech";
+export type TrackSlug = "cloud" | "cybersecurity" | "web" | "women-in-tech" | "ai-ml" | "mobile" | "hackathons-solutions";
 export type PartnerType = "university" | "community" | "sponsor" | "company";
 
 export interface EventForm {
