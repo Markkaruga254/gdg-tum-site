@@ -13,6 +13,8 @@ describe("track configuration", () => {
       "Hackathons & Solutions",
     ]);
     expect(trackName("women-in-tech")).toBe("Women in Tech");
+    expect(TRACKS).toHaveLength(7);
+    expect(TRACKS.every((track) => track.description.trim().length > 0)).toBe(true);
     expect(TRACKS.every((track) => !/\[[^\]]+\]/.test(track.name))).toBe(true);
   });
 
