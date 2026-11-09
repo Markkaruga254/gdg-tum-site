@@ -11,6 +11,10 @@ const firebaseConfig = {
 };
 
 export const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+
+// Firebase AI Logic requires App Check. The AI helper initializes it lazily
+// immediately before the first model request; public-site browsing does not
+// trigger reCAPTCHA assessments.
 export const db = getFirestore(app);
 
 // NEXT_PUBLIC_* values are inlined at build time, so a production bundle cannot
@@ -24,7 +28,7 @@ if (emulatorHost !== undefined) {
     );
   }
   const [host = "", port = ""] = emulatorHost.split(":");
-  if (host === "" || !/^\d+$/.test(port)) {
+  if (host === "" || !/^\\d+$/.test(port)) {
     throw new Error(
       `NEXT_PUBLIC_FIRESTORE_EMULATOR_HOST must be "host:port" (or unset to use the real project), got "${emulatorHost}".`,
     );
