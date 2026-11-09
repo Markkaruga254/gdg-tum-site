@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { AppUser } from "../types";
 import { withLeadershipMetadata } from "../leadership";
 
 describe("withLeadershipMetadata", () => {
@@ -20,7 +21,7 @@ describe("withLeadershipMetadata", () => {
       track: "cloud" as const,
       bio: "seed placeholder",
       links: [],
-    });
+    } as AppUser);
 
     expect(result.leadershipTitle).toBe(title);
     expect(result.track).toBe(track);
