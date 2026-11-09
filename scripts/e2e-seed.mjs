@@ -40,6 +40,7 @@ const users = [
   { id: "u-lead-cyber", name: "Cyber Lead", role: "lead", track: "cybersecurity", photoUrl: "", bio: "", links: [] },
   { id: "u-lead-web", name: "Web Lead", role: "lead", track: "web", photoUrl: "", bio: "", links: [] },
   { id: "u-lead-wit", name: "WIT Lead", role: "lead", track: "women-in-tech", photoUrl: "", bio: "", links: [] },
+  { id: "u-lead-mitchelle", name: "Mitchelle Ndunge", role: "lead", track: null, leadershipTitle: "Chapter Lead", photoUrl: "", bio: "", links: [{ title: "GitHub", url: "https://github.com/Dahliastar" }, { title: "LinkedIn", url: "https://www.linkedin.com/in/michelle-ndunge-7815482a2/" }] },
   { id: "u-member", name: "Member User", role: "member", track: "cloud", photoUrl: "", bio: "", links: [] },
   ...testAccounts.filter(({ role }) => role === "admin").map(({ id, name, role, track }) => ({ id, name, role, track, photoUrl: "", bio: "", links: [] })),
 ];
