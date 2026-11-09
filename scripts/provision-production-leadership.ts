@@ -160,7 +160,14 @@ async function resolveLeadDocument(lead: LeadDefinition) {
 
   const matches = await db.collection("users").where("name", "==", lead.name).get();
   if (matches.size > 1) fail(`Multiple user documents match "${lead.name}". Resolve duplicates before provisioning.`);
-  const ref = matches.empty ? db.collection("users").doc(lead.id) : matches.docs[0].ref;
+  const stableRef = db.collection("users").doc(lead.id);
+  if (matches.empty) {
+    const stableSnap = await stableRef.get();
+    if (stableSnap.exists && stableSnap.get("name") !== lead.name) {
+      fail(`Stable user ID ${lead.id} is already assigned to a different person.`);
+    }
+  }
+  const ref = matches.empty ? stableRef : matches.docs[0].ref;
   return {
     ref,
     data: {
@@ -187,7 +194,14 @@ async function main() {
   for (const track of tracks) {
     const matches = await db.collection("tracks").where("slug", "==", track.slug).get();
     if (matches.size > 1) fail(`Multiple track documents use slug "${track.slug}". Resolve duplicates before provisioning.`);
-    const ref = matches.empty ? db.collection("tracks").doc(track.slug) : matches.docs[0].ref;
+    const stableRef = db.collection("tracks").doc(track.slug);
+    if (matches.empty) {
+      const stableSnap = await stableRef.get();
+      if (stableSnap.exists && stableSnap.get("slug") !== track.slug) {
+        fail(`Track document ID ${track.slug} is occupied by a different track.`);
+      }
+    }
+    const ref = matches.empty ? stableRef : matches.docs[0].ref;
     const data = matches.empty
       ? { ...track, leadIds: leadIdsByTrack.get(track.slug)! }
       : { slug: track.slug, leadIds: leadIdsByTrack.get(track.slug)! };
