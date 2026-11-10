@@ -53,6 +53,8 @@ export default function GalleryManagerTab({ events, uid, setMsg, setErr }: Galle
     }
   }, [setErr]);
 
+  // Firestore is an external data source; state updates happen after the async read resolves.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { void loadPhotos(); }, [loadPhotos]);
 
   async function upload(event: FormEvent<HTMLFormElement>) {
