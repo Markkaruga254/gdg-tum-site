@@ -7,6 +7,7 @@ test("track page renders track info, public lead, events and writeups", async ({
   await expect(page.getByRole("heading", { name: "Cloud", exact: true })).toBeVisible();
   await expect(page.getByText("Cloud computing and serverless track")).toBeVisible();
   await expect(page.getByText("Mark Karuga")).toBeVisible();
+  await expect(page.getByRole("link", { name: /Mark Karuga.*View profile/ })).toBeVisible();
   await expect(page.getByText("Cloud Build Day")).toBeVisible();
   await expect(page.getByText("Cloud 101 Recap")).toBeVisible();
 });
