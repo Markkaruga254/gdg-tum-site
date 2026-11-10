@@ -284,6 +284,11 @@ export default function DashboardPage() {
         });
         await loadMedia(savedId);
       }
+      if (ev) {
+        await updateDoc(doc(db, "events", ev.id), {
+          writeupId: publish ? savedId : (ev.writeupId === editingWriteup?.id ? null : ev.writeupId ?? null),
+        });
+      }
       await loadWriteups();
     } catch (e: any) { setErr(e?.message || "Save failed"); }
     finally { setSaving(false); }
@@ -317,6 +322,9 @@ export default function DashboardPage() {
         status: "published",
         publishedAt: target.publishedAt ?? serverTimestamp(),
       });
+      if (target.eventId) {
+        await updateDoc(doc(db, "events", target.eventId), { writeupId: id });
+      }
       setMsg("Published");
       await loadWriteups();
     } catch (e: any) {
@@ -326,7 +334,15 @@ export default function DashboardPage() {
     }
   }
   async function unpublish(id: string) {
-    try { await updateDoc(doc(db, "writeups", id), { status: "draft" }); setMsg("Unpublished"); await loadWriteups(); }
+    try {
+      const target = writeups.find((item) => item.id === id);
+      await updateDoc(doc(db, "writeups", id), { status: "draft" });
+      if (target?.eventId && events.find((event) => event.id === target.eventId)?.writeupId === id) {
+        await updateDoc(doc(db, "events", target.eventId), { writeupId: null });
+      }
+      setMsg("Unpublished");
+      await loadWriteups();
+    }
     catch (e: any) { setErr(e?.code === "permission-denied" ? "You can only unpublish writeups in your own track." : e?.message || "Failed"); }
   }
   async function deleteWriteup(id: string) {

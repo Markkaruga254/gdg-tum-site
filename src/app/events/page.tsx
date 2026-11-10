@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
-import { getEvents, type EventWithId } from "@/lib/data";
+import { getEvents, getWriteups, type EventWithId } from "@/lib/data";
 import { trackTagColor } from "@/lib/tracks";
 
 function eventDate(value: EventWithId["date"]) {
@@ -33,7 +33,22 @@ export default function EventsPage() {
   useEffect(() => {
     (async () => {
       try {
-        setEvents(await getEvents());
+        const [eventResults, publishedWriteups] = await Promise.all([
+          getEvents(),
+          getWriteups({ status: "published" }),
+        ]);
+        const latestWriteupByEvent = new Map<string, string>();
+        for (const writeup of publishedWriteups.sort(
+          (a, b) => (b.publishedAt?.toMillis() ?? 0) - (a.publishedAt?.toMillis() ?? 0),
+        )) {
+          if (!latestWriteupByEvent.has(writeup.eventId)) {
+            latestWriteupByEvent.set(writeup.eventId, writeup.id);
+          }
+        }
+        setEvents(eventResults.map((event) => ({
+          ...event,
+          writeupId: event.writeupId || latestWriteupByEvent.get(event.id),
+        })));
       } catch {
         setError("Failed to load events.");
       } finally {

@@ -61,7 +61,8 @@ test("tracks and event detail routes render seeded records", async ({ page }) =>
   await page.goto("/event?id=ev-cloud-past");
   await expect(page.getByRole("heading", { name: "Cloud 101 Workshop", exact: true })).toBeVisible();
   await expect(page.getByText("Attended")).toBeVisible();
-  await expect(page.getByRole("link", { name: /Read the writeup/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Cloud 101 Recap", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Read full writeup/ })).toBeVisible();
 });
 
 test("writeups, blog and labs pages render populated and coming-soon states", async ({ page }) => {

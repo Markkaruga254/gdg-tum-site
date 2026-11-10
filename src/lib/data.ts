@@ -71,11 +71,13 @@ export async function getWriteups({
   status,
   trackId,
   authorId,
+  eventId,
   limitCount,
 }: {
   status?: Writeup["status"];
   trackId?: TrackSlug;
   authorId?: string;
+  eventId?: string;
   limitCount?: number;
 } = {}): Promise<WriteupWithId[]> {
   const constraints: QueryConstraint[] = [];
@@ -83,6 +85,7 @@ export async function getWriteups({
   if (status === "published") constraints.push(orderBy("publishedAt", "desc"));
   if (trackId) constraints.push(where("trackId", "==", trackId));
   if (authorId) constraints.push(where("authorId", "==", authorId));
+  if (eventId) constraints.push(where("eventId", "==", eventId));
   if (limitCount) constraints.push(limit(limitCount));
   return getCollection<Writeup>("writeups", constraints);
 }
