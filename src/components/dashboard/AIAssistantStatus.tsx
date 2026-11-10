@@ -32,7 +32,7 @@ export default function AIAssistantStatus({
 
     let active = true;
     let timeout: ReturnType<typeof setTimeout> | undefined;
-    const startedAt = Date.now();
+    let startedAt = Date.now();
     const tick = setInterval(() => {
       if (active) setElapsed(Math.floor((Date.now() - startedAt) / 1000));
     }, 1000);
@@ -51,6 +51,7 @@ export default function AIAssistantStatus({
         if (!active) return;
         setStatus("ready");
         onReadyChange(true);
+        startedAt = Date.now();
         timeout = setTimeout(check, 10 * 60 * 1000);
       } catch {
         if (!active) return;
