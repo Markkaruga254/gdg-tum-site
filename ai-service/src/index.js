@@ -6,7 +6,7 @@ import { createApp } from "./server.js";
 
 const projectId = process.env.GOOGLE_CLOUD_PROJECT || process.env.FIREBASE_PROJECT_ID;
 if (!projectId) throw new Error("GOOGLE_CLOUD_PROJECT is required.");
-if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY must be mounted from Secret Manager.");
+if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY must be configured as a server-side secret.");
 
 const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
 let serviceAccount;
