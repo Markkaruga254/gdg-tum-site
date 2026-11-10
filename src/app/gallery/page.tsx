@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import PhotoCard from "@/components/PhotoCard";
-import { getGalleryPage, type Photo, type GalleryPage } from "@/lib/gallery";
+import { getGalleryPage, getPublishedGalleryPhotos, type Photo, type GalleryPage } from "@/lib/gallery";
 import { trackFilterOptions, TRACK_BG_COLORS, trackTagColor } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
 
@@ -52,10 +52,14 @@ export default function Gallery() {
     let active = true;
     (async () => {
       try {
-        const page = await getGalleryPage({ trackId: trackFilter, pageSize: 6 });
+        const [page, standalonePhotos] = await Promise.all([
+          getGalleryPage({ trackId: trackFilter, pageSize: 6 }),
+          getPublishedGalleryPhotos(trackFilter),
+        ]);
         if (!active) return;
-        photosRef.current = page.photos;
-        setPhotos(page.photos);
+        const initialPhotos = [...standalonePhotos, ...page.photos];
+        photosRef.current = initialPhotos;
+        setPhotos(initialPhotos);
         setOverflowPhotos(page.overflowPhotos);
         setNextCursor(page.nextCursor);
       } catch {
@@ -114,6 +118,7 @@ export default function Gallery() {
                 altText={photo.altText}
                 trackId={photo.trackId}
                 writeupId={photo.writeupId}
+                href={photo.eventId ? `/event?id=${photo.eventId}` : photo.writeupId ? `/writeup?id=${photo.writeupId}` : undefined}
                 tagColor={trackTagColor(photo.trackId as TrackSlug)}
                 bg={TRACK_BG_COLORS[photo.trackId as TrackSlug] ?? "#111"}
               />
@@ -135,7 +140,7 @@ export default function Gallery() {
         )}
 
         <div className="flex flex-col gap-[10px] border-t-[3px] border-ink px-[26px] py-[18px] text-[11px] font-bold uppercase sm:flex-row sm:items-center sm:justify-between sm:text-[12px]">
-          <span>Click a photo to open its event writeup.</span>
+          <span>Photos linked to an event or writeup open their story.</span>
           <div className="flex flex-wrap items-center gap-1">
             <span>Want a photo removed?</span>
             {contactHref ? <a href={contactHref} className="underline underline-offset-4">Contact us ↗</a> : <span>Contact us</span>}
