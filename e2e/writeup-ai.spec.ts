@@ -64,6 +64,9 @@ test("lead can request photo captions with consent and apply a reviewed suggesti
 
   await page.getByLabel("Send for AI caption").first().check();
   await page.getByText("I confirm the people in the ticked photos have agreed.").click();
+  // Caption controls are on step 2; photo selection and consent stay selected.
+  await page.getByRole("button", { name: /2\s+AI draft/i }).click();
+  await expect(page.getByRole("button", { name: "Generate selected photo captions" })).toBeVisible();
 
   await page.route("http://writeup-ai.test/v1/media/captions", async (route) => {
     const request = route.request();
