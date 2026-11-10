@@ -1,6 +1,6 @@
 # GDG TUM Writeup AI service
 
-A small Node.js service for Gemini-assisted writeup drafts and optional photo captions. It is designed for Cloud Run and the existing static Firebase Hosting frontend.
+A small Node.js service for Gemini-assisted writeup drafts and optional photo captions. It is designed for Cloud Run or Render alongside the existing static Firebase Hosting frontend.
 
 ## Security model
 
@@ -97,11 +97,11 @@ All `/v1` endpoints require a Firebase ID token. Requests are limited to 20 draf
 
 The service can run as a Render Node.js web service from this repository:
 
-- Root directory: repository root
-- Build command: `cd ai-service && npm install --omit=dev --no-audit --no-fund`
-- Start command: `cd ai-service && npm start`
+- Runtime: Docker
+- Docker context: repository root (`.`)
+- Dockerfile: `ai-service/Render.Dockerfile`
 - Health check path: `/healthz`
-- Region recommendation: Singapore for users in Kenya (verify latency from the actual user base).
+- Region: Frankfurt is the initial choice for the Kenya-based lead team; verify actual request latency after deployment.
 
 Set these environment variables in the Render service:
 
@@ -110,7 +110,7 @@ Set these environment variables in the Render service:
 - `GEMINI_API_KEY` — secret; add it through the Render Dashboard, never Git.
 - `FIREBASE_SERVICE_ACCOUNT` — secret containing the complete dedicated service-account JSON; add it through the Render Dashboard, never Git.
 - `ALLOWED_ORIGINS=https://gdg-tum-site.web.app,https://gdg-tum-site.firebaseapp.com`
-- `CLOUDINARY_CLOUD_NAME=gdgtum`
+- `CLOUDINARY_CLOUD_NAME` — use the same cloud name as the website's `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` build variable.
 - `GEMINI_MODEL=gemini-3.8-flash`
 
 For Render, create a dedicated Google service account and grant only:
