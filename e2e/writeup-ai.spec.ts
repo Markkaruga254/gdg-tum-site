@@ -66,6 +66,14 @@ test("lead can generate, review and save an editable Gemini writeup draft", asyn
 
 test("lead can request photo captions with consent and apply a reviewed suggestion", async ({ page }) => {
   await signInAsTestLead(page);
+  await page.route("**/healthz", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      headers: { "access-control-allow-origin": "http://localhost:3000" },
+      body: JSON.stringify({ status: "ok" }),
+    });
+  });
   await page.locator("summary").filter({ hasText: "My writeups" }).click();
   await page.getByTestId("edit-writeup-w-ai-e2e-draft").click();
   await expect(page.getByAltText("Blue placeholder for an AI caption test")).toBeVisible();
