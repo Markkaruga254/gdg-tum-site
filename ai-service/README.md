@@ -88,6 +88,8 @@ After deployment, copy the Cloud Run service URL into the website's GitHub produ
 
 - `GET /healthz` — liveness check.
 - `POST /v1/writeups/draft` — JSON body: `{ "eventId": "...", "writeupId": "optional-existing-id", "notes": "facilitator notes" }`. Returns an editable title, <=40-word summary, Markdown body, and allow-listed topic/product tags.
+- `POST /v1/cloudinary/sign-upload` — authenticated JSON body with purpose `profile`, `writeup`, `partner`, or `gallery`; returns a signed upload payload. Gallery and partner signatures are admin-only.
+- `POST /v1/cloudinary/destroy-gallery-photo` — admin-only JSON body with a `publicId` in `gdg-tum/gallery/`; destroys only images in the dedicated gallery folder.
 - `POST /v1/media/captions` — JSON body: `{ "writeupId": "...", "mediaIds": ["..."], "consentConfirmed": true }`. Returns suggested captions and alt text for up to four selected photos. Suggestions are not saved automatically.
 
 All `/v1` endpoints require a Firebase ID token. Requests are limited to 20 draft generations and 20 caption batches per user per hour. Image captioning has a 5 MB per-image limit.
@@ -108,9 +110,13 @@ Set these environment variables in the Render service:
 - `NODE_ENV=production`
 - `GOOGLE_CLOUD_PROJECT=gdg-tum-site`
 - `GEMINI_API_KEY` — secret; add it through the Render Dashboard, never Git.
+- `CLOUDINARY_API_KEY` — server-side Cloudinary API key.
+- `CLOUDINARY_API_SECRET` — secret; add it through the Render Dashboard, never Git.
 - `FIREBASE_SERVICE_ACCOUNT` — secret containing the complete dedicated service-account JSON; add it through the Render Dashboard, never Git.
 - `ALLOWED_ORIGINS=https://gdg-tum-site.web.app,https://gdg-tum-site.firebaseapp.com`
-- `CLOUDINARY_CLOUD_NAME` — use the same cloud name as the website's `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` build variable.
+- `CLOUDINARY_CLOUD_NAME` — use the same cloud name as the website `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` build variable.
+- `CLOUDINARY_API_KEY` — Cloudinary API key, configured only on the server.
+- `CLOUDINARY_API_SECRET` — Cloudinary API secret stored as an encrypted service secret; never add it to Git or a `NEXT_PUBLIC_*` variable.
 - `GEMINI_MODEL=gemini-3.8-flash`
 
 For Render, create a dedicated Google service account (for example, `gdg-writeup-ai-render`). Avoid granting `roles/datastore.user`: that predefined role allows broad Firestore data read/write access, including deletion.
@@ -122,7 +128,7 @@ Create a project-level custom role named **GDG Writeup AI Firestore Data Access*
 - `datastore.entities.get`
 - `datastore.entities.update`
 
-The service uses direct document reads and transaction create/update operations; it does not need Firestore collection queries or document deletion. Assign this custom role to the dedicated service account. Also assign `roles/firebaseauth.viewer` so Firebase Admin can look up user records when checking revoked ID tokens.
+The service uses direct document reads and transaction create/update operations; it does not need Firestore collection queries or document deletion. It also signs browser uploads after verifying Firebase ID tokens. Gallery and partner upload signatures and gallery asset deletion are admin-only; profile uploads are available to signed-in users and writeup uploads to leads/admins. Assign this custom role to the dedicated service account. Also assign `roles/firebaseauth.viewer` so Firebase Admin can look up user records when checking revoked ID tokens.
 
 Firestore IAM is project-scoped here, so the custom role can still access documents by known ID across the project. The service's server-side role, track, author, event, and media ownership checks remain essential; Firebase Admin SDK requests bypass Firestore Security Rules.
 
