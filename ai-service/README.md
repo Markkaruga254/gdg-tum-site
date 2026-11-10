@@ -57,9 +57,11 @@ Create the Gemini secret interactively so the key is not stored in shell history
 ```sh
 gcloud secrets create gdg-tum-gemini-api-key --replication-policy=automatic
 gcloud secrets versions add gdg-tum-gemini-api-key --data-file=-
+gcloud secrets create gdg-tum-cloudinary-api-secret --replication-policy=automatic
+gcloud secrets versions add gdg-tum-cloudinary-api-secret --data-file=-
 ```
 
-Paste the Gemini API key into the hidden terminal input and press Ctrl+D. Grant the runtime identity access to this one secret:
+Paste the Gemini API key into the hidden terminal input and press Ctrl+D, then paste the Cloudinary API secret into its hidden terminal input and press Ctrl+D. Grant the runtime identity access to both secrets:
 
 ```sh
 gcloud secrets add-iam-policy-binding gdg-tum-gemini-api-key \
@@ -75,8 +77,8 @@ gcloud run deploy gdg-tum-writeup-ai \
   --region YOUR_CLOUD_RUN_REGION \
   --service-account gdg-writeup-ai@YOUR_GDG_TUM_PROJECT_ID.iam.gserviceaccount.com \
   --allow-unauthenticated \
-  --set-env-vars "GOOGLE_CLOUD_PROJECT=YOUR_GDG_TUM_PROJECT_ID,ALLOWED_ORIGINS=https://gdg-tum-site.web.app\,https://gdg-tum-site.firebaseapp.com,CLOUDINARY_CLOUD_NAME=YOUR_CLOUDINARY_CLOUD_NAME,GEMINI_MODEL=gemini-3.8-flash" \
-  --set-secrets "GEMINI_API_KEY=gdg-tum-gemini-api-key:1" \
+  --set-env-vars "GOOGLE_CLOUD_PROJECT=YOUR_GDG_TUM_PROJECT_ID,ALLOWED_ORIGINS=https://gdg-tum-site.web.app\,https://gdg-tum-site.firebaseapp.com,CLOUDINARY_CLOUD_NAME=YOUR_CLOUDINARY_CLOUD_NAME,CLOUDINARY_API_KEY=YOUR_CLOUDINARY_API_KEY,GEMINI_MODEL=gemini-3.8-flash" \
+  --set-secrets "GEMINI_API_KEY=gdg-tum-gemini-api-key:1,CLOUDINARY_API_SECRET=gdg-tum-cloudinary-api-secret:1" \
   --memory 512Mi --cpu 1 --min 0 --max 3 --concurrency 10 --timeout 60
 ```
 
@@ -115,8 +117,6 @@ Set these environment variables in the Render service:
 - `FIREBASE_SERVICE_ACCOUNT` — secret containing the complete dedicated service-account JSON; add it through the Render Dashboard, never Git.
 - `ALLOWED_ORIGINS=https://gdg-tum-site.web.app,https://gdg-tum-site.firebaseapp.com`
 - `CLOUDINARY_CLOUD_NAME` — use the same cloud name as the website `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` build variable.
-- `CLOUDINARY_API_KEY` — Cloudinary API key, configured only on the server.
-- `CLOUDINARY_API_SECRET` — Cloudinary API secret stored as an encrypted service secret; never add it to Git or a `NEXT_PUBLIC_*` variable.
 - `GEMINI_MODEL=gemini-3.8-flash`
 
 For Render, create a dedicated Google service account (for example, `gdg-writeup-ai-render`). Avoid granting `roles/datastore.user`: that predefined role allows broad Firestore data read/write access, including deletion.
