@@ -173,7 +173,7 @@ export default function DashboardPage() {
   async function generateDraft() {
     setErr(""); setMsg("");
     if (!wf.eventId) { setErr("Choose an event before generating a draft."); return; }
-    const sourceNotes = aiSourceNotes.trim() || wf.body;
+    const sourceNotes = aiDrafted ? aiSourceNotes : wf.body;
     if (sourceNotes.trim().length < 20) { setErr("Add at least 20 characters of facilitator notes before generating a draft."); return; }
     setAiGenerating(true);
     try {
@@ -357,7 +357,7 @@ export default function DashboardPage() {
     setAiConsent(false);
     setAiPhotoIds([]);
     setAiDrafted(Boolean(w.aiDrafted));
-    setAiSourceNotes("");
+    setAiSourceNotes(w.body || "");
     setAiCaptionSuggestions([]);
     setTopicTags(w.tags?.topics || []);
     setProductTags(w.tags?.products || []);
@@ -396,7 +396,7 @@ export default function DashboardPage() {
 
           {tab === "My events" && <MyEventsTab events={events} role={role} eventForm={eventForm} setEventForm={setEventForm} eventErrors={eventErrors} saveEvent={saveEvent} saving={saving} editingEvent={editingEvent} setEditingEvent={setEditingEvent} startEditEvent={startEditEvent} cancelEvent={cancelEvent} deleteEvent={deleteEvent} />}
 
-          {tab === "New writeup" && <NewWriteupTab editingWriteup={editingWriteup} wf={wf} setWf={setWf} wfErrors={wfErrors} events={events} saveWriteup={saveWriteup} saving={saving} mediaList={mediaList} aiPhotoIds={aiPhotoIds} setAiPhotoIds={setAiPhotoIds} aiConsent={aiConsent} setAiConsent={setAiConsent} setTab={setTab} writeupStep={writeupStep} setWriteupStep={setWriteupStep} topicTags={topicTags} setTopicTags={setTopicTags} productTags={productTags} setProductTags={setProductTags} generateDraft={generateDraft} aiGenerating={aiGenerating} generateAiCaptions={generateAiCaptions} aiCaptioning={aiCaptioning} aiCaptionSuggestions={aiCaptionSuggestions} applyAiCaption={applyAiCaption} aiDrafted={aiDrafted} aiServiceConfigured={aiServiceConfigured} />}
+          {tab === "New writeup" && <NewWriteupTab editingWriteup={editingWriteup} wf={wf} setWf={setWf} wfErrors={wfErrors} events={events} saveWriteup={saveWriteup} saving={saving} mediaList={mediaList} aiPhotoIds={aiPhotoIds} setAiPhotoIds={setAiPhotoIds} aiConsent={aiConsent} setAiConsent={setAiConsent} setTab={setTab} writeupStep={writeupStep} setWriteupStep={setWriteupStep} topicTags={topicTags} setTopicTags={setTopicTags} productTags={productTags} setProductTags={setProductTags} generateDraft={generateDraft} aiGenerating={aiGenerating} generateAiCaptions={generateAiCaptions} aiCaptioning={aiCaptioning} aiCaptionSuggestions={aiCaptionSuggestions} applyAiCaption={applyAiCaption} aiDrafted={aiDrafted} aiSourceNotes={aiSourceNotes} setAiSourceNotes={setAiSourceNotes} aiServiceConfigured={aiServiceConfigured} />}
 
           {tab === "Media" && <MediaTab mediaList={mediaList} mediaUploading={mediaUploading} mediaUploadProgress={mediaUploadProgress} editingWriteup={editingWriteup} uid={uid} role={role} track={track} setMsg={setMsg} setErr={setErr} loadMedia={loadMedia} setMediaUploading={setMediaUploading} setMediaUploadProgress={setMediaUploadProgress} />}
 
