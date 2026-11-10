@@ -30,7 +30,7 @@ export default function DashboardPage() {
   const [uid, setUid] = useState<string | null>(null);
   const [role, setRole] = useState<string>("");
   const [track, setTrack] = useState<string>("");
-  const [tab, setTab] = useState("New writeup");
+  const [tab, setTab] = useState("Overview");
   const [events, setEvents] = useState<any[]>([]);
   const [writeups, setWriteups] = useState<any[]>([]);
   const [msg, setMsg] = useState<string>("");
@@ -183,10 +183,14 @@ export default function DashboardPage() {
         attendance: wf.attendance ? Number(wf.attendance) : null,
         links: wf.links.filter((l: any) => l.url),
         tags: { topics: topicTags, products: productTags },
-        aiDrafted: false,
+        aiDrafted: editingWriteup?.aiDrafted ?? false,
       };
-      if (publish) { data.status = "published"; data.publishedAt = serverTimestamp(); }
-      else { data.status = "draft"; }
+      if (publish) {
+        data.status = "published";
+        if (editingWriteup?.status !== "published") data.publishedAt = serverTimestamp();
+      } else {
+        data.status = "draft";
+      }
       let savedId = editingWriteup?.id;
       if (editingWriteup) {
         await updateDoc(doc(db, "writeups", editingWriteup.id), data);
@@ -196,7 +200,14 @@ export default function DashboardPage() {
       }
       setMsg(publish ? "Published" : "Draft saved");
       if (savedId) {
-        setEditingWriteup({ id: savedId, authorId: uid, trackId: data.trackId });
+        setEditingWriteup({
+          ...(editingWriteup ?? {}),
+          id: savedId,
+          authorId: data.authorId,
+          trackId: data.trackId,
+          status: data.status,
+          aiDrafted: data.aiDrafted,
+        });
         await loadMedia(savedId);
       }
       await loadWriteups();
@@ -255,9 +266,8 @@ export default function DashboardPage() {
           {role === "admin" ? "Admin" : `${track.replaceAll("-", " ")} Track`}
         </span>
       </header>
-      <div data-testid="dashboard-layout" className={`mx-auto grid max-w-[1280px] border-x-[3px] border-ink ${tab === "New writeup" && writeupStep === 1 ? "grid-cols-1" : "grid-cols-[minmax(180px,230px)_minmax(0,1fr)]"}`}>
-        {!(tab === "New writeup" && writeupStep === 1) && (
-          <aside data-testid="dashboard-sidebar" className="min-w-0 border-r-[3px] border-ink">
+      <div data-testid="dashboard-layout" className="mx-auto grid max-w-[1280px] grid-cols-[minmax(180px,230px)_minmax(0,1fr)] border-x-[3px] border-ink">
+        <aside data-testid="dashboard-sidebar" className="min-w-0 border-r-[3px] border-ink">
             {(TABS.filter((t) => {
               if (t === "Partners") return role === "admin";
               if (t === "Live ticker") return role === "admin" || role === "lead";
@@ -265,8 +275,7 @@ export default function DashboardPage() {
             })).map((t) => (
               <button key={t} type="button" onClick={() => t === "New writeup" ? startNewWriteup() : setTab(t)} aria-current={tab === t ? "page" : undefined} className={`block w-full border-b-[3px] border-ink px-[10px] py-[14px] text-left text-[10px] font-bold uppercase leading-[1.3] sm:px-[18px] sm:py-[17px] sm:text-[11px] ${tab === t ? "bg-yellow" : "bg-white"}`}>{t}</button>
             ))}
-          </aside>
-        )}
+        </aside>
         <main className="min-w-0 p-[12px] sm:p-[28px]">
           {msg && <p className="mb-2 text-sm text-green">{msg}</p>}
           {err && <p className="mb-2 text-sm text-red">{err}</p>}
