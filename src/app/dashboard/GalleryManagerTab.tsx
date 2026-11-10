@@ -40,15 +40,14 @@ export default function GalleryManagerTab({ events, uid, setMsg, setErr }: Galle
   const [order, setOrder] = useState("0");
 
   const loadPhotos = useCallback(async () => {
-    setLoading(true);
     try {
       const snapshot = await getDocs(query(collection(db, "galleryPhotos"), orderBy("createdAt", "desc")));
       const items = snapshot.docs.map((item) => ({ id: item.id, ...item.data() } as GalleryPhoto));
       items.sort((a, b) => Number(a.order ?? 0) - Number(b.order ?? 0)
         || (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
       setPhotos(items);
-    } catch (error: any) {
-      setErr(error?.message || "Gallery photos could not be loaded.");
+    } catch (error: unknown) {
+      setErr(error instanceof Error ? error.message : "Gallery photos could not be loaded.");
     } finally {
       setLoading(false);
     }
@@ -78,8 +77,8 @@ export default function GalleryManagerTab({ events, uid, setMsg, setErr }: Galle
       form.reset();
       setMsg("Photo uploaded as a draft. Review it below and publish it when ready.");
       await loadPhotos();
-    } catch (error: any) {
-      setErr(error?.message || "Photo upload failed.");
+    } catch (error: unknown) {
+      setErr(error instanceof Error ? error.message : "Photo upload failed.");
     } finally {
       setUploading(false); setProgress(0);
     }
@@ -90,10 +89,10 @@ export default function GalleryManagerTab({ events, uid, setMsg, setErr }: Galle
       await updateDoc(doc(db, "galleryPhotos", id), { ...changes, updatedAt: serverTimestamp() });
       setMsg(success);
       await loadPhotos();
-    } catch (error: any) { setErr(error?.message || "Could not update this gallery photo."); }
+    } catch (error: unknown) { setErr(error instanceof Error ? error.message : "Could not update this gallery photo."); }
   }
 
-  async function togglePublished(photo: any) {
+  async function togglePublished(photo: GalleryPhoto) {
     const publish = photo.status !== "published";
     await updatePhoto(photo.id, {
       status: publish ? "published" : "draft",
@@ -101,7 +100,7 @@ export default function GalleryManagerTab({ events, uid, setMsg, setErr }: Galle
     }, publish ? "Photo published to Moments." : "Photo unpublished.");
   }
 
-  async function removePhoto(photo: any) {
+  async function removePhoto(photo: GalleryPhoto) {
     if (!confirm("Permanently remove this photo from the gallery and Cloudinary?")) return;
     setErr(""); setMsg("");
     try {
@@ -109,8 +108,8 @@ export default function GalleryManagerTab({ events, uid, setMsg, setErr }: Galle
       await deleteDoc(doc(db, "galleryPhotos", photo.id));
       setMsg("Photo and Cloudinary asset removed.");
       await loadPhotos();
-    } catch (error: any) {
-      setErr(error?.message || "Could not remove this photo.");
+    } catch (error: unknown) {
+      setErr(error instanceof Error ? error.message : "Could not remove this photo.");
     }
   }
 
