@@ -64,10 +64,20 @@ async function readImage(url, cloudinaryCloudName, fetchImpl) {
     }
     const declaredLength = Number(response.headers.get("content-length") || 0);
     if (declaredLength > MAX_IMAGE_BYTES) throw httpError(413, "A selected photo exceeds the 5 MB captioning limit.");
-    const bytes = Buffer.from(await response.arrayBuffer());
-    if (bytes.length === 0 || bytes.length > MAX_IMAGE_BYTES) {
-      throw httpError(413, "A selected photo is empty or exceeds the 5 MB captioning limit.");
+    if (!response.body) throw httpError(502, "A selected photo returned no image data.");
+    const chunks = [];
+    let totalBytes = 0;
+    for await (const chunk of response.body) {
+      const buffer = Buffer.from(chunk);
+      totalBytes += buffer.length;
+      if (totalBytes > MAX_IMAGE_BYTES) {
+        controller.abort();
+        throw httpError(413, "A selected photo exceeds the 5 MB captioning limit.");
+      }
+      chunks.push(buffer);
     }
+    if (totalBytes === 0) throw httpError(400, "A selected photo is empty.");
+    const bytes = Buffer.concat(chunks, totalBytes);
     return { mimeType: contentType, data: bytes.toString("base64") };
   } catch (error) {
     if (error.status) throw error;
