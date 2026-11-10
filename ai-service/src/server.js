@@ -1,4 +1,5 @@
 import express from "express";
+import { createHash } from "node:crypto";
 import { rateLimit } from "express-rate-limit";
 import { generateWithRetry } from "./gemini-retry.js";
 
@@ -97,6 +98,8 @@ export function createApp({
   genAI,
   allowedOrigins = [],
   cloudinaryCloudName = "",
+  cloudinaryApiKey = "",
+  cloudinaryApiSecret = "",
   model = "gemini-3.8-flash",
   fetchImpl = fetch,
   now = () => Date.now(),
@@ -153,6 +156,85 @@ export function createApp({
       if (error.status) return res.status(error.status).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });
       return res.status(401).json({ error: "Your session could not be verified. Sign in again." });
     }
+  });
+
+  function cloudinarySignature(parameters) {
+    if (!cloudinaryApiSecret || !cloudinaryApiKey || !cloudinaryCloudName) {
+      throw httpError(503, "Secure photo uploads are not configured. Ask an administrator to configure Cloudinary on the service.");
+    }
+    const canonical = Object.keys(parameters).sort().map((key) => `${key}=${parameters[key]}`).join("&");
+    return createHash("sha1").update(canonical + cloudinaryApiSecret).digest("hex");
+  }
+
+  async function getCurrentUser(uid) {
+    const snap = await db.collection("users").doc(uid).get();
+    if (!snap.exists) throw httpError(403, "Your GDG TUM profile could not be found.");
+    return snap.data();
+  }
+
+  app.post("/v1/cloudinary/sign-upload", async (req, res, next) => {
+    try {
+      const { purpose } = req.body || {};
+      const folders = {
+        profile: "gdg-tum/profiles",
+        writeup: "gdg-tum/writeups",
+        partner: "gdg-tum/partners",
+        gallery: "gdg-tum/gallery",
+      };
+      if (typeof purpose !== "string" || !Object.hasOwn(folders, purpose)) {
+        throw httpError(400, "Choose a valid upload purpose.");
+      }
+      const user = await getCurrentUser(req.identity.uid);
+      if (purpose === "gallery" && user.role !== "admin") {
+        throw httpError(403, "Only administrators can upload standalone gallery photos.");
+      }
+      if (purpose === "partner" && user.role !== "admin") {
+        throw httpError(403, "Only administrators can upload partner logos.");
+      }
+      if (["writeup"].includes(purpose) && !["lead", "admin"].includes(user.role)) {
+        throw httpError(403, "Only track leads and administrators can upload writeup media.");
+      }
+      const timestamp = Math.floor(now() / 1000);
+      const folder = purpose === "profile" ? `${folders.profile}/${req.identity.uid}`
+        : purpose === "writeup" ? `${folders.writeup}/${req.identity.uid}`
+        : purpose === "partner" ? `${folders.partner}/${req.identity.uid}`
+        : folders.gallery;
+      const parameters = { folder, timestamp };
+      res.status(200).json({
+        cloudName: cloudinaryCloudName,
+        apiKey: cloudinaryApiKey,
+        timestamp,
+        folder,
+        signature: cloudinarySignature(parameters),
+      });
+    } catch (error) { next(error); }
+  });
+
+  app.post("/v1/cloudinary/destroy-gallery-photo", async (req, res, next) => {
+    try {
+      const { publicId } = req.body || {};
+      if (typeof publicId !== "string" || !publicId.startsWith("gdg-tum/gallery/") || publicId.length > 250) {
+        throw httpError(400, "Invalid gallery photo reference.");
+      }
+      const user = await getCurrentUser(req.identity.uid);
+      if (user.role !== "admin") throw httpError(403, "Only administrators can remove gallery photos.");
+      if (!cloudinaryApiSecret || !cloudinaryApiKey || !cloudinaryCloudName) {
+        throw httpError(503, "Secure photo deletion is not configured.");
+      }
+      const timestamp = Math.floor(now() / 1000);
+      const signature = cloudinarySignature({ public_id: publicId, timestamp });
+      const body = new URLSearchParams({ public_id: publicId, timestamp: String(timestamp), api_key: cloudinaryApiKey, signature });
+      const response = await fetchImpl(`https://api.cloudinary.com/v1_1/${cloudinaryCloudName}/image/destroy`, {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body,
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !["ok", "not found"].includes(result.result)) {
+        throw httpError(502, "Cloudinary could not remove the selected photo. The gallery record was left unchanged.");
+      }
+      res.status(200).json({ result: result.result });
+    } catch (error) { next(error); }
   });
 
   async function getAuthorizedContext(uid, eventId, writeupId) {
