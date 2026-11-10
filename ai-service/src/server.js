@@ -121,6 +121,16 @@ export function createApp({
 
   app.get("/healthz", (_req, res) => res.status(200).json({ status: "ok" }));
 
+  // IP-based burst protection runs before authentication and protects the auth endpoint too.
+  // Firestore per-user hourly quotas remain authoritative across Cloud Run instances.
+  app.use("/v1", rateLimit({
+    windowMs: 60 * 1000,
+    limit: 30,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    message: { error: "Too many AI requests. Please slow down and try again shortly." },
+  }));
+
   app.use("/v1", async (req, res, next) => {
     try {
       const header = req.get("authorization") || "";
@@ -140,16 +150,6 @@ export function createApp({
     }
   });
 
-  // Per-instance burst protection complements the cross-instance Firestore hourly quotas.
-  // Cloud Run may scale to multiple instances, so Firestore remains the authoritative user quota.
-  app.use("/v1", rateLimit({
-    windowMs: 60 * 1000,
-    limit: 30,
-    standardHeaders: "draft-8",
-    legacyHeaders: false,
-    keyGenerator: (req) => req.identity.uid,
-    message: { error: "Too many AI requests. Please slow down and try again shortly." },
-  }));
   async function getAuthorizedContext(uid, eventId, writeupId) {
     const [userSnap, eventSnap] = await Promise.all([
       db.collection("users").doc(uid).get(),
