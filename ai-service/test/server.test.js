@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { createApp } from "../src/server.js";
 
-function fixture({ role = "lead", track = "cloud", eventTrack = "cloud", writeup = null, tokenValid = true } = {}) {
+function fixture({ role = "lead", track = "cloud", eventTrack = "cloud", writeup = null, mediaRecords = {}, tokenValid = true, fetchImpl = fetch } = {}) {
   const users = { "lead-1": { role, track } };
   const events = { "event-1": { title: "Cloud fundamentals", trackId: eventTrack, venue: "Online", description: "Introductory session" } };
   const writeups = writeup ? { "writeup-1": writeup } : {};
-  const media = {};
+  const media = mediaRecords;
   const usage = {};
   const db = {
     collection(name) {
@@ -47,7 +47,8 @@ function fixture({ role = "lead", track = "cloud", eventTrack = "cloud", writeup
   };
   const genAI = {
     models: {
-      async generateContent() {
+      async generateContent({ contents }) {
+        if (Array.isArray(contents)) return { text: JSON.stringify({ caption: "Members working through a cloud computing demonstration.", altText: "Participants gathered around a laptop during a technical session." }) };
         return { text: JSON.stringify({
           title: "Cloud fundamentals recap",
           summary: "A practical introduction to cloud computing and Google Cloud.",
@@ -58,7 +59,7 @@ function fixture({ role = "lead", track = "cloud", eventTrack = "cloud", writeup
       },
     },
   };
-  return { app: createApp({ auth, db, genAI, allowedOrigins: ["https://gdg-tum-site.web.app"], cloudinaryCloudName: "gdgtum" }), usage };
+  return { app: createApp({ auth, db, genAI, allowedOrigins: ["https://gdg-tum-site.web.app"], cloudinaryCloudName: "gdgtum", fetchImpl }), usage };
 }
 
 async function withServer(app, callback) {
@@ -116,5 +117,59 @@ test("rejects browser requests from an unapproved origin", async () => {
       body: JSON.stringify({ eventId: "event-1", notes: "We covered cloud computing basics and IAM." }),
     });
     assert.equal(response.status, 403);
+  });
+});
+
+test("requires explicit consent before sending photos to Gemini", async () => {
+  const { app } = fixture();
+  await withServer(app, async (base) => {
+    const response = await fetch(`${base}/v1/media/captions`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ writeupId: "writeup-1", mediaIds: ["media-1"], consentConfirmed: false }),
+    });
+    assert.equal(response.status, 400);
+    assert.match((await response.json()).error, /Confirm that the people shown/);
+  });
+});
+
+test("returns photo caption suggestions for authorized writeup media without saving them", async () => {
+  const mediaUrl = "https://res.cloudinary.com/gdgtum/image/upload/v123/sample.jpg";
+  const { app } = fixture({
+    writeup: { authorId: "lead-1", trackId: "cloud", eventId: "event-1" },
+    mediaRecords: { "media-1": { writeupId: "writeup-1", url: mediaUrl, caption: "Existing caption" } },
+    fetchImpl: async (url, options) => {
+      assert.equal(url, mediaUrl);
+      assert.equal(options.redirect, "error");
+      return new Response(new Uint8Array([1, 2, 3]), { status: 200, headers: { "content-type": "image/jpeg", "content-length": "3" } });
+    },
+  });
+  await withServer(app, async (base) => {
+    const response = await fetch(`${base}/v1/media/captions`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ writeupId: "writeup-1", mediaIds: ["media-1"], consentConfirmed: true }),
+    });
+    assert.equal(response.status, 200);
+    const payload = await response.json();
+    assert.equal(payload.captions[0].mediaId, "media-1");
+    assert.match(payload.captions[0].caption, /Members working/);
+    assert.equal(payload.captions[0].altText.length > 0, true);
+  });
+});
+
+test("rejects image URLs outside the configured Cloudinary account", async () => {
+  const { app } = fixture({
+    writeup: { authorId: "lead-1", trackId: "cloud", eventId: "event-1" },
+    mediaRecords: { "media-1": { writeupId: "writeup-1", url: "https://example.invalid/image.jpg" } },
+  });
+  await withServer(app, async (base) => {
+    const response = await fetch(`${base}/v1/media/captions`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ writeupId: "writeup-1", mediaIds: ["media-1"], consentConfirmed: true }),
+    });
+    assert.equal(response.status, 400);
+    assert.match((await response.json()).error, /Cloudinary account/);
   });
 });
