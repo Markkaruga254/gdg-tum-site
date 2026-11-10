@@ -56,7 +56,7 @@ export function ProfileTab({ uid, setMsg, setErr }: any) {
     setUploading(true);
     setUploadProgress(0);
     try {
-      const { url } = await uploadToCloudinary(f, setUploadProgress);
+      const { url } = await uploadToCloudinary(f, setUploadProgress, "profile");
       setPhotoUrl(url);
       setUploadProgress(100);
       setMsg("Photo uploaded");
