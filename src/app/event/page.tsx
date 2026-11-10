@@ -33,7 +33,14 @@ function EventDetail() {
         if (!active) return;
         setEvent(current);
         if (current) {
-          const linkedWriteup = current.writeupId ? await getWriteupById(current.writeupId) : null;
+          let linkedWriteup: WriteupWithId | null = null;
+          if (current.writeupId) {
+            try {
+              linkedWriteup = await getWriteupById(current.writeupId);
+            } catch {
+              // A stale link to a draft must not prevent the public event page loading.
+            }
+          }
           const relatedWriteup = linkedWriteup?.status === "published"
             ? linkedWriteup
             : (await getWriteups({ status: "published", eventId: current.id }))
