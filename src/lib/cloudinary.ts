@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 
 type UploadPurpose = "profile" | "writeup" | "partner" | "gallery";
-type UploadSignature = { cloudName: string; apiKey: string; timestamp: number; folder: string; signature: string };
+type UploadSignature = { cloudName: string; apiKey: string; timestamp: number; publicId: string; signature: string };
 
 async function requestService<T>(path: string, payload: Record<string, unknown>): Promise<T> {
   const baseUrl = process.env.NEXT_PUBLIC_WRITEUP_AI_API_URL?.trim().replace(/\/$/, "");
