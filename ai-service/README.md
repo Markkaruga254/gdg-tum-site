@@ -1,6 +1,6 @@
 # GDG TUM Writeup AI service
 
-A small Node.js service for Gemini-assisted writeup drafts and optional photo captions. It is designed for Cloud Run and the existing static Firebase Hosting frontend.
+A small Node.js service for Gemini-assisted writeup drafts and optional photo captions. It is designed for Cloud Run or Render alongside the existing static Firebase Hosting frontend.
 
 ## Security model
 
@@ -91,3 +91,33 @@ After deployment, copy the Cloud Run service URL into the website's GitHub produ
 - `POST /v1/media/captions` — JSON body: `{ "writeupId": "...", "mediaIds": ["..."], "consentConfirmed": true }`. Returns suggested captions and alt text for up to four selected photos. Suggestions are not saved automatically.
 
 All `/v1` endpoints require a Firebase ID token. Requests are limited to 20 draft generations and 20 caption batches per user per hour. Image captioning has a 5 MB per-image limit.
+
+
+## Deploy to Render
+
+The service can run as a Render Node.js web service from this repository:
+
+- Runtime: Docker
+- Docker context: repository root (`.`)
+- Dockerfile: `ai-service/Render.Dockerfile`
+- Health check path: `/healthz`
+- Region: Frankfurt is the initial choice for the Kenya-based lead team; verify actual request latency after deployment.
+
+Set these environment variables in the Render service:
+
+- `NODE_ENV=production`
+- `GOOGLE_CLOUD_PROJECT=gdg-tum-site`
+- `GEMINI_API_KEY` — secret; add it through the Render Dashboard, never Git.
+- `FIREBASE_SERVICE_ACCOUNT` — secret containing the complete dedicated service-account JSON; add it through the Render Dashboard, never Git.
+- `ALLOWED_ORIGINS=https://gdg-tum-site.web.app,https://gdg-tum-site.firebaseapp.com`
+- `CLOUDINARY_CLOUD_NAME` — use the same cloud name as the website's `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` build variable.
+- `GEMINI_MODEL=gemini-3.8-flash`
+
+For Render, create a dedicated Google service account and grant only:
+
+- `roles/datastore.user` for Firestore access.
+- `roles/firebaseauth.viewer` so revocation checks can read Firebase Authentication user records.
+
+Create a key for that service account only after reviewing your organization's key-creation policy. Store its JSON only in Render's encrypted environment-variable settings. Restrict who can view or change service environment variables, rotate the key periodically, and revoke it immediately if exposed. Do not reuse a broad project Owner/Editor service account.
+
+The configured Gemini API key is on Google's Free tier. Submitted prompts and media may be used to improve Google products; do not send sensitive personal information or identifiable photos. Render Free services can spin down after inactivity and do not provide a production availability SLA. The dashboard's AI status component checks `/healthz`, reports measured elapsed time rather than a promised countdown, and leaves the writeup editor usable while AI starts or is unavailable. Upgrade the Render plan if the workflow later requires stronger availability.

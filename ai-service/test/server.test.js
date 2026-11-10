@@ -70,6 +70,15 @@ async function withServer(app, callback) {
   finally { await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve())); }
 }
 
+test("exposes a lightweight public health check", async () => {
+  const { app } = fixture();
+  await withServer(app, async (base) => {
+    const response = await fetch(`${base}/healthz`);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { status: "ok" });
+  });
+});
+
 test("requires a valid Firebase ID token", async () => {
   const { app } = fixture();
   await withServer(app, async (base) => {

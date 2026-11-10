@@ -16,7 +16,7 @@ type CaptionSuggestion = {
 
 async function postAiRequest<T>(path: string, payload: Record<string, unknown>): Promise<T> {
   const baseUrl = process.env.NEXT_PUBLIC_WRITEUP_AI_API_URL?.trim().replace(/\/$/, "");
-  if (!baseUrl) throw new Error("The AI writing service has not been configured yet. Ask an administrator to finish the Cloud Run setup.");
+  if (!baseUrl) throw new Error("The AI writing service has not been configured yet. Ask an administrator to finish the AI service setup.");
   const user = auth.currentUser;
   if (!user) throw new Error("Your session has expired. Sign in again to use AI features.");
   const token = await user.getIdToken();

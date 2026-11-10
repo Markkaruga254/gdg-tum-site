@@ -1,4 +1,4 @@
-import { initializeApp, getApps } from "firebase-admin/app";
+import { cert, initializeApp, getApps } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { GoogleGenAI } from "@google/genai";
@@ -6,9 +6,24 @@ import { createApp } from "./server.js";
 
 const projectId = process.env.GOOGLE_CLOUD_PROJECT || process.env.FIREBASE_PROJECT_ID;
 if (!projectId) throw new Error("GOOGLE_CLOUD_PROJECT is required.");
-if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY must be mounted from Secret Manager.");
+if (!process.env.GEMINI_API_KEY) throw new Error("GEMINI_API_KEY must be configured as a server-side secret.");
 
-const firebaseApp = getApps()[0] || initializeApp({ projectId });
+const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
+let serviceAccount;
+if (serviceAccountJson) {
+  try {
+    serviceAccount = JSON.parse(serviceAccountJson);
+  } catch {
+    throw new Error("FIREBASE_SERVICE_ACCOUNT must contain valid service-account JSON.");
+  }
+  if (serviceAccount.project_id !== projectId) {
+    throw new Error("FIREBASE_SERVICE_ACCOUNT project_id does not match GOOGLE_CLOUD_PROJECT.");
+  }
+}
+const firebaseApp = getApps()[0] || initializeApp({
+  projectId,
+  ...(serviceAccount ? { credential: cert(serviceAccount) } : {}),
+});
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
