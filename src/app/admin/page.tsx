@@ -2,6 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useState } from "react";
+import type { ChangeEvent } from "react";
+import Image from "next/image";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { onAuthStateChanged } from "firebase/auth";
@@ -189,7 +191,7 @@ function UserRow({ user, self, onSave, onSavePhoto }: any) {
   const [savingPhoto, setSavingPhoto] = useState(false);
   const [photoError, setPhotoError] = useState("");
 
-  async function choosePhoto(event: React.ChangeEvent<HTMLInputElement>) {
+  async function choosePhoto(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -288,7 +290,7 @@ function UserRow({ user, self, onSave, onSavePhoto }: any) {
         <section className="col-span-full flex flex-wrap items-center gap-[12px] border-t border-ink/20 pt-[12px]" aria-label={`Profile photo for ${user.name || user.id}`}>
           <div className="flex h-[64px] w-[64px] shrink-0 items-center justify-center overflow-hidden border-[2px] border-ink bg-[#f5f5f5]">
             {(previewUrl || user.photoUrl) ? (
-              <img src={previewUrl || user.photoUrl} alt={`${user.name || "Track lead"} profile preview`} className="h-full w-full object-cover" />
+              <Image src={previewUrl || user.photoUrl} alt={`${user.name || "Track lead"} profile preview`} width={64} height={64} unoptimized className="h-full w-full object-cover" />
             ) : (
               <span className="px-[4px] text-center text-[9px] font-bold uppercase">No photo</span>
             )}
