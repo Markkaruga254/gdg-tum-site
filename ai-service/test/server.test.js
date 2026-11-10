@@ -158,6 +158,53 @@ test("returns photo caption suggestions for authorized writeup media without sav
   });
 });
 
+
+test("rejects a revoked or invalid Firebase ID token", async () => {
+  const { app } = fixture({ tokenValid: false });
+  await withServer(app, async (base) => {
+    const response = await fetch(`${base}/v1/writeups/draft`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ eventId: "event-1", notes: "We covered cloud computing basics and IAM." }),
+    });
+    assert.equal(response.status, 401);
+  });
+});
+
+test("rejects a lead attempting to use AI on another author's writeup", async () => {
+  const { app } = fixture({
+    writeup: { authorId: "another-user", trackId: "cloud", eventId: "event-1" },
+  });
+  await withServer(app, async (base) => {
+    const response = await fetch(`${base}/v1/writeups/draft`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ eventId: "event-1", writeupId: "writeup-1", notes: "We covered cloud computing basics and IAM." }),
+    });
+    assert.equal(response.status, 403);
+    assert.match((await response.json()).error, /own writeups/);
+  });
+});
+
+test("enforces the per-user hourly draft quota before calling Gemini", async () => {
+  const { app, usage } = fixture();
+  await withServer(app, async (base) => {
+    const request = () => fetch(`${base}/v1/writeups/draft`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ eventId: "event-1", notes: "We covered cloud computing basics, IAM and least privilege." }),
+    });
+    for (let count = 0; count < 20; count += 1) {
+      const response = await request();
+      assert.equal(response.status, 200, `request ${count + 1} should be within quota`);
+    }
+    const limited = await request();
+    assert.equal(limited.status, 429);
+    assert.match((await limited.json()).error, /hourly AI limit/);
+    assert.equal(usage["lead-1_draft"].count, 20);
+  });
+});
+
 test("rejects image URLs outside the configured Cloudinary account", async () => {
   const { app } = fixture({
     writeup: { authorId: "lead-1", trackId: "cloud", eventId: "event-1" },
