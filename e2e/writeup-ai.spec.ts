@@ -16,6 +16,15 @@ test("lead can generate, review and save an editable Gemini writeup draft", asyn
 
   await page.route("http://writeup-ai.test/v1/writeups/draft", async (route) => {
     const request = route.request();
+    const corsHeaders = {
+      "access-control-allow-origin": "http://localhost:3000",
+      "access-control-allow-headers": "Authorization, Content-Type",
+      "access-control-allow-methods": "POST, OPTIONS",
+    };
+    if (request.method() === "OPTIONS") {
+      await route.fulfill({ status: 204, headers: corsHeaders });
+      return;
+    }
     expect(request.method()).toBe("POST");
     expect(request.headers().authorization).toMatch(/^Bearer\s+/);
     const payload = request.postDataJSON();
@@ -23,6 +32,7 @@ test("lead can generate, review and save an editable Gemini writeup draft", asyn
     expect(payload.notes).toBe(notes);
     await route.fulfill({
       status: 200,
+      headers: corsHeaders,
       contentType: "application/json",
       body: JSON.stringify({
         draft: {
@@ -57,6 +67,16 @@ test("lead can request photo captions with consent and apply a reviewed suggesti
 
   await page.route("http://writeup-ai.test/v1/media/captions", async (route) => {
     const request = route.request();
+    const corsHeaders = {
+      "access-control-allow-origin": "http://localhost:3000",
+      "access-control-allow-headers": "Authorization, Content-Type",
+      "access-control-allow-methods": "POST, OPTIONS",
+    };
+    if (request.method() === "OPTIONS") {
+      await route.fulfill({ status: 204, headers: corsHeaders });
+      return;
+    }
+    expect(request.method()).toBe("POST");
     expect(request.headers().authorization).toMatch(/^Bearer\s+/);
     const payload = request.postDataJSON();
     expect(payload.writeupId).toBe("w-ai-e2e-draft");
@@ -64,6 +84,7 @@ test("lead can request photo captions with consent and apply a reviewed suggesti
     expect(payload.consentConfirmed).toBe(true);
     await route.fulfill({
       status: 200,
+      headers: corsHeaders,
       contentType: "application/json",
       body: JSON.stringify({
         captions: [{
