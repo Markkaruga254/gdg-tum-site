@@ -9,7 +9,7 @@ async function signInAsTestLead(page: import("@playwright/test").Page) {
 
 test("lead can generate, review and save an editable Gemini writeup draft", async ({ page }) => {
   await signInAsTestLead(page);
-  await page.route("http://writeup-ai.test/healthz", async (route) => {
+  await page.route("**/healthz", async (route) => {
     await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ status: "ok" }) });
   });
   await page.getByRole("button", { name: "New writeup", exact: true }).click();
