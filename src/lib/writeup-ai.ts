@@ -30,6 +30,16 @@ async function postAiRequest<T>(path: string, payload: Record<string, unknown>):
   });
   const result = await response.json().catch(() => ({}));
   if (!response.ok) {
+    const code = typeof result.code === "string" ? result.code : "";
+    if (code === "GEMINI_UNAVAILABLE") {
+      throw new Error("Gemini is temporarily busy. Your notes and edits are safe. Please try again shortly.");
+    }
+    if (code === "GEMINI_RATE_LIMITED") {
+      throw new Error("Gemini is receiving too many requests right now. Your notes and edits are safe; please try again shortly.");
+    }
+    if (code === "GEMINI_QUOTA_EXHAUSTED") {
+      throw new Error("The AI service has reached its Gemini usage quota. Your notes and edits are safe; please try again after the quota resets.");
+    }
     throw new Error(typeof result.error === "string" ? result.error : "The AI service could not complete that request.");
   }
   return result as T;

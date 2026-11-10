@@ -26,7 +26,11 @@ const firebaseApp = getApps()[0] || initializeApp({
 });
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
-const genAI = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const genAI = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+  // The application retry wrapper owns retry policy so SDK retries cannot multiply attempts.
+  httpOptions: { retryOptions: { attempts: 1 } },
+});
 
 const app = createApp({
   auth,

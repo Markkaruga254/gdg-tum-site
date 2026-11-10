@@ -1,5 +1,6 @@
 import express from "express";
 import { rateLimit } from "express-rate-limit";
+import { generateWithRetry } from "./gemini-retry.js";
 
 const TOPIC_TAGS = new Set(["cloud", "cybersecurity", "web", "mobile", "ai-ml", "data", "devops", "open-source", "careers"]);
 const PRODUCT_TAGS = new Set(["android", "firebase", "flutter", "gemini", "chrome", "google-cloud"]);
@@ -7,9 +8,10 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_IMAGES_PER_REQUEST = 4;
 const HOUR_MS = 60 * 60 * 1000;
 
-function httpError(status, message) {
+function httpError(status, message, code) {
   const error = new Error(message);
   error.status = status;
+  if (code) error.code = code;
   return error;
 }
 
@@ -98,6 +100,9 @@ export function createApp({
   model = "gemini-3.8-flash",
   fetchImpl = fetch,
   now = () => Date.now(),
+  sleep,
+  random,
+  onGeminiRetry,
 }) {
   if (!auth || !db || !genAI) throw new Error("Firebase Auth, Firestore, and Gemini clients are required.");
   const app = express();
@@ -145,7 +150,7 @@ export function createApp({
       req.identity = await auth.verifyIdToken(token, true);
       next();
     } catch (error) {
-      if (error.status) return res.status(error.status).json({ error: error.message });
+      if (error.status) return res.status(error.status).json({ error: error.message, ...(error.code ? { code: error.code } : {}) });
       return res.status(401).json({ error: "Your session could not be verified. Sign in again." });
     }
   });
@@ -222,7 +227,7 @@ export function createApp({
         notes.trim(),
       ].join("\n");
 
-      const response = await genAI.models.generateContent({
+      const response = await generateWithRetry(genAI, {
         model,
         contents: prompt,
         config: {
@@ -251,7 +256,7 @@ export function createApp({
             required: ["title", "summary", "body", "topicTags", "productTags"],
           },
         },
-      });
+      }, { sleep, random, onRetry: onGeminiRetry });
       const result = parseModelJson(response);
       const title = typeof result.title === "string" ? result.title.trim().slice(0, 140) : "";
       const summary = typeof result.summary === "string" ? result.summary.trim() : "";
@@ -306,7 +311,7 @@ export function createApp({
       const captions = [];
       for (const media of selected) {
         const image = await readImage(media.url, cloudinaryCloudName, fetchImpl);
-        const response = await genAI.models.generateContent({
+        const response = await generateWithRetry(genAI, {
           model,
           contents: [{
             role: "user",
@@ -326,7 +331,7 @@ export function createApp({
               required: ["caption", "altText"],
             },
           },
-        });
+        }, { sleep, random, onRetry: onGeminiRetry });
         const result = parseModelJson(response);
         const caption = typeof result.caption === "string" ? result.caption.trim().slice(0, 300) : "";
         const altText = typeof result.altText === "string" ? result.altText.trim().slice(0, 250) : "";
