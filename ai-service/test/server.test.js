@@ -159,6 +159,23 @@ test("returns photo caption suggestions for authorized writeup media without sav
 });
 
 
+
+test("applies an authenticated per-user burst limit to AI routes", async () => {
+  const { app } = fixture();
+  await withServer(app, async (base) => {
+    const request = () => fetch(`${base}/v1/unknown`, {
+      headers: { authorization: "Bearer valid-token" },
+    });
+    for (let count = 0; count < 30; count += 1) {
+      const response = await request();
+      assert.equal(response.status, 404, `request ${count + 1} should reach the route`);
+    }
+    const limited = await request();
+    assert.equal(limited.status, 429);
+    assert.match((await limited.json()).error, /Too many AI requests/);
+  });
+});
+
 test("rejects a revoked or invalid Firebase ID token", async () => {
   const { app } = fixture({ tokenValid: false });
   await withServer(app, async (base) => {
