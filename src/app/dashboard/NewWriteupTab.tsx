@@ -6,7 +6,7 @@ import ReactMarkdown from "react-markdown";
 const TOPIC_TAGS = ["cloud", "cybersecurity", "web", "mobile", "ai-ml", "data", "devops", "open-source", "careers"];
 const PRODUCT_TAGS = ["android", "firebase", "flutter", "gemini", "chrome", "google-cloud"];
 
-export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, writeupStep, setWriteupStep, topicTags, setTopicTags, productTags, setProductTags, generateDraft, aiGenerating, generateAiCaptions, aiCaptioning, aiCaptionSuggestions, applyAiCaption, aiDrafted, aiServiceConfigured }: any) {
+export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, writeupStep, setWriteupStep, topicTags, setTopicTags, productTags, setProductTags, generateDraft, aiGenerating, generateAiCaptions, aiCaptioning, aiCaptionSuggestions, applyAiCaption, aiDrafted, aiSourceNotes, setAiSourceNotes, aiServiceConfigured }: any) {
   const toggleTag = (tag: string, selected: string[], setter: (next: string[]) => void) => {
     setter(selected.includes(tag) ? selected.filter((item) => item !== tag) : [...selected, tag]);
   };
@@ -34,7 +34,7 @@ export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, eve
           </FormField>
 
           <FormField label="Rough notes" id="wb" error={wfErrors.body}>
-            <textarea id="wb" value={wf.body} onChange={(event) => setWf({ ...wf, body: event.target.value })} className="min-h-[150px] w-full border-[3px] border-ink px-3 py-2" rows={8} placeholder="Your notes go here. The AI only uses what you write." />
+            <textarea id="wb" value={aiDrafted ? aiSourceNotes : wf.body} onChange={(event) => aiDrafted ? setAiSourceNotes(event.target.value) : setWf({ ...wf, body: event.target.value })} className="min-h-[150px] w-full border-[3px] border-ink px-3 py-2" rows={8} placeholder="Your notes go here. The AI only uses what you write." />
           </FormField>
 
           <div className="grid grid-cols-2 gap-[8px] sm:gap-[14px]">
