@@ -4,6 +4,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  getCountFromServer,
   query,
   where,
   orderBy,
@@ -88,6 +89,12 @@ export async function getWriteups({
   if (eventId) constraints.push(where("eventId", "==", eventId));
   if (limitCount) constraints.push(limit(limitCount));
   return getCollection<Writeup>("writeups", constraints);
+}
+
+export async function getWriteupCount(status: Writeup["status"] = "published"): Promise<number> {
+  const constraints: QueryConstraint[] = [where("status", "==", status)];
+  const snapshot = await getCountFromServer(query(collection(db, "writeups"), ...constraints));
+  return snapshot.data().count;
 }
 
 export async function getWriteupById(id: string): Promise<WriteupWithId | null> {

@@ -11,6 +11,7 @@ import StatBlock from "@/components/StatBlock";
 import {
   getEvents,
   getWriteups,
+  getWriteupCount,
   getPosts,
   getPartners,
   getTracks,
@@ -51,6 +52,7 @@ function formatDateTime(date: unknown): string {
 export default function Home() {
   const [events, setEvents] = useState<EventWithId[]>([]);
   const [writeups, setWriteups] = useState<WriteupWithId[]>([]);
+  const [writeupCount, setWriteupCount] = useState(0);
   const [posts, setPosts] = useState<PostWithId[]>([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [postsError, setPostsError] = useState<string | null>(null);
@@ -71,6 +73,7 @@ export default function Home() {
       const results = await Promise.allSettled([
         getEvents({ orderAsc: true }),
         getWriteups({ status: "published", limitCount: 3 }),
+        getWriteupCount("published"),
         getTracks(),
         getUsers("lead"),
         getPosts(),
@@ -79,13 +82,16 @@ export default function Home() {
       ]);
       if (!active) return;
 
-      const [eventsResult, writeupsResult, tracksResult, leadsResult, postsResult, partnersResult, momentsResult] = results;
+      const [eventsResult, writeupsResult, writeupCountResult, tracksResult, leadsResult, postsResult, partnersResult, momentsResult] = results;
 
       if (eventsResult.status === "fulfilled") setEvents(eventsResult.value);
       else setError("Events could not be loaded.");
 
       if (writeupsResult.status === "fulfilled") setWriteups(writeupsResult.value);
       else setError("Writeups could not be loaded.");
+
+      if (writeupCountResult.status === "fulfilled") setWriteupCount(writeupCountResult.value);
+      else setError("Writeup count could not be loaded.");
 
       if (tracksResult.status === "fulfilled") setTracks(tracksResult.value);
       else setTracksError("Tracks could not be loaded. Open the tracks page to retry.");
@@ -171,7 +177,7 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-3">
               <StatBlock value={held} label="Events held" />
-              <StatBlock value={writeups.length} label="Writeups" />
+              <StatBlock value={writeupCount} label="Writeups" />
               <StatBlock value={tracks.length} label="Tracks" />
             </div>
           </div>
