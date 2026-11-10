@@ -23,8 +23,12 @@ export async function uploadToCloudinary(
   file: File,
   onProgress?: (n: number) => void,
   purpose: UploadPurpose = "writeup",
+  targetUserId?: string,
 ): Promise<{ url: string; publicId: string }> {
-  const signed = await requestService<UploadSignature>("/v1/cloudinary/sign-upload", { purpose });
+  const signed = await requestService<UploadSignature>("/v1/cloudinary/sign-upload", {
+    purpose,
+    ...(targetUserId ? { targetUserId } : {}),
+  });
   const fd = new FormData();
   fd.append("file", file);
   fd.append("api_key", signed.apiKey);

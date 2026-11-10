@@ -175,7 +175,7 @@ export function createApp({
 
   app.post("/v1/cloudinary/sign-upload", async (req, res, next) => {
     try {
-      const { purpose } = req.body || {};
+      const { purpose, targetUserId } = req.body || {};
       const folders = {
         profile: "gdg-tum/profiles",
         writeup: "gdg-tum/writeups",
@@ -186,6 +186,22 @@ export function createApp({
         throw httpError(400, "Choose a valid upload purpose.");
       }
       const user = await getCurrentUser(req.identity.uid);
+      let profileOwnerUid = req.identity.uid;
+      if (purpose === "profile" && targetUserId !== undefined) {
+        if (typeof targetUserId !== "string" || !/^[A-Za-z0-9_-]{1,128}$/.test(targetUserId)) {
+          throw httpError(400, "Choose a valid track lead profile.");
+        }
+        if (user.role !== "admin") {
+          throw httpError(403, "Only administrators can upload photos for another profile.");
+        }
+        const targetUser = await getCurrentUser(targetUserId);
+        if (targetUser.role !== "lead") {
+          throw httpError(400, "Profile photos can only be managed for track leads.");
+        }
+        profileOwnerUid = targetUserId;
+      } else if (purpose !== "profile" && targetUserId !== undefined) {
+        throw httpError(400, "A target profile is only valid for profile photo uploads.");
+      }
       if (purpose === "gallery" && user.role !== "admin") {
         throw httpError(403, "Only administrators can upload standalone gallery photos.");
       }
@@ -196,7 +212,7 @@ export function createApp({
         throw httpError(403, "Only track leads and administrators can upload writeup media.");
       }
       const timestamp = Math.floor(now() / 1000);
-      const publicId = purpose === "gallery" ? `${folders.gallery}/${randomUUID()}` : `${folders[purpose]}/${req.identity.uid}/${randomUUID()}`;
+      const publicId = purpose === "gallery" ? `${folders.gallery}/${randomUUID()}` : `${folders[purpose]}/${purpose === "profile" ? profileOwnerUid : req.identity.uid}/${randomUUID()}`;
       const parameters = { public_id: publicId, timestamp };
       res.status(200).json({
         cloudName: cloudinaryCloudName,
