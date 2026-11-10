@@ -27,18 +27,12 @@ export default function AIAssistantStatus({
 
   useEffect(() => {
     if (!configured || !apiUrl) {
-      setStatus("unavailable");
-      onReadyChange(false);
       return;
     }
 
     let active = true;
     let timeout: ReturnType<typeof setTimeout> | undefined;
     const startedAt = Date.now();
-    setStatus("checking");
-    setElapsed(0);
-    onReadyChange(false);
-
     const tick = setInterval(() => {
       if (active) setElapsed(Math.floor((Date.now() - startedAt) / 1000));
     }, 1000);
@@ -122,7 +116,7 @@ export default function AIAssistantStatus({
         <p aria-hidden="true" className="mt-[6px] text-[10px] font-bold tabular-nums">Time elapsed: {String(Math.floor(elapsed / 60)).padStart(2, "0")}:{String(elapsed % 60).padStart(2, "0")}</p>
       )}
       {status === "unavailable" && (
-        <button type="button" onClick={() => { setMessageIndex(0); setRetryKey((value) => value + 1); }} className="mt-[9px] border-[2px] border-ink bg-yellow px-[10px] py-[7px] text-[10px] font-bold uppercase">
+        <button type="button" onClick={() => { setMessageIndex(0); setElapsed(0); setStatus("checking"); onReadyChange(false); setRetryKey((value) => value + 1); }} className="mt-[9px] border-[2px] border-ink bg-yellow px-[10px] py-[7px] text-[10px] font-bold uppercase">
           Try again
         </button>
       )}
