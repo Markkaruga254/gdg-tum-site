@@ -339,3 +339,20 @@ test("does not retry permanent Gemini request errors", async () => {
   await assert.rejects(generateWithRetry(genAI, {}), /Invalid request/);
   assert.equal(calls, 1);
 });
+
+
+test("classifies an SDK RESOURCE_EXHAUSTED error as quota exhaustion", async () => {
+  let calls = 0;
+  const genAI = { models: { async generateContent() {
+    calls += 1;
+    const error = new Error("Resource exhausted");
+    error.status = 429;
+    error.code = "RESOURCE_EXHAUSTED";
+    throw error;
+  } } };
+  await assert.rejects(
+    generateWithRetry(genAI, {}),
+    (error) => error.code === "GEMINI_QUOTA_EXHAUSTED",
+  );
+  assert.equal(calls, 1);
+});
