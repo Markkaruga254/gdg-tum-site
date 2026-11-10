@@ -39,6 +39,8 @@ const app = createApp({
   allowedOrigins: (process.env.ALLOWED_ORIGINS || "https://gdg-tum-site.web.app,https://gdg-tum-site.firebaseapp.com")
     .split(",").map((origin) => origin.trim()).filter(Boolean),
   cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY || "",
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET || "",
   model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
 });
 
