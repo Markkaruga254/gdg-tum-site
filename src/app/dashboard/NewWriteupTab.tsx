@@ -21,7 +21,7 @@ export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, eve
       </div>
       <AIAssistantStatus apiUrl={process.env.NEXT_PUBLIC_WRITEUP_AI_API_URL || ""} configured={aiServiceConfigured} onReadyChange={setAiServiceReady} />
       <p role="note" className="mt-[8px] border-[2px] border-ink bg-yellow p-[10px] text-[10px] leading-[1.5]">
-        Privacy reminder: this Gemini API key uses the Free tier, where submitted content may be used to improve Google's products. Do not send sensitive personal information or identifiable photos. Only submit material approved for external AI processing, and review every suggestion before publishing.
+        Privacy reminder: this Gemini API key uses the Free tier, where submitted content may be used to improve Google&apos;s products. Do not send sensitive personal information or identifiable photos. Only submit material approved for external AI processing, and review every suggestion before publishing.
       </p>
 
       <div data-testid="writeup-stepper" className="mt-[20px] grid grid-cols-3 border-[3px] border-ink">
