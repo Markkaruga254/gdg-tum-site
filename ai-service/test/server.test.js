@@ -86,9 +86,9 @@ test("allows a signed-in lead to request a profile upload signature", async () =
     assert.equal(payload.apiKey, "test-api-key");
     assert.match(payload.publicId, /^gdg-tum\/profiles\/lead-1\//);
     assert.equal(typeof payload.timestamp, "number");
-    assert.match(payload.signature, /^[a-f0-9]{40}$/);
+    assert.match(payload.signature, /^[a-f0-9]{64}$/);
     const canonical = `public_id=${payload.publicId}&timestamp=${payload.timestamp}test-secret`;
-    assert.equal(payload.signature, createHash("sha1").update(canonical).digest("hex"));
+    assert.equal(payload.signature, createHash("sha256").update(canonical).digest("hex"));
   });
 });
 
