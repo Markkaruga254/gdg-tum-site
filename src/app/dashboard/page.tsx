@@ -314,7 +314,7 @@ export default function DashboardPage() {
           {msg && <p className="mb-2 text-sm text-green">{msg}</p>}
           {err && <p className="mb-2 text-sm text-red">{err}</p>}
 
-          {tab === "Overview" && <OverviewTab events={events} writeups={writeups} setTab={setTab} startEditWriteup={startEditWriteup} startNewWriteup={startNewWriteup} unpublish={unpublish} publishWriteup={publishWriteup} deleteWriteup={deleteWriteup} role={role} uid={uid} track={track} />}
+          {tab === "Overview" && <OverviewTab events={events} writeups={writeups} setTab={setTab} startEditWriteup={startEditWriteup} startNewWriteup={startNewWriteup} unpublish={unpublish} publishWriteup={publishWriteup} deleteWriteup={deleteWriteup} role={role} uid={uid} track={track} saving={saving} />}
 
           {tab === "My events" && <MyEventsTab events={events} role={role} eventForm={eventForm} setEventForm={setEventForm} eventErrors={eventErrors} saveEvent={saveEvent} saving={saving} editingEvent={editingEvent} setEditingEvent={setEditingEvent} startEditEvent={startEditEvent} cancelEvent={cancelEvent} deleteEvent={deleteEvent} />}
 
