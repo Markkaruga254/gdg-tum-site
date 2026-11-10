@@ -84,10 +84,10 @@ test("allows a signed-in lead to request a profile upload signature", async () =
     const payload = await response.json();
     assert.equal(payload.cloudName, "gdgtum");
     assert.equal(payload.apiKey, "test-api-key");
-    assert.equal(payload.folder, "gdg-tum/profiles/lead-1");
+    assert.match(payload.publicId, /^gdg-tum\/profiles\/lead-1\//);
     assert.equal(typeof payload.timestamp, "number");
     assert.match(payload.signature, /^[a-f0-9]{40}$/);
-    const canonical = `folder=${payload.folder}&timestamp=${payload.timestamp}test-secret`;
+    const canonical = `public_id=${payload.publicId}&timestamp=${payload.timestamp}test-secret`;
     assert.equal(payload.signature, createHash("sha1").update(canonical).digest("hex"));
   });
 });
@@ -119,7 +119,7 @@ test("allows only admins to sign and destroy standalone gallery photos", async (
       body: JSON.stringify({ purpose: "gallery" }),
     });
     assert.equal(signed.status, 200);
-    assert.equal((await signed.json()).folder, "gdg-tum/gallery");
+    assert.match((await signed.json()).publicId, /^gdg-tum\/gallery\//);
     const removed = await fetch(`${base}/v1/cloudinary/destroy-gallery-photo`, {
       method: "POST",
       headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
