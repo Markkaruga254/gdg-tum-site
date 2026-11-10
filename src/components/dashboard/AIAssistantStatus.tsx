@@ -48,7 +48,7 @@ export default function AIAssistantStatus({
       const controller = new AbortController();
       const abortTimer = setTimeout(() => controller.abort(), 8000);
       try {
-        const response = await fetch(`${apiUrl.replace(/\\/$/, "")}/healthz`, {
+        const response = await fetch(`${(apiUrl.endsWith("/") ? apiUrl.slice(0, -1) : apiUrl)}/healthz`, {
           method: "GET",
           cache: "no-store",
           signal: controller.signal,
@@ -108,11 +108,11 @@ export default function AIAssistantStatus({
     <section className="mt-[12px] border-[2px] border-ink bg-white p-[12px]" aria-label="AI assistant status">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-[10px] font-bold uppercase">AI assistant status</p>
-        <span className={`border-[2px] border-ink px-[7px] py-[3px] text-[9px] font-bold uppercase ${status === "ready" ? "bg-green" : status === "unavailable" ? "bg-red text-white" : "bg-yellow"}`}>
+        <span role="status" aria-live="polite" className={`border-[2px] border-ink px-[7px] py-[3px] text-[9px] font-bold uppercase ${status === "ready" ? "bg-green" : status === "unavailable" ? "bg-red text-white" : "bg-yellow"}`}>
           {status === "ready" ? "Ready" : status === "unavailable" ? "Unavailable" : status === "slow" ? "Still waking" : "Waking up"}
         </span>
       </div>
-      <p role="status" aria-live="polite" className="mt-[8px] text-[11px] font-bold leading-[1.5]">{message}</p>
+      <p className="mt-[8px] text-[11px] font-bold leading-[1.5]">{message}</p>
       {waiting && (
         <p className="mt-[5px] text-[10px] leading-[1.5] text-[#555]">
           {status === "slow" ? "This is taking longer than usual." : "The service may be starting after a quiet spell."} Your writeup stays editable and safe.
