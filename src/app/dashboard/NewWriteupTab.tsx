@@ -165,7 +165,7 @@ export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, eve
             <div className="flex flex-wrap gap-2">
               <button type="button" onClick={() => saveWriteup(true)} disabled={saving} className="border-[3px] border-ink bg-yellow px-4 py-2 font-bold uppercase">{saving ? "Saving..." : "Publish"}</button>
               <button type="button" onClick={() => saveWriteup(false)} disabled={saving} className="border-[3px] border-ink px-4 py-2 font-bold uppercase">{saving ? "Saving..." : "Save draft"}</button>
-              <button type="button" onClick={generateDraft} disabled={aiGenerating || !aiServiceConfigured} className="border-[3px] border-ink px-4 py-2 font-bold uppercase disabled:opacity-50">{aiGenerating ? "Regenerating…" : "Regenerate with Gemini"}</button>
+              <button type="button" onClick={generateDraft} disabled={aiGenerating || !aiServiceReady} className="border-[3px] border-ink px-4 py-2 font-bold uppercase disabled:opacity-50">{aiGenerating ? "Regenerating…" : "Regenerate with Gemini"}</button>
             </div>
           </aside>
         )}
