@@ -113,11 +113,19 @@ Set these environment variables in the Render service:
 - `CLOUDINARY_CLOUD_NAME` — use the same cloud name as the website's `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` build variable.
 - `GEMINI_MODEL=gemini-3.8-flash`
 
-For Render, create a dedicated Google service account and grant only:
+For Render, create a dedicated Google service account (for example, `gdg-writeup-ai-render`). Avoid granting `roles/datastore.user`: that predefined role allows broad Firestore data read/write access, including deletion.
 
-- `roles/datastore.user` for Firestore access.
-- `roles/firebaseauth.viewer` so revocation checks can read Firebase Authentication user records.
+Create a project-level custom role named **GDG Writeup AI Firestore Data Access** (role ID `gdgWriteupAiFirestore`) with only these permissions:
 
-Create a key for that service account only after reviewing your organization's key-creation policy. Store its JSON only in Render's encrypted environment-variable settings. Restrict who can view or change service environment variables, rotate the key periodically, and revoke it immediately if exposed. Do not reuse a broad project Owner/Editor service account.
+- `datastore.databases.get`
+- `datastore.entities.create`
+- `datastore.entities.get`
+- `datastore.entities.update`
+
+The service uses direct document reads and transaction create/update operations; it does not need Firestore collection queries or document deletion. Assign this custom role to the dedicated service account. Also assign `roles/firebaseauth.viewer` so Firebase Admin can look up user records when checking revoked ID tokens.
+
+Firestore IAM is project-scoped here, so the custom role can still access documents by known ID across the project. The service's server-side role, track, author, event, and media ownership checks remain essential; Firebase Admin SDK requests bypass Firestore Security Rules.
+
+Create a JSON key only after reviewing your organization's key-creation policy. Store the complete JSON only in Render's encrypted `FIREBASE_SERVICE_ACCOUNT` environment variable. Restrict who can view or change service environment variables, rotate the key periodically, and revoke it immediately if exposed. Never commit it to GitHub or paste it into chat. Do not reuse a broad project Owner/Editor service account.
 
 The configured Gemini API key is on Google's Free tier. Submitted prompts and media may be used to improve Google products; do not send sensitive personal information or identifiable photos. Render Free services can spin down after inactivity and do not provide a production availability SLA. The dashboard's AI status component checks `/healthz`, reports measured elapsed time rather than a promised countdown, and leaves the writeup editor usable while AI starts or is unavailable. Upgrade the Render plan if the workflow later requires stronger availability.
