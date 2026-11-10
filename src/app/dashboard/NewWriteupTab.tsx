@@ -6,18 +6,16 @@ import ReactMarkdown from "react-markdown";
 const TOPIC_TAGS = ["cloud", "cybersecurity", "web", "mobile", "ai-ml", "data", "devops", "open-source", "careers"];
 const PRODUCT_TAGS = ["android", "firebase", "flutter", "gemini", "chrome", "google-cloud"];
 
-export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, writeupStep, setWriteupStep, topicTags, setTopicTags, productTags, setProductTags }: any) {
+export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, writeupStep, setWriteupStep, topicTags, setTopicTags, productTags, setProductTags }: any) {
   const toggleTag = (tag: string, selected: string[], setter: (next: string[]) => void) => {
     setter(selected.includes(tag) ? selected.filter((item) => item !== tag) : [...selected, tag]);
   };
 
   return (
     <section>
-      {writeupStep !== 1 && (
-        <div className="flex flex-wrap items-center justify-between gap-[12px]">
-          <h2 className="font-display text-[clamp(42px,6vw,56px)] uppercase leading-none">New writeup</h2>
-        </div>
-      )}
+      <div className="flex flex-wrap items-center justify-between gap-[12px]">
+        <h2 className="font-display text-[clamp(42px,6vw,56px)] uppercase leading-none">{editingWriteup ? "Edit writeup" : "New writeup"}</h2>
+      </div>
 
       <div data-testid="writeup-stepper" className="mt-[20px] grid grid-cols-3 border-[3px] border-ink">
         <button type="button" onClick={() => setWriteupStep(1)} aria-current={writeupStep === 1 ? "step" : undefined} className={`min-w-0 border-r-[3px] border-ink px-[6px] py-[10px] text-left text-[9px] font-bold uppercase leading-[1.3] break-words sm:px-[14px] sm:py-[13px] sm:text-[11px] ${writeupStep === 1 ? "bg-ink text-white" : "bg-white"}`}>1&nbsp; Add your notes</button>
