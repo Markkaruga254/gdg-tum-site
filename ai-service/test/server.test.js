@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { createApp } from "../src/server.js";
+import { generateWithRetry } from "../src/gemini-retry.js";
 
 function fixture({ role = "lead", track = "cloud", eventTrack = "cloud", writeup = null, mediaRecords = {}, tokenValid = true, fetchImpl = fetch } = {}) {
   const users = { "lead-1": { role, track } };
@@ -245,4 +246,96 @@ test("rejects image URLs outside the configured Cloudinary account", async () =>
     assert.equal(response.status, 400);
     assert.match((await response.json()).error, /Cloudinary account/);
   });
+});
+
+
+test("retries a transient Gemini 503 once and succeeds without repeating quota consumption", async () => {
+  let calls = 0;
+  const delays = [];
+  const genAI = { models: { async generateContent() {
+    calls += 1;
+    if (calls === 1) {
+      const error = new Error("The model is overloaded");
+      error.status = 503;
+      throw error;
+    }
+    return { text: "ok" };
+  } } };
+  const response = await generateWithRetry(genAI, {}, {
+    sleep: async (delay) => delays.push(delay),
+    random: () => 0,
+  });
+  assert.equal(response.text, "ok");
+  assert.equal(calls, 2);
+  assert.deepEqual(delays, [1_000]);
+});
+
+test("stops after two retries for repeated Gemini 503 responses", async () => {
+  let calls = 0;
+  const delays = [];
+  const genAI = { models: { async generateContent() {
+    calls += 1;
+    const error = new Error("Service unavailable");
+    error.status = 503;
+    throw error;
+  } } };
+  await assert.rejects(
+    generateWithRetry(genAI, {}, {
+      sleep: async (delay) => delays.push(delay),
+      random: () => 0,
+    }),
+    (error) => error.status === 503
+      && error.code === "GEMINI_UNAVAILABLE"
+      && /temporarily busy/.test(error.message),
+  );
+  assert.equal(calls, 3);
+  assert.deepEqual(delays, [1_000, 2_000]);
+});
+
+test("retries a temporary Gemini 429 rate limit", async () => {
+  let calls = 0;
+  const genAI = { models: { async generateContent() {
+    calls += 1;
+    if (calls === 1) {
+      const error = new Error("Rate limit exceeded: requests per minute");
+      error.status = 429;
+      throw error;
+    }
+    return { text: "ok" };
+  } } };
+  const response = await generateWithRetry(genAI, {}, {
+    sleep: async () => {},
+    random: () => 0,
+  });
+  assert.equal(response.text, "ok");
+  assert.equal(calls, 2);
+});
+
+test("does not retry an exhausted Gemini quota", async () => {
+  let calls = 0;
+  const genAI = { models: { async generateContent() {
+    calls += 1;
+    const error = new Error("Quota exceeded for requests per day");
+    error.status = 429;
+    throw error;
+  } } };
+  await assert.rejects(
+    generateWithRetry(genAI, {}),
+    (error) => error.status === 429
+      && error.code === "GEMINI_QUOTA_EXHAUSTED"
+      && /quota is currently exhausted/.test(error.message),
+  );
+  assert.equal(calls, 1);
+});
+
+test("does not retry permanent Gemini request errors", async () => {
+  let calls = 0;
+  const genAI = { models: { async generateContent() {
+    calls += 1;
+    const error = new Error("Invalid request");
+    error.status = 400;
+    throw error;
+  } } };
+  await assert.rejects(generateWithRetry(genAI, {}), /Invalid request/);
+  assert.equal(calls, 1);
 });
