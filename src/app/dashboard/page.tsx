@@ -60,6 +60,7 @@ export default function DashboardPage() {
   const [aiCaptionSuggestions, setAiCaptionSuggestions] = useState<any[]>([]);
   const [topicTags, setTopicTags] = useState<string[]>([]);
   const [productTags, setProductTags] = useState<string[]>([]);
+  const aiServiceConfigured = Boolean(process.env.NEXT_PUBLIC_WRITEUP_AI_API_URL);
 
   useEffect(() => {
     let active = true;
@@ -395,7 +396,7 @@ export default function DashboardPage() {
 
           {tab === "My events" && <MyEventsTab events={events} role={role} eventForm={eventForm} setEventForm={setEventForm} eventErrors={eventErrors} saveEvent={saveEvent} saving={saving} editingEvent={editingEvent} setEditingEvent={setEditingEvent} startEditEvent={startEditEvent} cancelEvent={cancelEvent} deleteEvent={deleteEvent} />}
 
-          {tab === "New writeup" && <NewWriteupTab editingWriteup={editingWriteup} wf={wf} setWf={setWf} wfErrors={wfErrors} events={events} saveWriteup={saveWriteup} saving={saving} mediaList={mediaList} aiPhotoIds={aiPhotoIds} setAiPhotoIds={setAiPhotoIds} aiConsent={aiConsent} setAiConsent={setAiConsent} setTab={setTab} writeupStep={writeupStep} setWriteupStep={setWriteupStep} topicTags={topicTags} setTopicTags={setTopicTags} productTags={productTags} setProductTags={setProductTags} generateDraft={generateDraft} aiGenerating={aiGenerating} generateAiCaptions={generateAiCaptions} aiCaptioning={aiCaptioning} aiCaptionSuggestions={aiCaptionSuggestions} applyAiCaption={applyAiCaption} aiDrafted={aiDrafted} />}
+          {tab === "New writeup" && <NewWriteupTab editingWriteup={editingWriteup} wf={wf} setWf={setWf} wfErrors={wfErrors} events={events} saveWriteup={saveWriteup} saving={saving} mediaList={mediaList} aiPhotoIds={aiPhotoIds} setAiPhotoIds={setAiPhotoIds} aiConsent={aiConsent} setAiConsent={setAiConsent} setTab={setTab} writeupStep={writeupStep} setWriteupStep={setWriteupStep} topicTags={topicTags} setTopicTags={setTopicTags} productTags={productTags} setProductTags={setProductTags} generateDraft={generateDraft} aiGenerating={aiGenerating} generateAiCaptions={generateAiCaptions} aiCaptioning={aiCaptioning} aiCaptionSuggestions={aiCaptionSuggestions} applyAiCaption={applyAiCaption} aiDrafted={aiDrafted} aiServiceConfigured={aiServiceConfigured} />}
 
           {tab === "Media" && <MediaTab mediaList={mediaList} mediaUploading={mediaUploading} mediaUploadProgress={mediaUploadProgress} editingWriteup={editingWriteup} uid={uid} role={role} track={track} setMsg={setMsg} setErr={setErr} loadMedia={loadMedia} setMediaUploading={setMediaUploading} setMediaUploadProgress={setMediaUploadProgress} />}
 
