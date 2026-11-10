@@ -130,6 +130,18 @@ test("allows only admins to sign and destroy standalone gallery photos", async (
   });
 });
 
+test("prevents track leads from destroying standalone gallery assets", async () => {
+  const { app } = fixture();
+  await withServer(app, async (base) => {
+    const response = await fetch(`${base}/v1/cloudinary/destroy-gallery-photo`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ publicId: "gdg-tum/gallery/session-1" }),
+    });
+    assert.equal(response.status, 403);
+  });
+});
+
 test("rejects gallery deletion outside the dedicated gallery folder", async () => {
   const { app } = fixture({ role: "admin" });
   await withServer(app, async (base) => {
