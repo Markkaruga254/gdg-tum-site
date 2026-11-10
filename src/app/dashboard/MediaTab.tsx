@@ -23,7 +23,7 @@ export default function MediaTab({ mediaList, mediaUploading, mediaUploadProgres
                     setMediaUploading(true);
                     setMediaUploadProgress(0);
                     try {
-                      const { url, publicId } = await uploadToCloudinary(f, setMediaUploadProgress);
+                      const { url, publicId } = await uploadToCloudinary(f, setMediaUploadProgress, "writeup");
                       const wid = editingWriteup.id;
                       await addDoc(collection(db, "media"), { writeupId: wid, url, publicId, caption: "", altText: "", captionSource: "lead", createdBy: uid });
                       setMediaUploadProgress(100);
