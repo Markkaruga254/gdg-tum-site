@@ -1,5 +1,5 @@
 import express from "express";
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { rateLimit } from "express-rate-limit";
 import { generateWithRetry } from "./gemini-retry.js";
 
@@ -195,16 +195,13 @@ export function createApp({
         throw httpError(403, "Only track leads and administrators can upload writeup media.");
       }
       const timestamp = Math.floor(now() / 1000);
-      const folder = purpose === "profile" ? `${folders.profile}/${req.identity.uid}`
-        : purpose === "writeup" ? `${folders.writeup}/${req.identity.uid}`
-        : purpose === "partner" ? `${folders.partner}/${req.identity.uid}`
-        : folders.gallery;
-      const parameters = { folder, timestamp };
+      const publicId = purpose === "gallery" ? `${folders.gallery}/${randomUUID()}` : `${folders[purpose]}/${req.identity.uid}/${randomUUID()}`;
+      const parameters = { public_id: publicId, timestamp };
       res.status(200).json({
         cloudName: cloudinaryCloudName,
         apiKey: cloudinaryApiKey,
         timestamp,
-        folder,
+        publicId,
         signature: cloudinarySignature(parameters),
       });
     } catch (error) { next(error); }
