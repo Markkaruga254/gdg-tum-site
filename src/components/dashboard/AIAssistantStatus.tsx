@@ -47,7 +47,8 @@ export default function AIAssistantStatus({
           cache: "no-store",
           signal: controller.signal,
         });
-        if (!response.ok) throw new Error("Health check failed");
+        const health = await response.json().catch(() => null);
+        if (!response.ok || health?.status !== "ok") throw new Error("Health check failed");
         if (!active) return;
         setStatus("ready");
         onReadyChange(true);
