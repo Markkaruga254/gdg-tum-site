@@ -1,0 +1,19 @@
+{
+  "name": "gdg-tum-writeup-ai",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@google/genai": "^1.30.0",
+    "express": "^5.1.0",
+    "firebase-admin": "^13.5.0",
+    "express-rate-limit": "^8.1.0"
+  }
+}

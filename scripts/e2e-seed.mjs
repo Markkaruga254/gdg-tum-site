@@ -59,9 +59,11 @@ const events = [
   { id: "ev-cloud-past-3", title: "Cloud Storage Workshop", trackId: "cloud", date: new Date("2026-08-15T14:00:00Z"), venue: "Hall A", status: "past", attendance: 28, rsvpCount: 28, writeupId: "w-published-cloud-3" },
   { id: "ev-web-upcoming", title: "Web Workshop", trackId: "web", date: new Date("2026-12-10T16:00:00Z"), venue: "Lab 2", status: "upcoming", attendance: null, rsvpCount: null, writeupId: null },
   { id: "ev-cyber-upcoming", title: "Cybersecurity Lab", trackId: "cybersecurity", date: new Date("2026-12-15T10:00:00Z"), venue: "Lab 3", status: "upcoming", attendance: null, rsvpCount: null, writeupId: null },
+  { id: "ev-ai-e2e", title: "AI/ML Test Session", trackId: "ai-ml", date: new Date("2026-11-08T10:00:00Z"), venue: "E2E Lab", status: "past", attendance: null, rsvpCount: null, writeupId: "w-ai-e2e-draft" },
 ];
 
 const writeups = [
+  { id: "w-ai-e2e-draft", eventId: "ev-ai-e2e", trackId: "ai-ml", authorId: "u-lead-lewis", title: "AI/ML session notes", summary: "An editable test writeup for the authenticated Gemini caption workflow.", body: "We introduced machine learning concepts and discussed model evaluation during the session.", attendance: null, links: [], tags: { topics: ["ai-ml"], products: ["gemini"] }, status: "draft", publishedAt: null, aiDrafted: false },
   { id: "w-published-cloud", eventId: "ev-cloud-past", trackId: "cloud", authorId: "KoYwxs8piKh4c4tkcIHzOURzCwC3", title: "Cloud 101 Recap", summary: "A recap of our cloud workshop", body: "# Cloud 101\n\nWe learned about serverless.", attendance: 40, links: [], tags: { topics: ["cloud"], products: [] }, status: "published", publishedAt: new Date("2026-11-07T10:00:00Z"), aiDrafted: false },
   { id: "w-draft-cloud", eventId: "ev-cloud-past", trackId: "cloud", authorId: "u-lead-lewis", title: "", summary: "", body: "", attendance: "", links: [{ title: "", url: "" }], tags: { topics: [], products: [] }, status: "draft", publishedAt: null, aiDrafted: false },
   { id: "w-draft-preview-cloud", eventId: "ev-cloud-past", trackId: "cloud", authorId: "u-lead-lewis", title: "Cloud workshop recap", summary: "A short summary of the cloud workshop and what participants learned.", body: "We compared compute, storage and networking options during a hands-on session.\\n\\n## Key Takeaways\\n- Choose services based on workload needs.\\n- Secure identities and permissions from the start.\\n- Monitor cost and performance as you grow.", attendance: 40, links: [{ title: "Cloud workshop slides", url: "https://example.com/e2e-cloud-slides" }], tags: { topics: ["cloud", "devops"], products: ["google-cloud"] }, status: "draft", publishedAt: null, aiDrafted: false },
@@ -76,6 +78,7 @@ function placeholderPhoto(background, foreground = "#fff") {
 }
 
 const media = [
+  { id: "m-ai-e2e-1", writeupId: "w-ai-e2e-draft", url: placeholderPhoto("#1967D2"), publicId: "e2e/ai-caption-photo", caption: "Existing manually written caption", altText: "Blue placeholder for an AI caption test", createdBy: "u-lead-lewis" },
   { id: "m-cloud-1", writeupId: "w-published-cloud", url: placeholderPhoto("#1967D2"), publicId: "e2e/cloud-photo-1", caption: "Cloud workshop photo", altText: "Blue placeholder for a cloud workshop photo", createdBy: "KoYwxs8piKh4c4tkcIHzOURzCwC3" },
   { id: "m-cloud-2", writeupId: "w-published-cloud", url: placeholderPhoto("#EA4335", "#111"), publicId: "e2e/cloud-photo-2", caption: "Workshop group photo", altText: "Red placeholder for a workshop group photo", createdBy: "KoYwxs8piKh4c4tkcIHzOURzCwC3" },
   { id: "m-cloud-3", writeupId: "w-published-cloud", url: placeholderPhoto("#34A853", "#111"), publicId: "e2e/cloud-photo-3", caption: "Cloud lab session", altText: "Green placeholder for a cloud lab session", createdBy: "KoYwxs8piKh4c4tkcIHzOURzCwC3" },

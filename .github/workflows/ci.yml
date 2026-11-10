@@ -36,6 +36,23 @@ jobs:
         run: npm audit --omit=dev --audit-level=high
         continue-on-error: true
 
+  ai-service:
+    name: Gemini AI service tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: ai-service
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Install AI service dependencies
+        run: npm install --no-audit --no-fund
+      - name: Run service tests
+        run: npm test
+
   firestore-rules:
     name: Firestore authorization tests
     runs-on: ubuntu-latest
@@ -140,6 +157,7 @@ jobs:
       - firestore-rules
       - browser-e2e
       - production-build
+      - ai-service
     runs-on: ubuntu-latest
     steps:
       - name: Require all core validation jobs
@@ -148,10 +166,11 @@ jobs:
           FIRESTORE_RULES: ${{ needs.firestore-rules.result }}
           BROWSER_E2E: ${{ needs.browser-e2e.result }}
           PRODUCTION_BUILD: ${{ needs.production-build.result }}
+          AI_SERVICE: ${{ needs.ai-service.result }}
         run: |
           set -eu
           failed=0
-          for check in QUALITY FIRESTORE_RULES BROWSER_E2E PRODUCTION_BUILD; do
+          for check in QUALITY FIRESTORE_RULES BROWSER_E2E PRODUCTION_BUILD AI_SERVICE; do
             result="${!check}"
             printf '%-20s %s\n' "$check" "$result"
             if [ "$result" != "success" ]; then
@@ -244,6 +263,7 @@ jobs:
           NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
           NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
           NEXT_PUBLIC_FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+          NEXT_PUBLIC_WRITEUP_AI_API_URL: ${{ vars.NEXT_PUBLIC_WRITEUP_AI_API_URL }}
         run: npm run build
 
       - name: Install Firebase CLI

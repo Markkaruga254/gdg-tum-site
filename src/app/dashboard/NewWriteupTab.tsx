@@ -6,18 +6,17 @@ import ReactMarkdown from "react-markdown";
 const TOPIC_TAGS = ["cloud", "cybersecurity", "web", "mobile", "ai-ml", "data", "devops", "open-source", "careers"];
 const PRODUCT_TAGS = ["android", "firebase", "flutter", "gemini", "chrome", "google-cloud"];
 
-export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, writeupStep, setWriteupStep, topicTags, setTopicTags, productTags, setProductTags }: any) {
+export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, writeupStep, setWriteupStep, topicTags, setTopicTags, productTags, setProductTags, generateDraft, aiGenerating, generateAiCaptions, aiCaptioning, aiCaptionSuggestions, applyAiCaption, aiDrafted, aiSourceNotes, setAiSourceNotes, aiServiceConfigured }: any) {
   const toggleTag = (tag: string, selected: string[], setter: (next: string[]) => void) => {
     setter(selected.includes(tag) ? selected.filter((item) => item !== tag) : [...selected, tag]);
   };
 
   return (
     <section>
-      {writeupStep !== 1 && (
-        <div className="flex flex-wrap items-center justify-between gap-[12px]">
-          <h2 className="font-display text-[clamp(42px,6vw,56px)] uppercase leading-none">New writeup</h2>
-        </div>
-      )}
+      <div className="flex flex-wrap items-center justify-between gap-[12px]">
+        <h2 className="font-display text-[clamp(42px,6vw,56px)] uppercase leading-none">{editingWriteup ? "Edit writeup" : "New writeup"}</h2>
+      </div>
+      {!aiServiceConfigured && <p role="status" className="mt-[12px] border-[2px] border-ink bg-yellow p-[10px] text-[11px] font-bold leading-[1.5]">Gemini features will be available after the authenticated Cloud Run service is deployed and its URL is configured for this website.</p>}
 
       <div data-testid="writeup-stepper" className="mt-[20px] grid grid-cols-3 border-[3px] border-ink">
         <button type="button" onClick={() => setWriteupStep(1)} aria-current={writeupStep === 1 ? "step" : undefined} className={`min-w-0 border-r-[3px] border-ink px-[6px] py-[10px] text-left text-[9px] font-bold uppercase leading-[1.3] break-words sm:px-[14px] sm:py-[13px] sm:text-[11px] ${writeupStep === 1 ? "bg-ink text-white" : "bg-white"}`}>1&nbsp; Add your notes</button>
@@ -35,7 +34,7 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
           </FormField>
 
           <FormField label="Rough notes" id="wb" error={wfErrors.body}>
-            <textarea id="wb" value={wf.body} onChange={(event) => setWf({ ...wf, body: event.target.value })} className="min-h-[150px] w-full border-[3px] border-ink px-3 py-2" rows={8} placeholder="Your notes go here. The AI only uses what you write." />
+            <textarea id="wb" value={aiDrafted ? aiSourceNotes : wf.body} onChange={(event) => aiDrafted ? setAiSourceNotes(event.target.value) : setWf({ ...wf, body: event.target.value })} className="min-h-[150px] w-full border-[3px] border-ink px-3 py-2" rows={8} placeholder="Your notes go here. The AI only uses what you write." />
           </FormField>
 
           <div className="grid grid-cols-2 gap-[8px] sm:gap-[14px]">
@@ -55,7 +54,23 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
                 <p className="text-[12px] font-bold uppercase">Photos, slides &amp; links</p>
                 <button type="button" onClick={() => setTab("Media")} className="mt-[7px] border-[3px] border-ink px-[14px] py-[12px] text-[11px] font-bold uppercase">Drop files here or browse ↗</button>
               </div>
-              <button type="button" disabled title="AI draft generation will be enabled when the approved AI service is deployed." className="justify-self-start border-[3px] border-ink bg-ink px-[16px] py-[12px] text-[11px] font-bold uppercase text-white opacity-50">Generate draft · Coming soon</button>
+              <button type="button" onClick={generateAiCaptions} disabled={!aiServiceConfigured || !editingWriteup?.id || !aiConsent || aiPhotoIds.length === 0 || aiCaptioning} className="justify-self-start border-[3px] border-ink bg-yellow px-[16px] py-[12px] text-[11px] font-bold uppercase disabled:opacity-50">{aiCaptioning ? "Generating captions…" : "Generate selected photo captions"}</button>
+            {!editingWriteup?.id && <p className="text-[10px] leading-[1.5]">Save the writeup as a draft before generating captions.</p>}
+            {aiCaptionSuggestions.length > 0 && (
+              <div className="grid gap-[10px] border-[3px] border-ink bg-white p-[12px]">
+                <h3 className="text-[11px] font-bold uppercase">AI caption suggestions · Review before applying</h3>
+                {aiCaptionSuggestions.map((suggestion: any) => (
+                  <div key={suggestion.mediaId} className="border-t-[2px] border-ink pt-[10px]">
+                    <p className="text-[11px] font-bold uppercase">Caption</p>
+                    <p className="mt-[3px] text-[12px] leading-[1.5]">{suggestion.caption}</p>
+                    <p className="mt-[8px] text-[11px] font-bold uppercase">Alt text</p>
+                    <p className="mt-[3px] text-[12px] leading-[1.5]">{suggestion.altText}</p>
+                    <button type="button" onClick={() => applyAiCaption(suggestion)} className="mt-[8px] border-[2px] border-ink bg-yellow px-[10px] py-[7px] text-[10px] font-bold uppercase">Apply caption and alt text</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <button type="button" onClick={generateDraft} disabled={aiGenerating || !aiServiceConfigured} className="justify-self-start border-[3px] border-ink bg-ink px-[16px] py-[12px] text-[11px] font-bold uppercase text-white disabled:opacity-50">{aiGenerating ? "Generating with Gemini…" : "Generate draft with Gemini"}</button>
             </>
           )}
         </div>
@@ -65,14 +80,14 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
             <div className="flex flex-wrap items-center justify-between gap-[8px]">
               <span className="bg-ink px-[10px] py-[5px] text-[10px] font-bold uppercase text-white">Photos</span>
             </div>
-            <p className="text-[11px] leading-[1.5]">Tick the photos you want AI to caption. Unticked photos stay private and receive no AI caption.</p>
+            <p className="text-[11px] leading-[1.5]">Select up to four photos per request. Unticked photos stay private and receive no AI caption.</p>
             {mediaList.length ? (
               <div className="grid grid-cols-2 gap-[10px] sm:grid-cols-3">
                 {mediaList.map((media: any) => (
                   <label key={media.id} className="border-[2px] border-ink bg-white p-[7px]">
                     <img src={media.url} alt={media.altText || media.caption || "Uploaded event media"} className="aspect-[4/3] w-full object-cover" />
                     <span className="mt-[7px] flex items-start gap-[7px] text-[10px] font-bold uppercase leading-[1.4]">
-                      <input type="checkbox" checked={aiPhotoIds.includes(media.id)} onChange={(event) => setAiPhotoIds((current: string[]) => event.target.checked ? [...current, media.id] : current.filter((id: string) => id !== media.id))} />
+                      <input type="checkbox" checked={aiPhotoIds.includes(media.id)} disabled={!aiPhotoIds.includes(media.id) && aiPhotoIds.length >= 4} onChange={(event) => setAiPhotoIds((current: string[]) => event.target.checked ? [...current, media.id] : current.filter((id: string) => id !== media.id))} />
                       Send for AI caption
                     </span>
                   </label>
@@ -91,13 +106,13 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
               <input type="checkbox" checked={aiConsent} onChange={(event) => setAiConsent(event.target.checked)} className="mt-[2px]" />
               <span>I confirm the people in the ticked photos have agreed.</span>
             </label>
-            <button type="button" disabled title="AI draft generation will be enabled when the approved AI service is deployed." className="justify-self-start border-[3px] border-ink bg-ink px-[16px] py-[12px] text-[11px] font-bold uppercase text-white opacity-50">Generate draft · Coming soon</button>
+            <button type="button" onClick={generateDraft} disabled={aiGenerating} className="justify-self-start border-[3px] border-ink bg-ink px-[16px] py-[12px] text-[11px] font-bold uppercase text-white disabled:opacity-50">{aiGenerating ? "Generating with Gemini…" : "Generate draft with Gemini"}</button>
           </aside>
         ) : (
           <aside className="grid content-start gap-[14px] bg-[#fafafa] p-[18px] sm:p-[24px]">
             <div className="flex flex-wrap items-center justify-between gap-[8px]">
               <span className="bg-ink px-[10px] py-[5px] text-[10px] font-bold uppercase text-white">Draft preview</span>
-              <span className="text-[11px] font-bold uppercase">Editable</span>
+              <span className="text-[11px] font-bold uppercase">Editable</span>{aiDrafted && <span className="border-[2px] border-ink bg-yellow px-[8px] py-[4px] text-[9px] font-bold uppercase">AI-assisted · review required</span>}
             </div>
 
             <label htmlFor="wt" className="sr-only">Writeup title</label>
@@ -147,7 +162,7 @@ export default function NewWriteupTab({ wf, setWf, wfErrors, events, saveWriteup
             <div className="flex flex-wrap gap-2">
               <button type="button" onClick={() => saveWriteup(true)} disabled={saving} className="border-[3px] border-ink bg-yellow px-4 py-2 font-bold uppercase">{saving ? "Saving..." : "Publish"}</button>
               <button type="button" onClick={() => saveWriteup(false)} disabled={saving} className="border-[3px] border-ink px-4 py-2 font-bold uppercase">{saving ? "Saving..." : "Save draft"}</button>
-              <button type="button" disabled title="AI regeneration will be enabled when the approved AI service is deployed." className="border-[3px] border-ink px-4 py-2 font-bold uppercase opacity-50">Regenerate · Coming soon</button>
+              <button type="button" onClick={generateDraft} disabled={aiGenerating || !aiServiceConfigured} className="border-[3px] border-ink px-4 py-2 font-bold uppercase disabled:opacity-50">{aiGenerating ? "Regenerating…" : "Regenerate with Gemini"}</button>
             </div>
           </aside>
         )}

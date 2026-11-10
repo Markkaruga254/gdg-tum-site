@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { canManageWriteup } from "@/lib/permissions";
 
-export default function OverviewTab({ events, writeups, setTab, startEditWriteup, startNewWriteup, unpublish, publishWriteup, deleteWriteup, role, uid, track }: any) {
+export default function OverviewTab({ events, writeups, setTab, startEditWriteup, startNewWriteup, unpublish, publishWriteup, deleteWriteup, role, uid, track, saving }: any) {
   return (
     <section>
       <h1 className="font-display text-[clamp(42px,6vw,64px)] uppercase leading-none">Overview</h1>
@@ -29,17 +29,18 @@ export default function OverviewTab({ events, writeups, setTab, startEditWriteup
                 <p className="mt-[4px] text-[10px] font-bold uppercase text-[#555]">{writeup.status} · {writeup.trackId || "General"}</p>
               </div>
               <div className="flex flex-wrap gap-[7px]">
+                {writeup.status === "published" && <a href={`/writeup?id=${writeup.id}`} className="border-[2px] border-ink px-[10px] py-[7px] text-[10px] font-bold uppercase">View</a>}
                 {canManageWriteup(role, uid, track, writeup) && (
                   <>
-                    <button type="button" onClick={() => startEditWriteup(writeup)} data-testid={`edit-writeup-${writeup.id}`} className="border-[2px] border-ink px-[10px] py-[7px] text-[10px] font-bold uppercase">Edit</button>
+                    <button type="button" onClick={() => startEditWriteup(writeup)} data-testid={`edit-writeup-${writeup.id}`} disabled={saving} className="border-[2px] border-ink px-[10px] py-[7px] text-[10px] font-bold uppercase disabled:opacity-50">Edit</button>
                     {writeup.status === "published" ? (
-                      <button type="button" onClick={() => unpublish(writeup.id)} className="border-[2px] border-ink px-[10px] py-[7px] text-[10px] font-bold uppercase">Unpublish</button>
+                      <button type="button" onClick={() => unpublish(writeup.id)} disabled={saving} className="border-[2px] border-ink px-[10px] py-[7px] text-[10px] font-bold uppercase disabled:opacity-50">Unpublish</button>
                     ) : (
-                      <button type="button" onClick={() => publishWriteup(writeup.id)} className="border-[2px] border-ink bg-ink px-[10px] py-[7px] text-[10px] font-bold uppercase text-white">Publish</button>
+                      <button type="button" onClick={() => publishWriteup(writeup.id)} disabled={saving} className="border-[2px] border-ink bg-ink px-[10px] py-[7px] text-[10px] font-bold uppercase text-white disabled:opacity-50">Publish</button>
                     )}
                   </>
                 )}
-                {role === "admin" && <button type="button" onClick={() => deleteWriteup(writeup.id)} className="border-[2px] border-ink px-[10px] py-[7px] text-[10px] font-bold uppercase">Delete</button>}
+                {role === "admin" && <button type="button" onClick={() => deleteWriteup(writeup.id)} disabled={saving} className="border-[2px] border-ink px-[10px] py-[7px] text-[10px] font-bold uppercase disabled:opacity-50">Delete</button>}
               </div>
             </div>
           ))}
