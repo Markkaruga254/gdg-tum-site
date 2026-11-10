@@ -1,4 +1,5 @@
 import express from "express";
+import { rateLimit } from "express-rate-limit";
 
 const TOPIC_TAGS = new Set(["cloud", "cybersecurity", "web", "mobile", "ai-ml", "data", "devops", "open-source", "careers"]);
 const PRODUCT_TAGS = new Set(["android", "firebase", "flutter", "gemini", "chrome", "google-cloud"]);
@@ -139,6 +140,16 @@ export function createApp({
     }
   });
 
+  // Per-instance burst protection complements the cross-instance Firestore hourly quotas.
+  // Cloud Run may scale to multiple instances, so Firestore remains the authoritative user quota.
+  app.use("/v1", rateLimit({
+    windowMs: 60 * 1000,
+    limit: 30,
+    standardHeaders: "draft-8",
+    legacyHeaders: false,
+    keyGenerator: (req) => req.identity.uid,
+    message: { error: "Too many AI requests. Please slow down and try again shortly." },
+  }));
   async function getAuthorizedContext(uid, eventId, writeupId) {
     const [userSnap, eventSnap] = await Promise.all([
       db.collection("users").doc(uid).get(),
