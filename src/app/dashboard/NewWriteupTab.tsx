@@ -2,11 +2,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import FormField from "@/components/form/FormField";
 import ReactMarkdown from "react-markdown";
+import { useState } from "react";
+import AIAssistantStatus from "@/components/dashboard/AIAssistantStatus";
 
 const TOPIC_TAGS = ["cloud", "cybersecurity", "web", "mobile", "ai-ml", "data", "devops", "open-source", "careers"];
 const PRODUCT_TAGS = ["android", "firebase", "flutter", "gemini", "chrome", "google-cloud"];
 
 export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, writeupStep, setWriteupStep, topicTags, setTopicTags, productTags, setProductTags, generateDraft, aiGenerating, generateAiCaptions, aiCaptioning, aiCaptionSuggestions, applyAiCaption, aiDrafted, aiSourceNotes, setAiSourceNotes, aiServiceConfigured }: any) {
+  const [aiServiceReady, setAiServiceReady] = useState(false);
   const toggleTag = (tag: string, selected: string[], setter: (next: string[]) => void) => {
     setter(selected.includes(tag) ? selected.filter((item) => item !== tag) : [...selected, tag]);
   };
@@ -16,7 +19,7 @@ export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, eve
       <div className="flex flex-wrap items-center justify-between gap-[12px]">
         <h2 className="font-display text-[clamp(42px,6vw,56px)] uppercase leading-none">{editingWriteup ? "Edit writeup" : "New writeup"}</h2>
       </div>
-      {!aiServiceConfigured && <p role="status" className="mt-[12px] border-[2px] border-ink bg-yellow p-[10px] text-[11px] font-bold leading-[1.5]">Gemini features will be available after the authenticated Cloud Run service is deployed and its URL is configured for this website.</p>}
+      <AIAssistantStatus apiUrl={process.env.NEXT_PUBLIC_WRITEUP_AI_API_URL || ""} configured={aiServiceConfigured} onReadyChange={setAiServiceReady} />
 
       <div data-testid="writeup-stepper" className="mt-[20px] grid grid-cols-3 border-[3px] border-ink">
         <button type="button" onClick={() => setWriteupStep(1)} aria-current={writeupStep === 1 ? "step" : undefined} className={`min-w-0 border-r-[3px] border-ink px-[6px] py-[10px] text-left text-[9px] font-bold uppercase leading-[1.3] break-words sm:px-[14px] sm:py-[13px] sm:text-[11px] ${writeupStep === 1 ? "bg-ink text-white" : "bg-white"}`}>1&nbsp; Add your notes</button>
@@ -54,7 +57,7 @@ export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, eve
                 <p className="text-[12px] font-bold uppercase">Photos, slides &amp; links</p>
                 <button type="button" onClick={() => setTab("Media")} className="mt-[7px] border-[3px] border-ink px-[14px] py-[12px] text-[11px] font-bold uppercase">Drop files here or browse ↗</button>
               </div>
-              <button type="button" onClick={generateAiCaptions} disabled={!aiServiceConfigured || !editingWriteup?.id || !aiConsent || aiPhotoIds.length === 0 || aiCaptioning} className="justify-self-start border-[3px] border-ink bg-yellow px-[16px] py-[12px] text-[11px] font-bold uppercase disabled:opacity-50">{aiCaptioning ? "Generating captions…" : "Generate selected photo captions"}</button>
+              <button type="button" onClick={generateAiCaptions} disabled={!aiServiceReady || !editingWriteup?.id || !aiConsent || aiPhotoIds.length === 0 || aiCaptioning} className="justify-self-start border-[3px] border-ink bg-yellow px-[16px] py-[12px] text-[11px] font-bold uppercase disabled:opacity-50">{aiCaptioning ? "Generating captions…" : "Generate selected photo captions"}</button>
             {!editingWriteup?.id && <p className="text-[10px] leading-[1.5]">Save the writeup as a draft before generating captions.</p>}
             {aiCaptionSuggestions.length > 0 && (
               <div className="grid gap-[10px] border-[3px] border-ink bg-white p-[12px]">
@@ -70,7 +73,7 @@ export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, eve
                 ))}
               </div>
             )}
-            <button type="button" onClick={generateDraft} disabled={aiGenerating || !aiServiceConfigured} className="justify-self-start border-[3px] border-ink bg-ink px-[16px] py-[12px] text-[11px] font-bold uppercase text-white disabled:opacity-50">{aiGenerating ? "Generating with Gemini…" : "Generate draft with Gemini"}</button>
+            <button type="button" onClick={generateDraft} disabled={aiGenerating || !aiServiceReady} className="justify-self-start border-[3px] border-ink bg-ink px-[16px] py-[12px] text-[11px] font-bold uppercase text-white disabled:opacity-50">{aiGenerating ? "Generating with Gemini…" : "Generate draft with Gemini"}</button>
             </>
           )}
         </div>
@@ -106,7 +109,7 @@ export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, eve
               <input type="checkbox" checked={aiConsent} onChange={(event) => setAiConsent(event.target.checked)} className="mt-[2px]" />
               <span>I confirm the people in the ticked photos have agreed.</span>
             </label>
-            <button type="button" onClick={generateDraft} disabled={aiGenerating} className="justify-self-start border-[3px] border-ink bg-ink px-[16px] py-[12px] text-[11px] font-bold uppercase text-white disabled:opacity-50">{aiGenerating ? "Generating with Gemini…" : "Generate draft with Gemini"}</button>
+            <button type="button" onClick={generateDraft} disabled={aiGenerating || !aiServiceReady} className="justify-self-start border-[3px] border-ink bg-ink px-[16px] py-[12px] text-[11px] font-bold uppercase text-white disabled:opacity-50">{aiGenerating ? "Generating with Gemini…" : "Generate draft with Gemini"}</button>
           </aside>
         ) : (
           <aside className="grid content-start gap-[14px] bg-[#fafafa] p-[18px] sm:p-[24px]">
