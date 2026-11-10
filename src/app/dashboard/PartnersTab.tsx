@@ -101,7 +101,7 @@ export default function PartnersTab() {
       const current = partners.find((p) => p.id === editingId);
       let finalLogoUrl = current?.logoUrl;
       if (logoFile) {
-        const { url } = await uploadToCloudinary(logoFile, (p) => setUploadProgress(p));
+        const { url } = await uploadToCloudinary(logoFile, (p) => setUploadProgress(p), "partner");
         finalLogoUrl = url;
       }
       const data: any = {
