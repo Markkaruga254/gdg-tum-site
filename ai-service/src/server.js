@@ -163,7 +163,8 @@ export function createApp({
       throw httpError(503, "Secure photo uploads are not configured. Ask an administrator to configure Cloudinary on the service.");
     }
     const canonical = Object.keys(parameters).sort().map((key) => `${key}=${parameters[key]}`).join("&");
-    return createHash("sha1").update(canonical + cloudinaryApiSecret).digest("hex");
+    // Cloudinary accepts SHA-256 signatures by default; use it instead of legacy SHA-1.
+    return createHash("sha256").update(canonical + cloudinaryApiSecret).digest("hex");
   }
 
   async function getCurrentUser(uid) {
