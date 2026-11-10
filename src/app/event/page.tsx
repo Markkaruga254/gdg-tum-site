@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
-import { getEventById, getWriteupById, getMediaByWriteup, type EventWithId, type TickerWithId, type WriteupWithId, type MediaWithId } from "@/lib/data";
+import { getEventById, getWriteupById, getWriteups, getMediaByWriteup, type EventWithId, type TickerWithId, type WriteupWithId, type MediaWithId } from "@/lib/data";
 import { trackName, trackTagColor } from "@/lib/tracks";
 
 function EventDetail() {
@@ -33,7 +33,11 @@ function EventDetail() {
         if (!active) return;
         setEvent(current);
         if (current) {
-          const relatedWriteup = current.writeupId ? await getWriteupById(current.writeupId) : null;
+          const linkedWriteup = current.writeupId ? await getWriteupById(current.writeupId) : null;
+          const relatedWriteup = linkedWriteup?.status === "published"
+            ? linkedWriteup
+            : (await getWriteups({ status: "published", eventId: current.id }))
+                .sort((a, b) => (b.publishedAt?.toMillis() ?? 0) - (a.publishedAt?.toMillis() ?? 0))[0] ?? null;
           if (!active) return;
           setWriteup(relatedWriteup);
           if (current.status === "live") {
