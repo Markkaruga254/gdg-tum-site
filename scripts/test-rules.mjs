@@ -204,7 +204,7 @@ const galleryDraft = {
   status: "draft",
   createdBy: "u-admin",
 };
-await expectAllowed(() => addDoc(collection(admin, "galleryPhotos"), galleryDraft), "admin creates a standalone gallery draft");
+await expectAllowed(() => setDoc(doc(admin, "galleryPhotos", "gallery-draft"), galleryDraft), "admin creates a standalone gallery draft");
 await expectDenied(() => getDocs(collection(anon, "galleryPhotos")), "anonymous cannot list gallery photos without a published filter", { clean: true });
 await expectDenied(() => getDoc(doc(anon, "galleryPhotos", "gallery-draft")), "anonymous cannot read a gallery draft", { clean: true });
 await expectDenied(() => addDoc(collection(leadCloud, "galleryPhotos"), { ...galleryDraft, createdBy: "u-lead-cloud" }), "track lead cannot create standalone gallery photos", { clean: true });
