@@ -95,7 +95,7 @@ export default function DashboardPage() {
   async function loadWriteups() {
     if (!uid) return;
     try {
-      const fetched = await getWriteups({ authorId: uid });
+      const fetched = role === "admin" ? await getWriteups() : await getWriteups({ authorId: uid });
       setWriteups(fetched as any[]);
     } catch {
       setWriteups([]);
@@ -216,8 +216,40 @@ export default function DashboardPage() {
   }
 
   async function publishWriteup(id: string) {
-    try { await updateDoc(doc(db, "writeups", id), { status: "published", publishedAt: serverTimestamp() }); setMsg("Published"); await loadWriteups(); }
-    catch (e: any) { setErr(e?.code === "permission-denied" ? "You can only publish writeups in your own track." : e?.message || "Failed"); }
+    setErr(""); setMsg("");
+    const target = writeups.find((item) => item.id === id);
+    if (!target) {
+      setErr("That writeup could not be found. Refresh the dashboard and try again.");
+      await loadWriteups();
+      return;
+    }
+    const errors = validateWriteupSchema({
+      eventId: target.eventId || "",
+      title: target.title || "",
+      summary: target.summary || "",
+      body: target.body || "",
+      attendance: target.attendance ?? "",
+      links: target.links || [],
+    }, true);
+    if (Object.keys(errors).length > 0) {
+      startEditWriteup(target);
+      setWfErrors(errors);
+      setErr("This writeup needs a few required details before it can be published. Review the highlighted fields.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateDoc(doc(db, "writeups", id), {
+        status: "published",
+        publishedAt: target.publishedAt ?? serverTimestamp(),
+      });
+      setMsg("Published");
+      await loadWriteups();
+    } catch (e: any) {
+      setErr(e?.code === "permission-denied" ? "You can only publish writeups you are allowed to manage." : e?.message || "Failed");
+    } finally {
+      setSaving(false);
+    }
   }
   async function unpublish(id: string) {
     try { await updateDoc(doc(db, "writeups", id), { status: "draft" }); setMsg("Unpublished"); await loadWriteups(); }
@@ -230,6 +262,7 @@ export default function DashboardPage() {
   }
   function startNewWriteup() {
     setEditingWriteup(null);
+    setWfErrors({});
     setWf({ eventId: "", title: "", summary: "", body: "", attendance: "", links: [{ title: "", url: "" }] });
     setMediaList([]);
     setAiConsent(false);
@@ -242,6 +275,7 @@ export default function DashboardPage() {
 
   function startEditWriteup(w: any) {
     setEditingWriteup(w);
+    setWfErrors({});
     setWriteupStep(1);
     setTab("New writeup");
     setWf({ eventId: w.eventId, title: w.title, summary: w.summary || "", body: w.body || "", attendance: w.attendance ?? "", links: w.links?.length ? w.links : [{ title: "", url: "" }] });
