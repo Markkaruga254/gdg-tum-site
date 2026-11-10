@@ -1,12 +1,25 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import {
   addDoc, collection, deleteDoc, doc, getDocs, orderBy, query, serverTimestamp, updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { uploadToCloudinary, destroyGalleryPhoto } from "@/lib/cloudinary";
 import { TRACKS } from "@/lib/tracks";
+
+type GalleryPhoto = {
+  id: string;
+  url: string;
+  publicId?: string;
+  caption: string;
+  altText: string;
+  trackId: string;
+  eventId?: string | null;
+  order?: number;
+  status: "draft" | "published";
+  createdAt?: { toMillis?: () => number };
+};
 
 type GalleryManagerTabProps = {
   events: Array<{ id: string; title: string; trackId: string }>;
@@ -16,7 +29,7 @@ type GalleryManagerTabProps = {
 };
 
 export default function GalleryManagerTab({ events, uid, setMsg, setErr }: GalleryManagerTabProps) {
-  const [photos, setPhotos] = useState<any[]>([]);
+  const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -26,12 +39,12 @@ export default function GalleryManagerTab({ events, uid, setMsg, setErr }: Galle
   const [eventId, setEventId] = useState("");
   const [order, setOrder] = useState("0");
 
-  async function loadPhotos() {
+  const loadPhotos = useCallback(async () => {
     setLoading(true);
     try {
       const snapshot = await getDocs(query(collection(db, "galleryPhotos"), orderBy("createdAt", "desc")));
-      const items = snapshot.docs.map((item) => ({ id: item.id, ...item.data() }));
-      items.sort((a: any, b: any) => Number(a.order ?? 0) - Number(b.order ?? 0)
+      const items = snapshot.docs.map((item) => ({ id: item.id, ...item.data() } as GalleryPhoto));
+      items.sort((a, b) => Number(a.order ?? 0) - Number(b.order ?? 0)
         || (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
       setPhotos(items);
     } catch (error: any) {
@@ -39,9 +52,9 @@ export default function GalleryManagerTab({ events, uid, setMsg, setErr }: Galle
     } finally {
       setLoading(false);
     }
-  }
+  }, [setErr]);
 
-  useEffect(() => { void loadPhotos(); }, []);
+  useEffect(() => { void loadPhotos(); }, [loadPhotos]);
 
   async function upload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -142,7 +155,7 @@ export default function GalleryManagerTab({ events, uid, setMsg, setErr }: Galle
         <h3 className="font-display text-2xl uppercase">Manage photos ({photos.length})</h3>
         {loading ? <p className="py-4 text-sm">Loading gallery photos…</p> : photos.length === 0 ? <p className="py-4 text-sm">No standalone gallery photos yet.</p> : (
           <div className="mt-3 grid gap-3">
-            {photos.map((photo: any) => (
+            {photos.map((photo) => (
               <article key={photo.id} className="grid gap-3 border-[3px] border-ink p-3 sm:grid-cols-[150px_minmax(0,1fr)]">
                 <img src={photo.url} alt={photo.altText || ""} className="h-36 w-full object-cover sm:w-[150px]" />
                 <div className="min-w-0">
