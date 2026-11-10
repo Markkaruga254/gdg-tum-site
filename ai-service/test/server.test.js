@@ -5,8 +5,8 @@ import { createServer } from "node:http";
 import { createApp } from "../src/server.js";
 import { generateWithRetry } from "../src/gemini-retry.js";
 
-function fixture({ role = "lead", track = "cloud", eventTrack = "cloud", writeup = null, mediaRecords = {}, tokenValid = true, fetchImpl = fetch } = {}) {
-  const users = { "lead-1": { role, track } };
+function fixture({ role = "lead", track = "cloud", eventTrack = "cloud", writeup = null, mediaRecords = {}, tokenValid = true, fetchImpl = fetch, actorUid = "lead-1", additionalUsers = {} } = {}) {
+  const users = { [actorUid]: { role, track }, ...additionalUsers };
   const events = { "event-1": { title: "Cloud fundamentals", trackId: eventTrack, venue: "Online", description: "Introductory session" } };
   const writeups = writeup ? { "writeup-1": writeup } : {};
   const media = mediaRecords;
@@ -44,7 +44,7 @@ function fixture({ role = "lead", track = "cloud", eventTrack = "cloud", writeup
   const auth = {
     async verifyIdToken(token) {
       if (!tokenValid || token !== "valid-token") throw new Error("invalid");
-      return { uid: "lead-1" };
+      return { uid: actorUid };
     },
   };
   const genAI = {
@@ -89,6 +89,51 @@ test("allows a signed-in lead to request a profile upload signature", async () =
     assert.match(payload.signature, /^[a-f0-9]{64}$/);
     const canonical = `public_id=${payload.publicId}&timestamp=${payload.timestamp}test-secret`;
     assert.equal(payload.signature, createHash("sha256").update(canonical).digest("hex"));
+  });
+});
+
+test("allows an admin to request a profile upload signature scoped to an existing track lead", async () => {
+  const { app } = fixture({
+    role: "admin",
+    actorUid: "admin-1",
+    additionalUsers: { "lead-2": { role: "lead", track: "web" } },
+  });
+  await withServer(app, async (base) => {
+    const response = await fetch(`${base}/v1/cloudinary/sign-upload`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ purpose: "profile", targetUserId: "lead-2" }),
+    });
+    assert.equal(response.status, 200);
+    assert.match((await response.json()).publicId, /^gdg-tum\/profiles\/lead-2\//);
+  });
+});
+
+test("prevents a track lead from requesting a profile upload for another user", async () => {
+  const { app } = fixture({ additionalUsers: { "lead-2": { role: "lead", track: "web" } } });
+  await withServer(app, async (base) => {
+    const response = await fetch(`${base}/v1/cloudinary/sign-upload`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ purpose: "profile", targetUserId: "lead-2" }),
+    });
+    assert.equal(response.status, 403);
+  });
+});
+
+test("prevents admins from targeting profiles that are not track leads", async () => {
+  const { app } = fixture({
+    role: "admin",
+    actorUid: "admin-1",
+    additionalUsers: { "member-1": { role: "member", track: null } },
+  });
+  await withServer(app, async (base) => {
+    const response = await fetch(`${base}/v1/cloudinary/sign-upload`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ purpose: "profile", targetUserId: "member-1" }),
+    });
+    assert.equal(response.status, 400);
   });
 });
 
