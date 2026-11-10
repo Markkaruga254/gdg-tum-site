@@ -14,6 +14,39 @@ function dateLabel(value: EventWithId["date"]) {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
+function TrackLeadPortrait({ lead, trackName }: { lead: AppUserWithId; trackName: string }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const initials = lead.name.split(" ").map((part) => part[0]).join("").slice(0, 2);
+
+  return (
+    <a
+      href={`/lead?id=${encodeURIComponent(lead.id)}`}
+      className="flex min-w-0 items-center gap-[12px] border-[3px] border-ink bg-white p-[8px] text-ink"
+    >
+      <span className="relative flex h-[72px] w-[72px] shrink-0 items-center justify-center overflow-hidden bg-[#f1f1f1]">
+        {lead.photoUrl && !imageFailed ? (
+          <img
+            src={lead.photoUrl}
+            alt={lead.name}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          <span aria-hidden="true" className="font-display text-[24px] uppercase">{initials}</span>
+        )}
+      </span>
+      <span className="min-w-0">
+        <span className="block text-[12px] font-bold uppercase">{lead.name}</span>
+        <span className="mt-[4px] block text-[10px] font-bold uppercase text-[#555]">
+          {lead.leadershipTitle || `${trackName} Track Lead`}
+        </span>
+        <span className="mt-[7px] block text-[10px] font-bold uppercase underline underline-offset-2">View profile ↗</span>
+      </span>
+    </a>
+  );
+}
+
 function View() {
   const params = useSearchParams();
   const slug = params.get("slug");
@@ -74,9 +107,9 @@ function View() {
         <header className="border-b-[3px] border-ink px-[26px] py-[34px]" style={{ backgroundColor: TRACK_BG_COLORS[track.slug], color: darkText ? "#111" : "#fff" }}>
           <h1 className="font-display text-[clamp(60px,9vw,120px)] uppercase leading-none">{track.name}</h1>
           <p className="mt-[14px] max-w-[600px] text-[17px] leading-[1.5]">{track.description}</p>
-          <div className="mt-[18px] flex flex-wrap gap-[10px]">
+          <div className="mt-[22px] flex flex-wrap gap-[12px]">
             {leads.length > 0 ? leads.map((lead) => (
-              <a key={lead.id} href={`/lead?id=${lead.id}`} className="border-[3px] border-ink bg-white px-[20px] py-[12px] text-[12px] font-bold uppercase text-ink">{lead.name} ↗</a>
+              <TrackLeadPortrait key={lead.id} lead={lead} trackName={track.name} />
             )) : <span className="text-[12px] font-bold uppercase">Lead: To be announced</span>}
           </div>
         </header>
