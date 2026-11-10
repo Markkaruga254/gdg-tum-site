@@ -133,6 +133,33 @@ service cloud.firestore {
       allow delete: if isSignedIn() && canManageMedia(resource.data.writeupId);
     }
 
+    match /galleryPhotos/{id} {
+      allow read: if resource.data.get("status", "") == "published" || isAdmin();
+      allow create: if isAdmin()
+        && request.resource.data.get("createdBy", "") == request.auth.uid
+        && request.resource.data.get("status", "") in ["draft", "published"]
+        && request.resource.data.get("trackId", "") in ["cloud", "cybersecurity", "web", "women-in-tech", "ai-ml", "mobile", "hackathons-solutions"]
+        && request.resource.data.get("url", "").matches("^https://res\\.cloudinary\\.com/.+")
+        && request.resource.data.get("publicId", "").matches("^gdg-tum/gallery/.+")
+        && request.resource.data.get("caption", "") is string
+        && request.resource.data.get("caption", "").size() <= 160
+        && request.resource.data.get("altText", "") is string
+        && request.resource.data.get("altText", "").size() <= 250
+        && request.resource.data.get("order", 0) is int;
+      allow update: if isAdmin()
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.url == resource.data.url
+        && request.resource.data.publicId == resource.data.publicId
+        && request.resource.data.get("status", "") in ["draft", "published"]
+        && request.resource.data.get("trackId", "") in ["cloud", "cybersecurity", "web", "women-in-tech", "ai-ml", "mobile", "hackathons-solutions"]
+        && request.resource.data.get("caption", "") is string
+        && request.resource.data.get("caption", "").size() <= 160
+        && request.resource.data.get("altText", "") is string
+        && request.resource.data.get("altText", "").size() <= 250
+        && request.resource.data.get("order", 0) is int;
+      allow delete: if isAdmin();
+    }
+
     match /partners/{id} {
       allow read: if true;
       allow write: if isAdmin();
