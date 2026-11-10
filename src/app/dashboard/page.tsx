@@ -22,6 +22,7 @@ import LiveTickerTab from "./LiveTickerTab";
 import MyProfileTab from "./MyProfileTab";
 import { getUserById, getEvents, getWriteups, getMediaByWriteup } from "@/lib/data";
 import type { TrackSlug } from "@/lib/types";
+import { generatePhotoCaptions, generateWriteupDraft } from "@/lib/writeup-ai";
 
 const TABS = ["Overview","New writeup","My events","Media","Live ticker","My profile","Partners"];
 
@@ -52,6 +53,11 @@ export default function DashboardPage() {
   const [writeupStep, setWriteupStep] = useState(1);
   const [aiConsent, setAiConsent] = useState(false);
   const [aiPhotoIds, setAiPhotoIds] = useState<string[]>([]);
+  const [aiDrafted, setAiDrafted] = useState(false);
+  const [aiSourceNotes, setAiSourceNotes] = useState("");
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiCaptioning, setAiCaptioning] = useState(false);
+  const [aiCaptionSuggestions, setAiCaptionSuggestions] = useState<any[]>([]);
   const [topicTags, setTopicTags] = useState<string[]>([]);
   const [productTags, setProductTags] = useState<string[]>([]);
 
@@ -163,6 +169,71 @@ export default function DashboardPage() {
     setEventForm({ title: ev.title, date: local, venue: ev.venue, description: ev.description ?? "", status: ev.status, attendance: ev.attendance ?? "", trackId: ev.trackId });
   }
 
+  async function generateDraft() {
+    setErr(""); setMsg("");
+    if (!wf.eventId) { setErr("Choose an event before generating a draft."); return; }
+    const sourceNotes = aiSourceNotes.trim() || wf.body;
+    if (sourceNotes.trim().length < 20) { setErr("Add at least 20 characters of facilitator notes before generating a draft."); return; }
+    setAiGenerating(true);
+    try {
+      const draft = await generateWriteupDraft({
+        eventId: wf.eventId,
+        ...(editingWriteup?.id ? { writeupId: editingWriteup.id } : {}),
+        notes: sourceNotes,
+      });
+      setWf((current) => ({ ...current, title: draft.title, summary: draft.summary, body: draft.body }));
+      setTopicTags(draft.topicTags);
+      setProductTags(draft.productTags);
+      setAiSourceNotes(sourceNotes);
+      setAiDrafted(true);
+      setWriteupStep(3);
+      setMsg("AI draft generated. Review every detail before saving or publishing.");
+    } catch (error: any) {
+      setErr(error?.message || "AI draft generation failed.");
+    } finally {
+      setAiGenerating(false);
+    }
+  }
+
+  async function generateAiCaptions() {
+    setErr(""); setMsg("");
+    if (!editingWriteup?.id) { setErr("Save this writeup as a draft before generating photo captions."); return; }
+    if (!aiConsent) { setErr("Confirm photo consent before sending images for AI captioning."); return; }
+    if (aiPhotoIds.length === 0) { setErr("Select at least one photo to caption."); return; }
+    setAiCaptioning(true);
+    try {
+      const suggestions = await generatePhotoCaptions({
+        writeupId: editingWriteup.id,
+        mediaIds: aiPhotoIds,
+        consentConfirmed: true,
+      });
+      setAiCaptionSuggestions(suggestions);
+      setMsg(`Generated ${suggestions.length} photo caption suggestion(s). Review and apply them individually.`);
+    } catch (error: any) {
+      setErr(error?.message || "Photo caption generation failed.");
+    } finally {
+      setAiCaptioning(false);
+    }
+  }
+
+  async function applyAiCaption(suggestion: any) {
+    setErr(""); setMsg("");
+    if (!editingWriteup?.id || !suggestion?.mediaId) return;
+    try {
+      await updateDoc(doc(db, "media", suggestion.mediaId), {
+        caption: suggestion.caption,
+        altText: suggestion.altText,
+        captionSource: "ai",
+        aiCaptionedAt: serverTimestamp(),
+      });
+      setAiCaptionSuggestions((current) => current.filter((item) => item.mediaId !== suggestion.mediaId));
+      await loadMedia(editingWriteup.id);
+      setMsg("AI caption and alt text applied. You can still edit them in Media.");
+    } catch (error: any) {
+      setErr(error?.message || "Could not apply the AI caption.");
+    }
+  }
+
   function validateWriteup(publish: boolean) {
     const errors = validateWriteupSchema(wf, publish);
     setWfErrors(errors);
@@ -183,7 +254,7 @@ export default function DashboardPage() {
         attendance: wf.attendance ? Number(wf.attendance) : null,
         links: wf.links.filter((l: any) => l.url),
         tags: { topics: topicTags, products: productTags },
-        aiDrafted: editingWriteup?.aiDrafted ?? false,
+        aiDrafted,
       };
       if (publish) {
         data.status = "published";
@@ -267,6 +338,9 @@ export default function DashboardPage() {
     setMediaList([]);
     setAiConsent(false);
     setAiPhotoIds([]);
+    setAiDrafted(false);
+    setAiSourceNotes("");
+    setAiCaptionSuggestions([]);
     setTopicTags([]);
     setProductTags([]);
     setWriteupStep(1);
@@ -281,6 +355,9 @@ export default function DashboardPage() {
     setWf({ eventId: w.eventId, title: w.title, summary: w.summary || "", body: w.body || "", attendance: w.attendance ?? "", links: w.links?.length ? w.links : [{ title: "", url: "" }] });
     setAiConsent(false);
     setAiPhotoIds([]);
+    setAiDrafted(Boolean(w.aiDrafted));
+    setAiSourceNotes("");
+    setAiCaptionSuggestions([]);
     setTopicTags(w.tags?.topics || []);
     setProductTags(w.tags?.products || []);
     loadMedia(w.id);
@@ -318,7 +395,7 @@ export default function DashboardPage() {
 
           {tab === "My events" && <MyEventsTab events={events} role={role} eventForm={eventForm} setEventForm={setEventForm} eventErrors={eventErrors} saveEvent={saveEvent} saving={saving} editingEvent={editingEvent} setEditingEvent={setEditingEvent} startEditEvent={startEditEvent} cancelEvent={cancelEvent} deleteEvent={deleteEvent} />}
 
-          {tab === "New writeup" && <NewWriteupTab editingWriteup={editingWriteup} wf={wf} setWf={setWf} wfErrors={wfErrors} events={events} saveWriteup={saveWriteup} saving={saving} mediaList={mediaList} aiPhotoIds={aiPhotoIds} setAiPhotoIds={setAiPhotoIds} aiConsent={aiConsent} setAiConsent={setAiConsent} setTab={setTab} writeupStep={writeupStep} setWriteupStep={setWriteupStep} topicTags={topicTags} setTopicTags={setTopicTags} productTags={productTags} setProductTags={setProductTags} />}
+          {tab === "New writeup" && <NewWriteupTab editingWriteup={editingWriteup} wf={wf} setWf={setWf} wfErrors={wfErrors} events={events} saveWriteup={saveWriteup} saving={saving} mediaList={mediaList} aiPhotoIds={aiPhotoIds} setAiPhotoIds={setAiPhotoIds} aiConsent={aiConsent} setAiConsent={setAiConsent} setTab={setTab} writeupStep={writeupStep} setWriteupStep={setWriteupStep} topicTags={topicTags} setTopicTags={setTopicTags} productTags={productTags} setProductTags={setProductTags} generateDraft={generateDraft} aiGenerating={aiGenerating} generateAiCaptions={generateAiCaptions} aiCaptioning={aiCaptioning} aiCaptionSuggestions={aiCaptionSuggestions} applyAiCaption={applyAiCaption} aiDrafted={aiDrafted} />}
 
           {tab === "Media" && <MediaTab mediaList={mediaList} mediaUploading={mediaUploading} mediaUploadProgress={mediaUploadProgress} editingWriteup={editingWriteup} uid={uid} role={role} track={track} setMsg={setMsg} setErr={setErr} loadMedia={loadMedia} setMediaUploading={setMediaUploading} setMediaUploadProgress={setMediaUploadProgress} />}
 
