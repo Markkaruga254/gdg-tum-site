@@ -41,7 +41,7 @@ type PhotoCardProps = {
   caption: string;
   altText?: string;
   trackId: TrackSlug;
-  writeupId: string;
+  writeupId?: string;
   href?: string;
   featured?: boolean;
   tagColor?: "blue" | "red" | "green" | "yellow" | "ink";
@@ -54,13 +54,13 @@ export default function PhotoCard({
   altText,
   trackId,
   writeupId,
-  href = `/writeup?id=${writeupId}`,
+  href,
   featured = false,
   tagColor,
   bg = TRACK_BG_COLORS[trackId],
 }: PhotoCardProps) {
   return (
-    <a href={href} className={`flex h-full flex-col border-[3px] border-ink bg-white ${featured ? "min-h-[440px]" : "min-h-[300px]"}`}>
+    <a href={href || (writeupId ? `/writeup?id=${writeupId}` : url)} className={`flex h-full flex-col border-[3px] border-ink bg-white ${featured ? "min-h-[440px]" : "min-h-[300px]"}`}>
       <PhotoImage
         url={url}
         altText={altText || caption}

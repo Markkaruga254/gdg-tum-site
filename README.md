@@ -49,8 +49,8 @@ Every push to `main` triggers the production deployment automatically, but only 
 ## First admin bootstrap
 Edit the user's role to "admin" in the Firestore console under users/{uid}.
 
-## Cloudinary unsigned preset
-Set NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME and NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET in .env.local. Create an unsigned upload preset in Cloudinary.
+## Cloudinary signed uploads
+Set `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` in the website build environment and configure `NEXT_PUBLIC_WRITEUP_AI_API_URL` to point to the authenticated media/AI service. On that service, configure `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`; keep the API secret in the hosting provider's encrypted secret store. The browser requests a signed upload after Firebase authentication. Do not create or use an unsigned upload preset for this application.
 
 ## Manual rules test checklist
 - Member cannot write events.

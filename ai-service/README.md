@@ -24,6 +24,8 @@ Cloud Run must allow public HTTP invocation so a browser can reach the service d
    export GEMINI_API_KEY=your-development-gemini-key
    export ALLOWED_ORIGINS=http://localhost:3000,https://gdg-tum-site.web.app
    export CLOUDINARY_CLOUD_NAME=your-cloudinary-cloud-name
+    export CLOUDINARY_API_KEY=your-cloudinary-api-key
+    export CLOUDINARY_API_SECRET=your-cloudinary-api-secret
    npm test
    npm start
    ```
@@ -57,12 +59,17 @@ Create the Gemini secret interactively so the key is not stored in shell history
 ```sh
 gcloud secrets create gdg-tum-gemini-api-key --replication-policy=automatic
 gcloud secrets versions add gdg-tum-gemini-api-key --data-file=-
+gcloud secrets create gdg-tum-cloudinary-api-secret --replication-policy=automatic
+gcloud secrets versions add gdg-tum-cloudinary-api-secret --data-file=-
 ```
 
-Paste the Gemini API key into the hidden terminal input and press Ctrl+D. Grant the runtime identity access to this one secret:
+Paste the Gemini API key into the hidden terminal input and press Ctrl+D, then paste the Cloudinary API secret into its hidden terminal input and press Ctrl+D. Grant the runtime identity access to both secrets:
 
 ```sh
 gcloud secrets add-iam-policy-binding gdg-tum-gemini-api-key \
+  --member="serviceAccount:gdg-writeup-ai@YOUR_GDG_TUM_PROJECT_ID.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+gcloud secrets add-iam-policy-binding gdg-tum-cloudinary-api-secret \
   --member="serviceAccount:gdg-writeup-ai@YOUR_GDG_TUM_PROJECT_ID.iam.gserviceaccount.com" \
   --role="roles/secretmanager.secretAccessor"
 ```
@@ -75,8 +82,8 @@ gcloud run deploy gdg-tum-writeup-ai \
   --region YOUR_CLOUD_RUN_REGION \
   --service-account gdg-writeup-ai@YOUR_GDG_TUM_PROJECT_ID.iam.gserviceaccount.com \
   --allow-unauthenticated \
-  --set-env-vars "GOOGLE_CLOUD_PROJECT=YOUR_GDG_TUM_PROJECT_ID,ALLOWED_ORIGINS=https://gdg-tum-site.web.app\,https://gdg-tum-site.firebaseapp.com,CLOUDINARY_CLOUD_NAME=YOUR_CLOUDINARY_CLOUD_NAME,GEMINI_MODEL=gemini-3.8-flash" \
-  --set-secrets "GEMINI_API_KEY=gdg-tum-gemini-api-key:1" \
+  --set-env-vars "GOOGLE_CLOUD_PROJECT=YOUR_GDG_TUM_PROJECT_ID,ALLOWED_ORIGINS=https://gdg-tum-site.web.app\,https://gdg-tum-site.firebaseapp.com,CLOUDINARY_CLOUD_NAME=YOUR_CLOUDINARY_CLOUD_NAME,CLOUDINARY_API_KEY=YOUR_CLOUDINARY_API_KEY,GEMINI_MODEL=gemini-3.8-flash" \
+  --set-secrets "GEMINI_API_KEY=gdg-tum-gemini-api-key:1,CLOUDINARY_API_SECRET=gdg-tum-cloudinary-api-secret:1" \
   --memory 512Mi --cpu 1 --min 0 --max 3 --concurrency 10 --timeout 60
 ```
 
@@ -88,6 +95,8 @@ After deployment, copy the Cloud Run service URL into the website's GitHub produ
 
 - `GET /healthz` — liveness check.
 - `POST /v1/writeups/draft` — JSON body: `{ "eventId": "...", "writeupId": "optional-existing-id", "notes": "facilitator notes" }`. Returns an editable title, <=40-word summary, Markdown body, and allow-listed topic/product tags.
+- `POST /v1/cloudinary/sign-upload` — authenticated JSON body with purpose `profile`, `writeup`, `partner`, or `gallery`; returns a signed upload payload. Gallery and partner signatures are admin-only.
+- `POST /v1/cloudinary/destroy-gallery-photo` — admin-only JSON body with a `publicId` in `gdg-tum/gallery/`; destroys only images in the dedicated gallery folder.
 - `POST /v1/media/captions` — JSON body: `{ "writeupId": "...", "mediaIds": ["..."], "consentConfirmed": true }`. Returns suggested captions and alt text for up to four selected photos. Suggestions are not saved automatically.
 
 All `/v1` endpoints require a Firebase ID token. Requests are limited to 20 draft generations and 20 caption batches per user per hour. Image captioning has a 5 MB per-image limit.
@@ -108,9 +117,11 @@ Set these environment variables in the Render service:
 - `NODE_ENV=production`
 - `GOOGLE_CLOUD_PROJECT=gdg-tum-site`
 - `GEMINI_API_KEY` — secret; add it through the Render Dashboard, never Git.
+- `CLOUDINARY_API_KEY` — server-side Cloudinary API key.
+- `CLOUDINARY_API_SECRET` — secret; add it through the Render Dashboard, never Git.
 - `FIREBASE_SERVICE_ACCOUNT` — secret containing the complete dedicated service-account JSON; add it through the Render Dashboard, never Git.
 - `ALLOWED_ORIGINS=https://gdg-tum-site.web.app,https://gdg-tum-site.firebaseapp.com`
-- `CLOUDINARY_CLOUD_NAME` — use the same cloud name as the website's `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` build variable.
+- `CLOUDINARY_CLOUD_NAME` — use the same cloud name as the website `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME` build variable.
 - `GEMINI_MODEL=gemini-3.8-flash`
 
 For Render, create a dedicated Google service account (for example, `gdg-writeup-ai-render`). Avoid granting `roles/datastore.user`: that predefined role allows broad Firestore data read/write access, including deletion.
@@ -122,7 +133,7 @@ Create a project-level custom role named **GDG Writeup AI Firestore Data Access*
 - `datastore.entities.get`
 - `datastore.entities.update`
 
-The service uses direct document reads and transaction create/update operations; it does not need Firestore collection queries or document deletion. Assign this custom role to the dedicated service account. Also assign `roles/firebaseauth.viewer` so Firebase Admin can look up user records when checking revoked ID tokens.
+The service uses direct document reads and transaction create/update operations; it does not need Firestore collection queries or document deletion. It also signs browser uploads after verifying Firebase ID tokens. Gallery and partner upload signatures and gallery asset deletion are admin-only; profile uploads are available to signed-in users and writeup uploads to leads/admins. Assign this custom role to the dedicated service account. Also assign `roles/firebaseauth.viewer` so Firebase Admin can look up user records when checking revoked ID tokens.
 
 Firestore IAM is project-scoped here, so the custom role can still access documents by known ID across the project. The service's server-side role, track, author, event, and media ownership checks remain essential; Firebase Admin SDK requests bypass Firestore Security Rules.
 

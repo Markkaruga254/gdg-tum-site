@@ -1,4 +1,5 @@
 import test from "node:test";
+import { createHash } from "node:crypto";
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
 import { createApp } from "../src/server.js";
@@ -60,7 +61,7 @@ function fixture({ role = "lead", track = "cloud", eventTrack = "cloud", writeup
       },
     },
   };
-  return { app: createApp({ auth, db, genAI, allowedOrigins: ["https://gdg-tum-site.web.app"], cloudinaryCloudName: "gdgtum", fetchImpl }), usage };
+  return { app: createApp({ auth, db, genAI, allowedOrigins: ["https://gdg-tum-site.web.app"], cloudinaryCloudName: "gdgtum", cloudinaryApiKey: "test-api-key", cloudinaryApiSecret: "test-secret", fetchImpl }), usage };
 }
 
 async function withServer(app, callback) {
@@ -70,6 +71,88 @@ async function withServer(app, callback) {
   try { await callback(`http://127.0.0.1:${address.port}`); }
   finally { await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve())); }
 }
+
+test("allows a signed-in lead to request a profile upload signature", async () => {
+  const { app } = fixture();
+  await withServer(app, async (base) => {
+    const response = await fetch(`${base}/v1/cloudinary/sign-upload`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ purpose: "profile" }),
+    });
+    assert.equal(response.status, 200);
+    const payload = await response.json();
+    assert.equal(payload.cloudName, "gdgtum");
+    assert.equal(payload.apiKey, "test-api-key");
+    assert.match(payload.publicId, /^gdg-tum\/profiles\/lead-1\//);
+    assert.equal(typeof payload.timestamp, "number");
+    assert.match(payload.signature, /^[a-f0-9]{64}$/);
+    const canonical = `public_id=${payload.publicId}&timestamp=${payload.timestamp}test-secret`;
+    assert.equal(payload.signature, createHash("sha256").update(canonical).digest("hex"));
+  });
+});
+
+test("prevents track leads from requesting standalone gallery upload signatures", async () => {
+  const { app } = fixture();
+  await withServer(app, async (base) => {
+    const response = await fetch(`${base}/v1/cloudinary/sign-upload`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ purpose: "gallery" }),
+    });
+    assert.equal(response.status, 403);
+  });
+});
+
+test("allows only admins to sign and destroy standalone gallery photos", async () => {
+  const { app } = fixture({
+    role: "admin",
+    fetchImpl: async (_url, options) => {
+      assert.equal(options.method, "POST");
+      return new Response(JSON.stringify({ result: "ok" }), { status: 200, headers: { "content-type": "application/json" } });
+    },
+  });
+  await withServer(app, async (base) => {
+    const signed = await fetch(`${base}/v1/cloudinary/sign-upload`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ purpose: "gallery" }),
+    });
+    assert.equal(signed.status, 200);
+    assert.match((await signed.json()).publicId, /^gdg-tum\/gallery\//);
+    const removed = await fetch(`${base}/v1/cloudinary/destroy-gallery-photo`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ publicId: "gdg-tum/gallery/session-1" }),
+    });
+    assert.equal(removed.status, 200);
+    assert.deepEqual(await removed.json(), { result: "ok" });
+  });
+});
+
+test("prevents track leads from destroying standalone gallery assets", async () => {
+  const { app } = fixture();
+  await withServer(app, async (base) => {
+    const response = await fetch(`${base}/v1/cloudinary/destroy-gallery-photo`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ publicId: "gdg-tum/gallery/session-1" }),
+    });
+    assert.equal(response.status, 403);
+  });
+});
+
+test("rejects gallery deletion outside the dedicated gallery folder", async () => {
+  const { app } = fixture({ role: "admin" });
+  await withServer(app, async (base) => {
+    const response = await fetch(`${base}/v1/cloudinary/destroy-gallery-photo`, {
+      method: "POST",
+      headers: { authorization: "Bearer valid-token", "content-type": "application/json" },
+      body: JSON.stringify({ publicId: "gdg-tum/profiles/lead-1/photo" }),
+    });
+    assert.equal(response.status, 400);
+  });
+});
 
 test("exposes a lightweight public health check", async () => {
   const { app } = fixture();

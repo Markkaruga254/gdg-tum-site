@@ -8,10 +8,12 @@ export interface Photo {
   url: string;
   caption: string;
   altText: string;
-  writeupId: string;
-  writeupTitle: string;
+  writeupId?: string;
+  writeupTitle?: string;
+  eventId?: string;
   trackId: TrackSlug;
   publishedAt: unknown;
+  order?: number;
 }
 
 export interface GalleryPage {
@@ -87,4 +89,28 @@ export async function getGalleryPage({
     overflowPhotos: allPhotos.slice(size),
     nextCursor,
   };
+}
+
+export async function getPublishedGalleryPhotos(trackId?: TrackSlug): Promise<Photo[]> {
+  const q = query(
+    collection(db, "galleryPhotos"),
+    where("status", "==", "published"),
+    orderBy("createdAt", "desc"),
+    limit(200),
+  );
+  const snapshot = await getDocs(q);
+  const photos = snapshot.docs.map((item) => {
+    const data = item.data();
+    return {
+      mediaId: item.id,
+      url: cloudThumb(String(data.url || ""), 600),
+      caption: String(data.caption || ""),
+      altText: String(data.altText || data.caption || ""),
+      trackId: data.trackId as TrackSlug,
+      eventId: typeof data.eventId === "string" ? data.eventId : undefined,
+      publishedAt: data.publishedAt ?? data.createdAt,
+      order: typeof data.order === "number" ? data.order : 0,
+    };
+  }).filter((photo) => !trackId || photo.trackId === trackId);
+  return photos.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 }

@@ -20,11 +20,12 @@ import NewWriteupTab from "./NewWriteupTab";
 import MediaTab from "./MediaTab";
 import LiveTickerTab from "./LiveTickerTab";
 import MyProfileTab from "./MyProfileTab";
+import GalleryManagerTab from "./GalleryManagerTab";
 import { getUserById, getEvents, getWriteups, getMediaByWriteup } from "@/lib/data";
 import type { TrackSlug } from "@/lib/types";
 import { generatePhotoCaptions, generateWriteupDraft } from "@/lib/writeup-ai";
 
-const TABS = ["Overview","New writeup","My events","Media","Live ticker","My profile","Partners"];
+const TABS = ["Overview","New writeup","My events","Media","Gallery","Live ticker","My profile","Partners"];
 
 export default function DashboardPage() {
   const [allowed, setAllowed] = useState<boolean | null>(null);
@@ -399,7 +400,7 @@ export default function DashboardPage() {
       <div data-testid="dashboard-layout" className="mx-auto grid max-w-[1280px] grid-cols-1 border-x-[3px] md:grid-cols-[minmax(180px,230px)_minmax(0,1fr)] border-ink">
         <aside data-testid="dashboard-sidebar" className="min-w-0 border-b-[3px] border-ink md:border-b-0 md:border-r-[3px]">
             {(TABS.filter((t) => {
-              if (t === "Partners") return role === "admin";
+              if (t === "Partners" || t === "Gallery") return role === "admin";
               if (t === "Live ticker") return role === "admin" || role === "lead";
               return true;
             })).map((t) => (
@@ -417,6 +418,8 @@ export default function DashboardPage() {
           {tab === "New writeup" && <NewWriteupTab editingWriteup={editingWriteup} wf={wf} setWf={setWf} wfErrors={wfErrors} events={events} saveWriteup={saveWriteup} saving={saving} mediaList={mediaList} aiPhotoIds={aiPhotoIds} setAiPhotoIds={setAiPhotoIds} aiConsent={aiConsent} setAiConsent={setAiConsent} setTab={setTab} writeupStep={writeupStep} setWriteupStep={setWriteupStep} topicTags={topicTags} setTopicTags={setTopicTags} productTags={productTags} setProductTags={setProductTags} generateDraft={generateDraft} aiGenerating={aiGenerating} generateAiCaptions={generateAiCaptions} aiCaptioning={aiCaptioning} aiCaptionSuggestions={aiCaptionSuggestions} applyAiCaption={applyAiCaption} aiDrafted={aiDrafted} aiSourceNotes={aiSourceNotes} setAiSourceNotes={setAiSourceNotes} aiServiceConfigured={aiServiceConfigured} />}
 
           {tab === "Media" && <MediaTab mediaList={mediaList} mediaUploading={mediaUploading} mediaUploadProgress={mediaUploadProgress} editingWriteup={editingWriteup} uid={uid} role={role} track={track} setMsg={setMsg} setErr={setErr} loadMedia={loadMedia} setMediaUploading={setMediaUploading} setMediaUploadProgress={setMediaUploadProgress} />}
+
+          {tab === "Gallery" && role === "admin" && <GalleryManagerTab events={events} uid={uid} setMsg={setMsg} setErr={setErr} />}
 
           {tab === "Live ticker" && <LiveTickerTab uid={uid} role={role} events={events} track={track} setMsg={setMsg} setErr={setErr} />}
 

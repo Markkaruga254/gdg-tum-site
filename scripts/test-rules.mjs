@@ -191,6 +191,32 @@ await expectDenied(() => addDoc(collection(leadCloud, "media"), { writeupId: "w-
 await expectDenied(() => updateDoc(doc(leadWeb, "media", "m-draft"), { caption: "vandal" }), "web lead cannot caption cloud lead's draft media", { clean: true });
 await expectDenied(() => deleteDoc(doc(member, "media", "m-published")), "member cannot delete media");
 
+// ---- galleryPhotos --------------------------------------------------------
+section("galleryPhotos — published photos public; all management admin-only");
+const galleryDraft = {
+  url: "https://res.cloudinary.com/gdgtum/image/upload/gdg-tum/gallery/draft.jpg",
+  publicId: "gdg-tum/gallery/draft",
+  caption: "Cloud workshop",
+  altText: "Participants working together at a cloud workshop",
+  trackId: "cloud",
+  eventId: null,
+  order: 0,
+  status: "draft",
+  createdBy: "u-admin",
+};
+await expectAllowed(() => setDoc(doc(admin, "galleryPhotos", "gallery-draft"), galleryDraft), "admin creates a standalone gallery draft");
+await expectDenied(() => getDocs(collection(anon, "galleryPhotos")), "anonymous cannot list gallery photos without a published filter", { clean: true });
+await expectDenied(() => getDoc(doc(anon, "galleryPhotos", "gallery-draft")), "anonymous cannot read a gallery draft", { clean: true });
+await expectDenied(() => addDoc(collection(leadCloud, "galleryPhotos"), { ...galleryDraft, createdBy: "u-lead-cloud" }), "track lead cannot create standalone gallery photos", { clean: true });
+await expectDenied(() => addDoc(collection(member, "galleryPhotos"), { ...galleryDraft, createdBy: "u-member" }), "member cannot create standalone gallery photos", { clean: true });
+await expectDenied(() => updateDoc(doc(leadCloud, "galleryPhotos", "gallery-draft"), { caption: "unauthorized" }), "track lead cannot edit gallery photos", { clean: true });
+await expectDenied(() => deleteDoc(doc(member, "galleryPhotos", "gallery-draft")), "member cannot delete gallery photos", { clean: true });
+const publishedGallery = await addDoc(collection(admin, "galleryPhotos"), { ...galleryDraft, status: "published", publicId: "gdg-tum/gallery/published", url: "https://res.cloudinary.com/gdgtum/image/upload/gdg-tum/gallery/published.jpg" });
+await expectAllowed(() => getDoc(doc(anon, "galleryPhotos", publishedGallery.id)), "anonymous reads a published gallery photo");
+await expectAllowed(() => getDocs(query(collection(anon, "galleryPhotos"), where("status", "==", "published"))), "anonymous lists published gallery photos");
+await expectAllowed(() => updateDoc(doc(admin, "galleryPhotos", publishedGallery.id), { caption: "Updated caption" }), "admin edits a published gallery photo");
+await expectAllowed(() => deleteDoc(doc(admin, "galleryPhotos", publishedGallery.id)), "admin deletes a gallery photo");
+
 // ---- posts ---------------------------------------------------------------
 section("posts — public read, no client writes (news bot uses Admin SDK)");
 await expectAllowed(() => getDocs(collection(anon, "posts")), "anonymous can read posts");
