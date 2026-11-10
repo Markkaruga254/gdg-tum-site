@@ -20,7 +20,8 @@ function upstreamText(error) {
 
 function isQuotaExhausted(error, text) {
   return /quota[_ ]?exceeded|daily quota|per.?day quota|billing.+quota/.test(text)
-    || error?.status === "RESOURCE_EXHAUSTED" && !/rate.?limit|requests per minute|requests per second/.test(text);
+    || (error?.status === "RESOURCE_EXHAUSTED" || error?.code === "RESOURCE_EXHAUSTED")
+      && !/rate.?limit|requests per minute|requests per second/.test(text);
 }
 
 function retryKind(error) {
