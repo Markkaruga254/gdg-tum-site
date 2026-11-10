@@ -70,6 +70,9 @@ gcloud secrets add-iam-policy-binding gdg-tum-gemini-api-key \
 gcloud secrets add-iam-policy-binding gdg-tum-cloudinary-api-secret \\
   --member="serviceAccount:gdg-writeup-ai@YOUR_GDG_TUM_PROJECT_ID.iam.gserviceaccount.com" \\
   --role="roles/secretmanager.secretAccessor"
+gcloud secrets add-iam-policy-binding gdg-tum-cloudinary-api-secret \\
+  --member="serviceAccount:gdg-writeup-ai@YOUR_GDG_TUM_PROJECT_ID.iam.gserviceaccount.com" \\
+  --role="roles/secretmanager.secretAccessor"
 ```
 
 Build and deploy from the repository root:
