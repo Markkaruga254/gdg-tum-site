@@ -124,7 +124,19 @@ function EventDetail() {
             <div className="px-[26px] py-[24px]">
               <p className="font-display text-[clamp(52px,7vw,76px)] uppercase leading-none">{(event.attendance ?? 0).toLocaleString()}</p>
               <p className="mt-[8px] text-[12px] font-bold uppercase">Attended</p>
-              {writeup && <a href={`/writeup?id=${writeup.id}`} className="mt-[20px] inline-block text-[12px] font-bold uppercase underline underline-offset-4">Read the writeup ↗</a>}
+            </div>
+          </section>
+        )}
+
+        {writeup && (
+          <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[220px_minmax(0,1fr)]">
+            <div className="border-b-[3px] border-ink bg-yellow px-[26px] py-[22px] md:border-b-0 md:border-r-[3px]">
+              <h2 className="text-[13px] font-bold uppercase">Event writeup</h2>
+            </div>
+            <div className="px-[26px] py-[24px]">
+              <h3 className="font-display text-[clamp(32px,5vw,56px)] uppercase leading-[1.02]">{writeup.title}</h3>
+              {writeup.summary && <p className="mt-[12px] max-w-[760px] text-[16px] leading-[1.6]">{writeup.summary}</p>}
+              <a href={`/writeup?id=${writeup.id}`} className="mt-[18px] inline-block text-[12px] font-bold uppercase underline underline-offset-4">Read full writeup ↗</a>
             </div>
           </section>
         )}
