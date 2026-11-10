@@ -176,6 +176,7 @@ export default function DashboardPage() {
     const sourceNotes = aiDrafted ? aiSourceNotes : wf.body;
     if (sourceNotes.trim().length < 20) { setErr("Add at least 20 characters of facilitator notes before generating a draft."); return; }
     setAiGenerating(true);
+    setMsg("Generating draft… Gemini may take a little longer during periods of high demand. The service will retry temporary failures automatically.");
     try {
       const draft = await generateWriteupDraft({
         eventId: wf.eventId,
@@ -202,6 +203,7 @@ export default function DashboardPage() {
     if (!aiConsent) { setErr("Confirm photo consent before sending images for AI captioning."); return; }
     if (aiPhotoIds.length === 0) { setErr("Select at least one photo to caption."); return; }
     setAiCaptioning(true);
+    setMsg("Generating photo captions… Temporary Gemini failures are retried automatically.");
     try {
       const suggestions = await generatePhotoCaptions({
         writeupId: editingWriteup.id,
