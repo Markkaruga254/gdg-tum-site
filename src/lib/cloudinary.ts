@@ -29,7 +29,7 @@ export async function uploadToCloudinary(
   fd.append("file", file);
   fd.append("api_key", signed.apiKey);
   fd.append("timestamp", String(signed.timestamp));
-  fd.append("folder", signed.folder);
+  fd.append("public_id", signed.publicId);
   fd.append("signature", signed.signature);
 
   const xhr = new XMLHttpRequest();
