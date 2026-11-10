@@ -150,8 +150,21 @@ export default function GalleryManagerTab({ events, uid, setMsg, setErr }: Galle
                     <span className="text-[10px] font-bold uppercase">{photo.status === "published" ? "Published" : "Draft"} · {photo.trackId}</span>
                     <span className="text-[10px] font-bold uppercase">Order {photo.order ?? 0}</span>
                   </div>
-                  <p className="mt-1 text-sm font-bold">{photo.caption}</p>
-                  <p className="mt-1 text-xs text-gray-600">{photo.altText}</p>
+                  <label className="mt-2 block text-[10px] font-bold uppercase" htmlFor={`gallery-caption-${photo.id}`}>Caption</label>
+                  <input id={`gallery-caption-${photo.id}`} defaultValue={photo.caption} maxLength={160} onBlur={(event) => {
+                    if (event.target.value !== photo.caption) void updatePhoto(photo.id, { caption: event.target.value.trim() }, "Caption updated.");
+                  }} className="mt-1 w-full border-2 border-ink px-2 py-1 text-sm" />
+                  <label className="mt-2 block text-[10px] font-bold uppercase" htmlFor={`gallery-alt-${photo.id}`}>Alt text</label>
+                  <input id={`gallery-alt-${photo.id}`} defaultValue={photo.altText} maxLength={250} onBlur={(event) => {
+                    if (event.target.value !== photo.altText) void updatePhoto(photo.id, { altText: event.target.value.trim() }, "Alt text updated.");
+                  }} className="mt-1 w-full border-2 border-ink px-2 py-1 text-sm" />
+                  <label className="mt-2 block text-[10px] font-bold uppercase" htmlFor={`gallery-order-${photo.id}`}>Display order</label>
+                  <input id={`gallery-order-${photo.id}`} type="number" min="0" step="1" defaultValue={photo.order ?? 0} onBlur={(event) => {
+                    const nextOrder = Number(event.target.value);
+                    if (Number.isInteger(nextOrder) && nextOrder >= 0 && nextOrder !== (photo.order ?? 0)) {
+                      void updatePhoto(photo.id, { order: nextOrder }, "Display order updated.");
+                    }
+                  }} className="mt-1 w-24 border-2 border-ink px-2 py-1 text-sm" />
                   {photo.eventId && <p className="mt-1 text-xs">Linked event: {events.find((event) => event.id === photo.eventId)?.title || "Event"}</p>}
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button type="button" onClick={() => void togglePublished(photo)} className="border-[2px] border-ink px-3 py-2 text-[10px] font-bold uppercase">{photo.status === "published" ? "Unpublish" : "Publish"}</button>
