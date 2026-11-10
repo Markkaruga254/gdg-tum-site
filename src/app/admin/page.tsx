@@ -8,6 +8,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, collection, getDocs, updateDoc } from "firebase/firestore";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 const trackOptions = [
   { value: "", label: "None" },
@@ -95,6 +96,19 @@ export default function AdminPage() {
     }
   }
 
+  async function saveUserPhoto(user: any, photoUrl: string) {
+    setMsg("");
+    setErr("");
+    try {
+      await updateDoc(doc(db, "users", user.id), { photoUrl });
+      await refreshUsers(uid ?? undefined);
+      setMsg(`Profile photo saved for ${user.name || "track lead"}.`);
+    } catch (error: any) {
+      setErr(error?.message || "The profile photo could not be saved.");
+      throw error;
+    }
+  }
+
   if (loading) {
     return (
       <>
@@ -153,7 +167,7 @@ export default function AdminPage() {
           </p>
         ) : (
           users.map((user) => (
-            <UserRow key={user.id} user={user} self={user.id === uid} onSave={saveUser} />
+            <UserRow key={user.id} user={user} self={user.id === uid} onSave={saveUser} onSavePhoto={saveUserPhoto} />
           ))
         )}
 
@@ -166,10 +180,53 @@ export default function AdminPage() {
   );
 }
 
-function UserRow({ user, self, onSave }: any) {
+function UserRow({ user, self, onSave, onSavePhoto }: any) {
   const [role, setRole] = useState(user.role || "member");
   const [track, setTrack] = useState(user.track || "");
   const [saving, setSaving] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [savingPhoto, setSavingPhoto] = useState(false);
+  const [photoError, setPhotoError] = useState("");
+
+  async function choosePhoto(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    setPhotoError("");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      setPhotoError("Choose a JPEG, PNG or WebP image.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setPhotoError("The image must be 5 MB or smaller.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const uploaded = await uploadToCloudinary(file, undefined, "profile", user.id);
+      setPreviewUrl(uploaded.url);
+    } catch (error: any) {
+      setPhotoError(error?.message || "The profile photo could not be uploaded.");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function savePhoto() {
+    if (!previewUrl) return;
+    setSavingPhoto(true);
+    setPhotoError("");
+    try {
+      await onSavePhoto(user, previewUrl);
+      setPreviewUrl("");
+    } catch (error: any) {
+      setPhotoError(error?.message || "The profile photo could not be saved.");
+    } finally {
+      setSavingPhoto(false);
+    }
+  }
 
   async function save() {
     setSaving(true);
@@ -227,6 +284,41 @@ function UserRow({ user, self, onSave }: any) {
       >
         {saving ? "…" : "Save"}
       </button>
+      {user.role === "lead" && (
+        <section className="col-span-full flex flex-wrap items-center gap-[12px] border-t border-ink/20 pt-[12px]" aria-label={`Profile photo for ${user.name || user.id}`}>
+          <div className="flex h-[64px] w-[64px] shrink-0 items-center justify-center overflow-hidden border-[2px] border-ink bg-[#f5f5f5]">
+            {(previewUrl || user.photoUrl) ? (
+              <img src={previewUrl || user.photoUrl} alt={`${user.name || "Track lead"} profile preview`} className="h-full w-full object-cover" />
+            ) : (
+              <span className="px-[4px] text-center text-[9px] font-bold uppercase">No photo</span>
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[10px] font-bold uppercase">Track lead photo</p>
+            <p className="mt-[3px] text-[10px] text-[#555]">{previewUrl ? "New photo uploaded — save to publish it on the profile." : user.photoUrl ? "Current profile photo" : "No profile photo added yet."}</p>
+            {photoError && <p role="alert" className="mt-[5px] text-[11px] font-bold text-red-700">{photoError}</p>}
+          </div>
+          <label className="cursor-pointer border-[2px] border-ink px-[10px] py-[8px] text-[10px] font-bold uppercase">
+            {uploading ? "Uploading…" : user.photoUrl || previewUrl ? "Choose / replace" : "Choose photo"}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(event) => void choosePhoto(event)}
+              disabled={uploading || savingPhoto}
+              className="sr-only"
+              aria-label={`Choose profile photo for ${user.name || user.id}`}
+            />
+          </label>
+          {previewUrl && (
+            <>
+              <button type="button" onClick={() => setPreviewUrl("")} disabled={savingPhoto} className="border-[2px] border-ink px-[10px] py-[8px] text-[10px] font-bold uppercase disabled:opacity-60">Cancel</button>
+              <button type="button" onClick={() => void savePhoto()} disabled={savingPhoto} className="border-[2px] border-ink bg-ink px-[10px] py-[8px] text-[10px] font-bold uppercase text-white disabled:opacity-60">
+                {savingPhoto ? "Saving…" : "Save photo"}
+              </button>
+            </>
+          )}
+        </section>
+      )}
     </div>
   );
 }
