@@ -123,9 +123,15 @@ export function createApp({
   app.use("/v1", async (req, res, next) => {
     try {
       const header = req.get("authorization") || "";
-      const match = /^Bearer\s+(.+)$/i.exec(header);
-      if (!match) throw httpError(401, "Sign in to use the AI writing assistant.");
-      req.identity = await auth.verifyIdToken(match[1], true);
+      const separator = header.indexOf(" ");
+      const scheme = separator > 0 ? header.slice(0, separator) : "";
+      const token = separator > 0 ? header.slice(separator + 1).trim() : "";
+      const hasEmbeddedWhitespace =
+        token.includes(" ") || token.includes("\t") || token.includes("\n") || token.includes("\r");
+      if (scheme.toLowerCase() !== "bearer" || !token || hasEmbeddedWhitespace) {
+        throw httpError(401, "Sign in to use the AI writing assistant.");
+      }
+      req.identity = await auth.verifyIdToken(token, true);
       next();
     } catch (error) {
       if (error.status) return res.status(error.status).json({ error: error.message });
