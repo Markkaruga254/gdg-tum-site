@@ -24,6 +24,8 @@ Cloud Run must allow public HTTP invocation so a browser can reach the service d
    export GEMINI_API_KEY=your-development-gemini-key
    export ALLOWED_ORIGINS=http://localhost:3000,https://gdg-tum-site.web.app
    export CLOUDINARY_CLOUD_NAME=your-cloudinary-cloud-name
+    export CLOUDINARY_API_KEY=your-cloudinary-api-key
+    export CLOUDINARY_API_SECRET=your-cloudinary-api-secret
    npm test
    npm start
    ```
@@ -67,11 +69,8 @@ Paste the Gemini API key into the hidden terminal input and press Ctrl+D, then p
 gcloud secrets add-iam-policy-binding gdg-tum-gemini-api-key \
   --member="serviceAccount:gdg-writeup-ai@YOUR_GDG_TUM_PROJECT_ID.iam.gserviceaccount.com" \
   --role="roles/secretmanager.secretAccessor"
-gcloud secrets add-iam-policy-binding gdg-tum-cloudinary-api-secret \\
-  --member="serviceAccount:gdg-writeup-ai@YOUR_GDG_TUM_PROJECT_ID.iam.gserviceaccount.com" \\
-  --role="roles/secretmanager.secretAccessor"
-gcloud secrets add-iam-policy-binding gdg-tum-cloudinary-api-secret \\
-  --member="serviceAccount:gdg-writeup-ai@YOUR_GDG_TUM_PROJECT_ID.iam.gserviceaccount.com" \\
+gcloud secrets add-iam-policy-binding gdg-tum-cloudinary-api-secret \
+  --member="serviceAccount:gdg-writeup-ai@YOUR_GDG_TUM_PROJECT_ID.iam.gserviceaccount.com" \
   --role="roles/secretmanager.secretAccessor"
 ```
 
