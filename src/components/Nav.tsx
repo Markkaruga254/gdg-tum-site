@@ -75,7 +75,7 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
         </Link>
       ))}
 
-      {userName ? (
+      {userName && (
         <span className={`${home ? "hidden md:flex" : "flex"} items-center gap-[6px] border-r-[3px] border-ink px-[20px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px]`}>
           <span className="max-w-[150px] break-words">{userName}</span>
           <span aria-hidden="true">·</span>
@@ -83,15 +83,6 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
             Sign out
           </button>
         </span>
-      ) : (
-        <Link
-          href="/login"
-          onClick={() => setMobileMenuOpen(false)}
-          aria-current={pathname === "/login" ? "page" : undefined}
-          className={`${cellClass} ${home ? "hidden md:flex" : "flex"} ${pathname === "/login" ? "bg-yellow" : "bg-white"}`}
-        >
-          Sign in
-        </Link>
       )}
 
       <Link
@@ -120,11 +111,7 @@ export default function Nav({ home = false }: { home?: boolean } = {}) {
             <button type="button" onClick={() => { setMobileMenuOpen(false); void signOut(); }} className="bg-white px-[18px] py-[15px] text-left text-[12px] font-bold uppercase tracking-[.5px]">
               Sign out · {userName}
             </button>
-          ) : (
-            <Link href="/login" onClick={() => setMobileMenuOpen(false)} className={`px-[18px] py-[15px] text-[12px] font-bold uppercase tracking-[.5px] ${pathname === "/login" ? "bg-yellow" : "bg-white"}`}>
-              Sign in
-            </Link>
-          )}
+          ) : null}
         </div>
       )}
     </nav>
