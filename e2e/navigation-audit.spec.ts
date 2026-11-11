@@ -67,7 +67,6 @@ test("desktop navigation links can be clicked to reach their destinations", asyn
     { label: "Blog", href: "/blog" },
     { label: "Leads", href: "/leads" },
     { label: "Labs", href: "/labs" },
-    { label: "Sign in", href: "/login" },
   ];
 
   for (const link of navigationLinks) {
@@ -77,7 +76,7 @@ test("desktop navigation links can be clicked to reach their destinations", asyn
   }
 });
 
-test("mobile menu opens, exposes navigation, and closes after navigation", async ({ page }) => {
+test("public mobile menu exposes content navigation without a sign-in entry", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
 
@@ -88,6 +87,8 @@ test("mobile menu opens, exposes navigation, and closes after navigation", async
 
   const mobileNavigation = page.locator("#mobile-navigation");
   await expect(mobileNavigation.getByRole("link", { name: "Events", exact: true })).toBeVisible();
+  await expect(mobileNavigation.getByRole("link", { name: "Sign in", exact: true })).toHaveCount(0);
+  await expect(mobileNavigation.locator('a[href="/login"]')).toHaveCount(0);
   await mobileNavigation.getByRole("link", { name: "Events", exact: true }).click();
 
   await expect(page).toHaveURL(/\/events$/);
