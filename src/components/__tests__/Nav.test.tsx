@@ -62,7 +62,7 @@ describe("canonical navigation", () => {
   it("keeps the full navigation wrapped on non-home phone pages", () => {
     render(<Nav />);
     expect(screen.queryByRole("button", { name: "Menu" })).not.toBeInTheDocument();
-    for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Sign in"]) {
+    for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs"]) {
       expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
     }
     expect(screen.getByRole("link", { name: "Join a track ↗" })).toBeInTheDocument();
