@@ -39,10 +39,12 @@ describe("canonical navigation", () => {
     render(<Nav home />);
     const navigation = screen.getByRole("navigation", { name: "Main navigation" });
     expect(navigation).toHaveClass("flex-wrap");
-    for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Sign in"]) {
+    for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs"]) {
       expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
     }
     expect(screen.getByRole("link", { name: /Join/ })).toBeInTheDocument();
+    expect(navigation.querySelector('a[href="/login"]')).toBeNull();
+    expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
 
     const menuButton = screen.getByRole("button", { name: "Menu" });
     expect(menuButton).toHaveAttribute("aria-expanded", "false");
@@ -52,7 +54,7 @@ describe("canonical navigation", () => {
     const mobileMenu = navigation.querySelector("#mobile-navigation");
     expect(mobileMenu).not.toBeNull();
     const mobileLinks = within(mobileMenu as HTMLElement);
-    for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Sign in"]) {
+    for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs"]) {
       expect(mobileLinks.getByRole("link", { name: label })).toBeInTheDocument();
     }
   });
@@ -64,6 +66,7 @@ describe("canonical navigation", () => {
       expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
     }
     expect(screen.getByRole("link", { name: "Join a track ↗" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
   });
 
   it("marks the current route yellow and adds the descriptor only on home", () => {
