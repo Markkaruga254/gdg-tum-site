@@ -31,8 +31,12 @@ export default function LoginPage() {
     setError(null);
     try {
       await signInGoogle();
-    } catch {
-      setError("Google sign-in could not be completed. Please try again.");
+    } catch (signInError) {
+      setError(
+        signInError instanceof Error
+          ? signInError.message
+          : "Google sign-in could not be completed. Please try again.",
+      );
     } finally {
       setLoading(false);
     }

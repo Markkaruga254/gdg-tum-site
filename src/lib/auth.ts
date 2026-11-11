@@ -28,27 +28,51 @@ if (authEmulatorHost !== undefined) {
   connectAuthEmulator(auth, `http://${host}:${port}`, { disableWarnings: true });
 }
 
+const STAFF_ACCESS_REQUIRED =
+  "This Google account is not provisioned as a GDG TUM Track Lead or Admin. Contact a GDG TUM administrator if you need access.";
+
 export async function signInGoogle() {
   const provider = new GoogleAuthProvider();
   const res = await signInWithPopup(auth, provider);
   const u = res.user;
-  const userRef = doc(db, "users", u.uid);
-  const snap = await getDoc(userRef);
 
-  if (!snap.exists()) {
-    await setDoc(userRef, { name: u.displayName || "", photoUrl: u.photoURL || "", role: "member", track: null });
+  try {
+    const userRef = doc(db, "users", u.uid);
+    const snap = await getDoc(userRef);
+
+    // Staff profiles are provisioned by an administrator before sign-in.
+    // Never create member profiles as a side effect of visiting the login page.
+    if (!snap.exists()) {
+      throw new Error(STAFF_ACCESS_REQUIRED);
+    }
+
+    const profile = snap.data();
+    const isAdmin = profile.role === "admin";
+    const isLead = profile.role === "lead" && typeof profile.track === "string" && profile.track.trim() !== "";
+    if (!isAdmin && !isLead) {
+      throw new Error(STAFF_ACCESS_REQUIRED);
+    }
+
+    // Keep the email private for authorized staff only. Merge so other
+    // private account fields are preserved.
+    await setDoc(doc(db, "private_users", u.uid), { email: u.email || "" }, { merge: true });
+
+    // Migrate a legacy public email field the next time its owner signs in.
+    if (Object.prototype.hasOwnProperty.call(profile, "email")) {
+      await updateDoc(userRef, { email: deleteField() });
+    }
+
+    return u;
+  } catch (error) {
+    // A Google identity that fails authorization (or profile loading) must not
+    // remain authenticated in the public browsing session.
+    try {
+      await fbSignOut(auth);
+    } catch {
+      // Preserve the original authorization/profile error for the login UI.
+    }
+    throw error;
   }
-
-  // Keep the email private for both new and existing profiles. Merge so other
-  // private account fields are preserved.
-  await setDoc(doc(db, "private_users", u.uid), { email: u.email || "" }, { merge: true });
-
-  // Migrate a legacy public email field the next time its owner signs in.
-  if (snap.exists() && Object.prototype.hasOwnProperty.call(snap.data(), "email")) {
-    await updateDoc(userRef, { email: deleteField() });
-  }
-
-  return res.user;
 }
 
 export async function signInE2E(email: string, password: string) {
