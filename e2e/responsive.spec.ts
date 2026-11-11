@@ -48,6 +48,7 @@ for (const route of routes) {
       }
 
       const navigation = page.getByRole("navigation", { name: "Main navigation" });
+      await expect(navigation.locator('a[href="/login"]')).toHaveCount(0);
       await expect(navigation).toBeVisible();
 
       if (width <= 390 && route.name === "home") {
@@ -55,11 +56,11 @@ for (const route of routes) {
         await expect(navigation.getByRole("link", { name: "Events" })).toBeHidden();
         await expect(navigation.getByRole("link", { name: "Join ↗" })).toBeVisible();
         await navigation.getByRole("button", { name: "Menu" }).click();
-        for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Sign in"]) {
+        for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs"]) {
           await expect(navigation.getByRole("link", { name: label })).toBeVisible();
         }
       } else {
-        for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Sign in", "Join a track ↗"]) {
+        for (const label of ["Events", "Tracks", "Gallery", "Blog", "Leads", "Labs", "Join a track ↗"]) {
           await expect(navigation.getByRole("link", { name: label })).toBeVisible();
         }
         await expect(navigation.getByRole("button", { name: "Menu" })).toBeHidden();
