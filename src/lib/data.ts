@@ -14,6 +14,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { TRACKS } from "@/lib/tracks";
+import { isLeadDirectoryVisible } from "@/lib/lead-profile";
 import type {
   Event, Writeup, Track, AppUser, Post, Partner, Media, Ticker,
   TrackSlug,
@@ -135,8 +136,9 @@ export async function getUsers(role?: AppUser["role"]): Promise<AppUserWithId[]>
 export async function getLeadershipUsers(): Promise<AppUserWithId[]> {
   const users = await getUsers();
   return users.filter((user) =>
-    user.role === "lead" ||
-    (user.role === "admin" && Boolean(user.track && user.leadershipTitle)),
+    isLeadDirectoryVisible(user.directoryVisible) &&
+    (user.role === "lead" ||
+      (user.role === "admin" && Boolean(user.track && user.leadershipTitle))),
   );
 }
 
@@ -145,7 +147,10 @@ export async function getUserById(id: string): Promise<AppUserWithId | null> {
 }
 
 export async function getPublicLeadById(id: string): Promise<AppUserWithId | null> {
-  return getUserById(id);
+  const user = await getUserById(id);
+  if (!user || !isLeadDirectoryVisible(user.directoryVisible)) return null;
+  if (user.role !== "lead" && !(user.role === "admin" && user.track && user.leadershipTitle)) return null;
+  return user;
 }
 
 export async function getPartners(): Promise<PartnerWithId[]> {

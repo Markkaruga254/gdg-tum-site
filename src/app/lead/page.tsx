@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import Tag from "@/components/Tag";
 import { getPublicLeadById, getEvents, getWriteups, type AppUserWithId, type EventWithId, type WriteupWithId } from "@/lib/data";
 import { TRACK_BG_COLORS, trackColor, trackName, trackTagColor } from "@/lib/tracks";
+import { leadDisplayName, leadInitials } from "@/lib/lead-profile";
 
 function trackLabel(track: Parameters<typeof trackName>[0]) {
   return trackName(track);
@@ -57,6 +58,7 @@ function View() {
   if (loading) return <><Nav /><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]">Loading profile…</main><Footer /></>;
   if (!user) return <><Nav /><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]"><h1 className="font-display text-[56px] uppercase">Profile not found</h1><a href="/leads" className="mt-4 inline-block underline">Back to leads</a></main><Footer /></>;
 
+  const displayName = leadDisplayName(user.name, user.track);
   const roleTitle = user.leadershipTitle || (user.track ? `${trackLabel(user.track)} Track Lead` : "GDG TUM Lead");
   const pastEvents = events.filter((event) => event.status === "past")
     .sort((a, b) => b.date.toMillis() - a.date.toMillis());
@@ -72,7 +74,7 @@ function View() {
         <section className="grid grid-cols-1 border-b-[3px] border-ink md:grid-cols-[minmax(0,1fr)_380px]">
           <div className="px-[26px] py-[34px] md:px-[42px] md:py-[44px]">
             <Tag label={`${roleTitle} · 2026/27`} color={user.track ? trackTagColor(user.track) : "yellow"} />
-            <h1 className="mt-[22px] font-display text-[clamp(60px,9vw,112px)] uppercase leading-[.9]">{user.name}</h1>
+            <h1 className="mt-[22px] font-display text-[clamp(60px,9vw,112px)] uppercase leading-[.9]">{displayName}</h1>
             {user.bio && <p className="mt-[20px] max-w-[620px] text-[17px] leading-[1.6]">{user.bio}</p>}
             <div className="mt-[24px] flex flex-wrap gap-[10px]">
               {user.links?.map((link) => (
@@ -84,9 +86,9 @@ function View() {
           </div>
           <div className="flex min-h-[300px] items-center justify-center border-t-[3px] border-ink md:border-l-[3px] md:border-t-0" style={{ backgroundColor: heroColor, color: heroTextColor }}>
             {user.photoUrl ? (
-              <img src={user.photoUrl} alt={user.name} className="h-full min-h-[320px] max-h-[460px] w-full object-cover" />
+              <img src={user.photoUrl} alt={displayName} className="h-full min-h-[320px] max-h-[460px] w-full object-cover" />
             ) : (
-              <span className="font-display text-[44px] uppercase">{user.name.split(" ").map((part) => part[0]).join("").slice(0, 2)}</span>
+              <span className="font-display text-[44px] uppercase">{leadInitials(displayName)}</span>
             )}
           </div>
         </section>

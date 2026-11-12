@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import { getEvents, getLeadershipUsers, getWriteups, type AppUserWithId } from "@/lib/data";
 import { TRACK_BG_COLORS, trackColor } from "@/lib/tracks";
 import type { TrackSlug } from "@/lib/types";
+import { leadDisplayName, leadInitials } from "@/lib/lead-profile";
 
 const filters: { id: TrackSlug | "all"; label: string }[] = [
   { id: "all", label: "All" },
@@ -68,7 +69,9 @@ export default function LeadsPage() {
   const visibleLeads = leads
     .filter((lead) => filter === "all" || lead.track === filter)
     .sort((a, b) => {
-      if (!a.track && !b.track) return a.name.localeCompare(b.name);
+      if (!a.track && !b.track) {
+        return leadDisplayName(a.name, a.track).localeCompare(leadDisplayName(b.name, b.track));
+      }
       if (!a.track) return -1;
       if (!b.track) return 1;
       return trackOrder.indexOf(a.track) - trackOrder.indexOf(b.track);
@@ -112,17 +115,18 @@ export default function LeadsPage() {
               const backgroundColor = lead.track ? TRACK_BG_COLORS[lead.track] : "#FBBC04";
               const color = lead.track ? trackColor(lead.track) : "yellow";
               const textColor = color === "blue" || color === "red" ? "#fff" : "#111";
+              const displayName = leadDisplayName(lead.name, lead.track);
               return (
                 <article key={lead.id} className="border-[3px] border-ink bg-white">
                   <div className="flex min-h-[170px] items-center justify-center border-b-[3px] border-ink" style={{ backgroundColor, color: textColor }}>
                     {lead.photoUrl ? (
-                      <img src={lead.photoUrl} alt={lead.name} className="h-[170px] w-full object-cover" />
+                      <img src={lead.photoUrl} alt={displayName} className="h-[170px] w-full object-cover" />
                     ) : (
-                      <span className="font-display text-[44px] uppercase">{lead.name.split(" ").map((part) => part[0]).join("").slice(0, 2)}</span>
+                      <span className="font-display text-[44px] uppercase">{leadInitials(displayName)}</span>
                     )}
                   </div>
                   <div className="p-[16px]">
-                    <h2 className="text-[20px] font-bold">{lead.name}</h2>
+                    <h2 className="text-[20px] font-bold">{displayName}</h2>
                     <p className="my-[4px] text-[12px] font-bold uppercase">{roleLabel(lead)}</p>
                     {lead.bio && <p className="mb-[14px] text-[14px] leading-[1.5]">{lead.bio}</p>}
                     <p className="mb-[14px] text-[12px] font-bold uppercase">

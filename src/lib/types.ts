@@ -55,6 +55,8 @@ export interface AppUser {
   track?: TrackSlug | null;
   /** Public-facing position; supports chapter and cross-track leadership roles. */
   leadershipTitle?: string;
+  /** Explicitly hide internal/test leadership accounts from public directories. Defaults to visible. */
+  directoryVisible?: boolean;
   photoUrl?: string;
   bio?: string;
   links?: { title: string; url: string }[];
