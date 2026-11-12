@@ -25,7 +25,7 @@ import { getUserById, getEvents, getWriteups, getMediaByWriteup } from "@/lib/da
 import type { TrackSlug } from "@/lib/types";
 import { generatePhotoCaptions, generateWriteupDraft } from "@/lib/writeup-ai";
 
-const TABS = ["Overview","New writeup","My events","Media","Gallery","Live ticker","My profile","Partners"];
+const TABS = ["Overview","New writeup","Track events","Media","Gallery","Live ticker","My profile","Partners"];
 
 export default function DashboardPage() {
   const [allowed, setAllowed] = useState<boolean | null>(null);
@@ -103,7 +103,7 @@ export default function DashboardPage() {
   async function loadWriteups() {
     if (!uid) return;
     try {
-      const fetched = role === "admin" ? await getWriteups() : await getWriteups({ authorId: uid });
+      const fetched = role === "admin" ? await getWriteups() : await getWriteups({ trackId: track as TrackSlug });
       setWriteups(fetched as any[]);
     } catch {
       setWriteups([]);
@@ -413,7 +413,7 @@ export default function DashboardPage() {
 
           {tab === "Overview" && <OverviewTab events={events} writeups={writeups} setTab={setTab} startEditWriteup={startEditWriteup} startNewWriteup={startNewWriteup} unpublish={unpublish} publishWriteup={publishWriteup} deleteWriteup={deleteWriteup} role={role} uid={uid} track={track} saving={saving} />}
 
-          {tab === "My events" && <MyEventsTab events={events} role={role} eventForm={eventForm} setEventForm={setEventForm} eventErrors={eventErrors} saveEvent={saveEvent} saving={saving} editingEvent={editingEvent} setEditingEvent={setEditingEvent} startEditEvent={startEditEvent} cancelEvent={cancelEvent} deleteEvent={deleteEvent} />}
+          {tab === "Track events" && <MyEventsTab events={events} role={role} eventForm={eventForm} setEventForm={setEventForm} eventErrors={eventErrors} saveEvent={saveEvent} saving={saving} editingEvent={editingEvent} setEditingEvent={setEditingEvent} startEditEvent={startEditEvent} cancelEvent={cancelEvent} deleteEvent={deleteEvent} />}
 
           {tab === "New writeup" && <NewWriteupTab editingWriteup={editingWriteup} wf={wf} setWf={setWf} wfErrors={wfErrors} events={events} saveWriteup={saveWriteup} saving={saving} mediaList={mediaList} aiPhotoIds={aiPhotoIds} setAiPhotoIds={setAiPhotoIds} aiConsent={aiConsent} setAiConsent={setAiConsent} setTab={setTab} writeupStep={writeupStep} setWriteupStep={setWriteupStep} topicTags={topicTags} setTopicTags={setTopicTags} productTags={productTags} setProductTags={setProductTags} generateDraft={generateDraft} aiGenerating={aiGenerating} generateAiCaptions={generateAiCaptions} aiCaptioning={aiCaptioning} aiCaptionSuggestions={aiCaptionSuggestions} applyAiCaption={applyAiCaption} aiDrafted={aiDrafted} aiSourceNotes={aiSourceNotes} setAiSourceNotes={setAiSourceNotes} aiServiceConfigured={aiServiceConfigured} />}
 

@@ -135,13 +135,15 @@ await expectDenied(() => updateDoc(doc(otherMember, "private_users", "u-member")
 await expectDenied(() => getDocs(collection(anon, "private_users")), "anonymous cannot list emails");
 
 // ---- writeups --------------------------------------------------------------
-section("writeups — drafts private; current track leads publish/unpublish their own writeups");
+section("writeups — drafts private; current track leads manage all writeups in their track");
 await expectAllowed(() => getDoc(doc(anon, "writeups", "w-published-cloud")), "anonymous reads a published writeup");
 await expectAllowed(() => getDocs(query(collection(anon, "writeups"), where("status", "==", "published"))), "anonymous lists published writeups");
 await expectDenied(() => getDocs(collection(anon, "writeups")), "anonymous cannot list writeups without a status filter", { clean: true });
 await expectDenied(() => getDoc(doc(anon, "writeups", "w-draft-cloud")), "anonymous cannot read a draft");
 await expectDenied(() => getDoc(doc(member, "writeups", "w-draft-cloud")), "a member cannot read someone else's draft");
 await expectAllowed(() => getDoc(doc(leadCloud, "writeups", "w-draft-cloud")), "the author reads their own draft");
+await expectAllowed(() => getDoc(doc(leadCloudSecondary, "writeups", "w-draft-cloud")), "another lead on the same track reads the draft");
+await expectAllowed(() => getDocs(query(collection(leadCloudSecondary, "writeups"), where("trackId", "==", "cloud"))), "same-track lead lists all writeups in their track");
 await expectAllowed(() => getDoc(doc(admin, "writeups", "w-draft-web")), "admin reads any draft");
 await expectAllowed(() => addDoc(collection(leadCloud, "writeups"), { title: "D", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", status: "draft", body: "b", tags: { topics: [], products: [] } }), "cloud lead creates a cloud draft for themselves");
 await expectAllowed(() => addDoc(collection(leadCloud, "writeups"), { title: "P", eventId: "ev-cloud", trackId: "cloud", authorId: "u-lead-cloud", status: "published", body: "b", tags: { topics: [], products: [] } }), "cloud lead creates a cloud writeup as published");
@@ -150,14 +152,15 @@ await expectDenied(() => addDoc(collection(leadCloud, "writeups"), { title: "D",
 await expectDenied(() => addDoc(collection(member, "writeups"), { title: "D", eventId: "ev-cloud", trackId: "cloud", authorId: "u-member", status: "draft", body: "b", tags: { topics: [], products: [] } }), "member cannot create a writeup");
 await expectAllowed(() => addDoc(collection(admin, "writeups"), { title: "A", eventId: "ev-web", trackId: "web", authorId: "u-lead-web", status: "published", body: "b", tags: { topics: [], products: [] } }), "admin creates a published writeup credited to a lead");
 await expectAllowed(() => updateDoc(doc(leadCloud, "writeups", "w-draft-cloud"), { body: "edited" }), "author edits their draft body");
-await expectAllowed(() => updateDoc(doc(leadCloud, "writeups", "w-draft-cloud"), { status: "published" }), "lead publishes their own draft");
+await expectAllowed(() => updateDoc(doc(leadCloudSecondary, "writeups", "w-draft-cloud"), { body: "edited by co-lead" }), "same-track lead edits another author's draft");
+await expectAllowed(() => updateDoc(doc(leadCloudSecondary, "writeups", "w-draft-cloud"), { status: "published" }), "same-track lead publishes another author's draft");
 await expectAllowed(() => updateDoc(doc(leadCloud, "writeups", "w-flip-cloud"), { status: "draft" }), "lead unpublishes their own writeup");
 await updateDoc(doc(admin, "users", "u-lead-cloud"), { track: "web" });
 await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-flip-cloud"), { body: "lead no longer owns this track" }), "former track lead cannot update their old writeup");
 await updateDoc(doc(admin, "users", "u-lead-cloud"), { track: "cloud" });
 await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-draft-cloud"), { authorId: "u-lead-web" }), "author cannot reassign attribution");
 await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-draft-cloud"), { trackId: "web" }), "author cannot move a writeup to another track");
-await expectDenied(() => updateDoc(doc(leadWeb, "writeups", "w-draft-cloud"), { body: "vandal" }), "a lead cannot edit another author's draft");
+await expectDenied(() => updateDoc(doc(leadWeb, "writeups", "w-draft-cloud"), { body: "vandal" }), "a lead from another track cannot edit this draft");
 await expectAllowed(() => updateDoc(doc(admin, "writeups", "w-draft-web"), { status: "published" }), "admin publishes another author's draft");
 await expectAllowed(() => deleteDoc(doc(admin, "writeups", "w-draft-web")), "admin deletes a writeup");
 await expectDenied(() => deleteDoc(doc(leadCloud, "writeups", "w-flip-cloud")), "author cannot delete their own writeup");
@@ -168,13 +171,14 @@ await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-flip-cloud"), {
 await expectDenied(() => updateDoc(doc(leadCloud, "writeups", "w-flip-cloud"), { trackId: "web" }), "lead cannot change writeup track");
 
 // ---- media -----------------------------------------------------------------
-section("media — published/admin/author reads; author-or-admin writes only");
+section("media — published/admin/track-lead reads; track leads manage their track media");
 await expectAllowed(() => getDoc(doc(anon, "media", "m-published")), "anonymous reads media on a published writeup");
 await expectDenied(() => getDoc(doc(anon, "media", "m-draft")), "anonymous cannot read media on a draft");
 await expectDenied(() => getDoc(doc(member, "media", "m-draft")), "a member cannot read media on someone else's draft");
     await expectAllowed(() => getDoc(doc(leadCloud, "media", "m-draft")), "the author reads their own draft's media");
-await expectDenied(() => getDoc(doc(leadCloudSecondary, "media", "m-draft")), "a different lead of the same track cannot read another author's draft media");
-    await expectAllowed(() => getDoc(doc(admin, "media", "m-draft")), "admin reads media on someone else's draft");
+await expectAllowed(() => getDoc(doc(leadCloudSecondary, "media", "m-draft")), "a different lead of the same track reads draft media");
+await expectDenied(() => getDoc(doc(leadWeb, "media", "m-draft")), "a lead from another track cannot read draft media", { clean: true });
+await expectAllowed(() => getDoc(doc(admin, "media", "m-draft")), "admin reads media on someone else's draft");
 await expectAllowed(() => getDoc(doc(admin, "media", "m-orphan")), "admin can read media even if its parent writeup was removed");
 await expectDenied(() => getDoc(doc(anon, "media", "m-orphan")), "anonymous cannot read media whose parent writeup is missing");
     await expectAllowed(() => getDocs(query(collection(anon, "media"), where("writeupId", "==", "w-published-cloud"))), "anonymous lists media for a published writeup");
@@ -184,13 +188,14 @@ await expectAllowed(() => updateDoc(doc(admin, "media", "m-published"), { captio
 await expectDenied(() => updateDoc(doc(admin, "media", "m-published"), { writeupId: "w-draft-web" }), "admin cannot reparent existing media");
 await expectAllowed(() => deleteDoc(doc(admin, "media", "m-published")), "admin deletes media");
 await expectAllowed(() => updateDoc(doc(leadCloud, "media", "m-draft"), { caption: "edited" }), "writeup author captions their own draft's media");
-await expectDenied(() => addDoc(collection(leadCloudSecondary, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/x.jpg", createdBy: "u-lead-cloud-secondary" }), "same-track lead cannot create media for another author", { clean: true });
-await expectDenied(() => updateDoc(doc(leadCloudSecondary, "media", "m-draft"), { caption: "not the author" }), "same-track lead cannot update another author's media", { clean: true });
-await expectDenied(() => deleteDoc(doc(leadCloudSecondary, "media", "m-draft")), "same-track lead cannot delete another author's media", { clean: true });
+await expectAllowed(() => addDoc(collection(leadCloudSecondary, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/x.jpg", createdBy: "u-lead-cloud-secondary" }), "same-track lead creates media for a track writeup");
+await expectAllowed(() => updateDoc(doc(leadCloudSecondary, "media", "m-draft"), { caption: "co-lead edit" }), "same-track lead updates another author's media");
+await expectAllowed(() => deleteDoc(doc(leadCloudSecondary, "media", "m-draft")), "same-track lead deletes another author's media");
 await expectDenied(() => addDoc(collection(member, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-member" }), "member cannot create media", { clean: true });
 await expectDenied(() => addDoc(collection(anon, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-anon" }), "anonymous cannot create media", { clean: true });
 await expectDenied(() => addDoc(collection(leadCloud, "media"), { writeupId: "w-draft-web", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-lead-cloud" }), "cloud lead cannot create media on a web writeup", { clean: true });
-await expectDenied(() => updateDoc(doc(leadWeb, "media", "m-draft"), { caption: "vandal" }), "web lead cannot caption cloud lead's draft media", { clean: true });
+await expectDenied(() => updateDoc(doc(leadWeb, "media", "m-draft-cross-track"), { caption: "vandal" }), "web lead cannot caption cloud lead's draft media", { clean: true });
+await expectDenied(() => deleteDoc(doc(leadWeb, "media", "m-draft-cross-track")), "web lead cannot delete cloud track media", { clean: true });
 await expectDenied(() => deleteDoc(doc(member, "media", "m-published")), "member cannot delete media");
 
 // ---- galleryPhotos --------------------------------------------------------

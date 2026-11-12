@@ -8,8 +8,8 @@ describe("canManageWriteup", () => {
     expect(canManageWriteup("lead", "lead-1", "cloud", ownCloudWriteup)).toBe(true);
   });
 
-  it("denies a lead access to another author's writeup", () => {
-    expect(canManageWriteup("lead", "lead-2", "cloud", ownCloudWriteup)).toBe(false);
+  it("allows another lead on the same track to manage the writeup", () => {
+    expect(canManageWriteup("lead", "lead-2", "cloud", ownCloudWriteup)).toBe(true);
   });
 
   it("denies a former track lead from publishing or editing their old writeup", () => {

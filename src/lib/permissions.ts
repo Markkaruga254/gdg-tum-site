@@ -12,7 +12,6 @@ export function canManageWriteup(
   return role === "admin" || (
     role === "lead"
     && Boolean(uid)
-    && writeup.authorId === uid
     && Boolean(currentTrack)
     && writeup.trackId === currentTrack
   );

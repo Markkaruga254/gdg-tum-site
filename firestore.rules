@@ -31,11 +31,29 @@ service cloud.firestore {
     function writeupExists(writeupId) { return exists(writeupPath(writeupId)); }
     function writeupData(writeupId) { return get(writeupPath(writeupId)).data; }
     function isWriteupAuthor(writeupId) {
-      return isSignedIn() && writeupExists(writeupId)
+      return isSignedIn()
+        && role() != "lead"
+        && writeupExists(writeupId)
         && writeupData(writeupId).get("authorId", "") == request.auth.uid;
     }
     function canManageMedia(writeupId) {
-      return isAdmin() || isWriteupAuthor(writeupId);
+      return isSignedIn()
+        && exists(userPath(request.auth.uid))
+        && exists(writeupPath(writeupId))
+        && (
+          get(userPath(request.auth.uid)).data.get("role", "") == "admin"
+          || (
+            get(userPath(request.auth.uid)).data.get("role", "") == "lead"
+            && get(userPath(request.auth.uid)).data.get("track", "") is string
+            && get(writeupPath(writeupId)).data.get("trackId", "") is string
+            && get(userPath(request.auth.uid)).data.get("track", "")
+              == get(writeupPath(writeupId)).data.get("trackId", "")
+          )
+          || (
+            get(userPath(request.auth.uid)).data.get("role", "") != "lead"
+            && get(writeupPath(writeupId)).data.get("authorId", "") == request.auth.uid
+          )
+        );
     }
 
     match /tracks/{id} {
@@ -101,7 +119,11 @@ service cloud.firestore {
 
     match /writeups/{id} {
       allow read: if resource.data.get("status", "") == "published"
-        || (isSignedIn() && (resource.data.get("authorId", "") == request.auth.uid || isAdmin()));
+        || (isSignedIn() && (
+          (role() != "lead" && resource.data.get("authorId", "") == request.auth.uid)
+          || isLeadOf(resource.data.get("trackId", ""))
+          || isAdmin()
+        ));
       allow create: if isSignedIn() && (
         isAdmin()
         || (isLeadOf(request.resource.data.trackId)
@@ -113,7 +135,6 @@ service cloud.firestore {
         && (isAdmin() || (
           isSignedIn()
           && isLeadOf(resource.data.trackId)
-          && resource.data.authorId == request.auth.uid
           && request.resource.data.status in ["draft", "published"]
         ));
       allow delete: if isAdmin();
@@ -124,13 +145,18 @@ service cloud.firestore {
         writeupExists(resource.data.writeupId) && (
           writeupData(resource.data.writeupId).get("status", "") == "published"
           || isWriteupAuthor(resource.data.writeupId)
+          || isLeadOf(writeupData(resource.data.writeupId).get("trackId", ""))
         )
       );
       allow create: if isSignedIn() && canManageMedia(request.resource.data.writeupId);
       allow update: if isSignedIn()
+        && resource.data.keys().hasAll(["writeupId"])
+        && request.resource.data.keys().hasAll(["writeupId"])
         && request.resource.data.writeupId == resource.data.writeupId
         && canManageMedia(resource.data.writeupId);
-      allow delete: if isSignedIn() && canManageMedia(resource.data.writeupId);
+      allow delete: if resource.data.get("writeupId", "") is string
+        && resource.data.get("writeupId", "") != ""
+        && canManageMedia(resource.data.get("writeupId", ""));
     }
 
     match /galleryPhotos/{id} {
