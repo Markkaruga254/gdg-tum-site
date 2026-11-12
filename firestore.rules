@@ -37,13 +37,18 @@ service cloud.firestore {
         && writeupData(writeupId).get("authorId", "") == request.auth.uid;
     }
     function canManageMedia(writeupId) {
-      return isAdmin() || (
-        isSignedIn()
-        && exists(userPath(request.auth.uid))
-        && writeupExists(writeupId)
-        && get(userPath(request.auth.uid)).data.role == "lead"
-        && get(userPath(request.auth.uid)).data.track == writeupData(writeupId).trackId
-      ) || isWriteupAuthor(writeupId);
+      return isSignedIn() && (
+        isAdmin()
+        || (
+          writeupExists(writeupId)
+          && isLeadOf(writeupData(writeupId).get("trackId", ""))
+        )
+        || (
+          role() != "lead"
+          && writeupExists(writeupId)
+          && writeupData(writeupId).get("authorId", "") == request.auth.uid
+        )
+      );
     }
 
     match /tracks/{id} {
@@ -145,8 +150,9 @@ service cloud.firestore {
         && request.resource.data.writeupId == resource.data.writeupId
         && canManageMedia(resource.data.writeupId);
       allow delete: if isSignedIn()
-        && resource.data.keys().hasAll(["writeupId"])
-        && canManageMedia(resource.data.writeupId);
+        && resource.data.get("writeupId", "") is string
+        && resource.data.get("writeupId", "") != ""
+        && canManageMedia(resource.data.get("writeupId", ""));
     }
 
     match /galleryPhotos/{id} {
