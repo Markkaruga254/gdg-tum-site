@@ -194,8 +194,8 @@ await expectAllowed(() => deleteDoc(doc(leadCloudSecondary, "media", "m-draft"))
 await expectDenied(() => addDoc(collection(member, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-member" }), "member cannot create media", { clean: true });
 await expectDenied(() => addDoc(collection(anon, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-anon" }), "anonymous cannot create media", { clean: true });
 await expectDenied(() => addDoc(collection(leadCloud, "media"), { writeupId: "w-draft-web", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-lead-cloud" }), "cloud lead cannot create media on a web writeup", { clean: true });
-await expectDenied(() => updateDoc(doc(leadWeb, "media", "m-draft"), { caption: "vandal" }), "web lead cannot caption cloud lead's draft media", { clean: true });
-await expectDenied(() => deleteDoc(doc(leadWeb, "media", "m-draft")), "web lead cannot delete cloud track media", { clean: true });
+await expectDenied(() => updateDoc(doc(leadWeb, "media", "m-draft-cross-track"), { caption: "vandal" }), "web lead cannot caption cloud lead's draft media", { clean: true });
+await expectDenied(() => deleteDoc(doc(leadWeb, "media", "m-draft-cross-track")), "web lead cannot delete cloud track media", { clean: true });
 await expectDenied(() => deleteDoc(doc(member, "media", "m-published")), "member cannot delete media");
 
 // ---- galleryPhotos --------------------------------------------------------
