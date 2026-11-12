@@ -37,23 +37,23 @@ service cloud.firestore {
         && writeupData(writeupId).get("authorId", "") == request.auth.uid;
     }
     function canManageMedia(writeupId) {
-      return isSignedIn() && (
-        isAdmin()
-        || (
-          role() == "lead"
-          ? (
-            writeupExists(writeupId)
-            && writeupData(writeupId).keys().hasAll(["trackId"])
-            && get(userPath(request.auth.uid)).data.keys().hasAll(["track"])
-            && writeupData(writeupId).trackId == get(userPath(request.auth.uid)).data.track
+      return isSignedIn()
+        && exists(userPath(request.auth.uid))
+        && exists(writeupPath(writeupId))
+        && (
+          get(userPath(request.auth.uid)).data.get("role", "") == "admin"
+          || (
+            get(userPath(request.auth.uid)).data.get("role", "") == "lead"
+            && get(userPath(request.auth.uid)).data.get("track", "") is string
+            && get(writeupPath(writeupId)).data.get("trackId", "") is string
+            && get(userPath(request.auth.uid)).data.get("track", "")
+              == get(writeupPath(writeupId)).data.get("trackId", "")
           )
-          : (
-            writeupExists(writeupId)
-            && writeupData(writeupId).keys().hasAll(["authorId"])
-            && writeupData(writeupId).authorId == request.auth.uid
+          || (
+            get(userPath(request.auth.uid)).data.get("role", "") != "lead"
+            && get(writeupPath(writeupId)).data.get("authorId", "") == request.auth.uid
           )
-        )
-      );
+        );
     }
 
     match /tracks/{id} {
@@ -154,11 +154,9 @@ service cloud.firestore {
         && request.resource.data.keys().hasAll(["writeupId"])
         && request.resource.data.writeupId == resource.data.writeupId
         && canManageMedia(resource.data.writeupId);
-      allow delete: if isSignedIn()
-        && resource.data.keys().hasAll(["writeupId"])
-        && resource.data.writeupId is string
-        && resource.data.writeupId != ""
-        && canManageMedia(resource.data.writeupId);
+      allow delete: if resource.data.get("writeupId", "") is string
+        && resource.data.get("writeupId", "") != ""
+        && canManageMedia(resource.data.get("writeupId", ""));
     }
 
     match /galleryPhotos/{id} {
