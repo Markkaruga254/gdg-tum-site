@@ -177,7 +177,8 @@ await expectDenied(() => getDoc(doc(anon, "media", "m-draft")), "anonymous canno
 await expectDenied(() => getDoc(doc(member, "media", "m-draft")), "a member cannot read media on someone else's draft");
     await expectAllowed(() => getDoc(doc(leadCloud, "media", "m-draft")), "the author reads their own draft's media");
 await expectAllowed(() => getDoc(doc(leadCloudSecondary, "media", "m-draft")), "a different lead of the same track reads draft media");
-    await expectAllowed(() => getDoc(doc(admin, "media", "m-draft")), "admin reads media on someone else's draft");
+await expectDenied(() => getDoc(doc(leadWeb, "media", "m-draft")), "a lead from another track cannot read draft media", { clean: true });
+await expectAllowed(() => getDoc(doc(admin, "media", "m-draft")), "admin reads media on someone else's draft");
 await expectAllowed(() => getDoc(doc(admin, "media", "m-orphan")), "admin can read media even if its parent writeup was removed");
 await expectDenied(() => getDoc(doc(anon, "media", "m-orphan")), "anonymous cannot read media whose parent writeup is missing");
     await expectAllowed(() => getDocs(query(collection(anon, "media"), where("writeupId", "==", "w-published-cloud"))), "anonymous lists media for a published writeup");
@@ -194,6 +195,7 @@ await expectDenied(() => addDoc(collection(member, "media"), { writeupId: "w-pub
 await expectDenied(() => addDoc(collection(anon, "media"), { writeupId: "w-published-cloud", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-anon" }), "anonymous cannot create media", { clean: true });
 await expectDenied(() => addDoc(collection(leadCloud, "media"), { writeupId: "w-draft-web", url: "https://example.invalid/c.jpg", publicId: "fixture/c", createdBy: "u-lead-cloud" }), "cloud lead cannot create media on a web writeup", { clean: true });
 await expectDenied(() => updateDoc(doc(leadWeb, "media", "m-draft"), { caption: "vandal" }), "web lead cannot caption cloud lead's draft media", { clean: true });
+await expectDenied(() => deleteDoc(doc(leadWeb, "media", "m-draft")), "web lead cannot delete cloud track media", { clean: true });
 await expectDenied(() => deleteDoc(doc(member, "media", "m-published")), "member cannot delete media");
 
 // ---- galleryPhotos --------------------------------------------------------
