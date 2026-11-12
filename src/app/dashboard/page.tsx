@@ -103,7 +103,7 @@ export default function DashboardPage() {
   async function loadWriteups() {
     if (!uid) return;
     try {
-      const fetched = role === "admin" ? await getWriteups() : await getWriteups({ authorId: uid });
+      const fetched = role === "admin" ? await getWriteups() : await getWriteups({ trackId: track as TrackSlug });
       setWriteups(fetched as any[]);
     } catch {
       setWriteups([]);
