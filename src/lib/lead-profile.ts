@@ -23,7 +23,7 @@ export function leadInitials(name: string | null | undefined): string {
   const normalizedName = typeof name === "string" ? name.trim() : "";
   if (!normalizedName) return "GD";
   return normalizedName
-    .split(/\\s+/)
+    .split(/\s+/)
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0].toUpperCase())
