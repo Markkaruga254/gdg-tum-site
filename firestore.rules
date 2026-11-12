@@ -40,13 +40,18 @@ service cloud.firestore {
       return isSignedIn() && (
         isAdmin()
         || (
-          writeupExists(writeupId)
-          && isLeadOf(writeupData(writeupId).get("trackId", ""))
-        )
-        || (
-          role() != "lead"
-          && writeupExists(writeupId)
-          && writeupData(writeupId).get("authorId", "") == request.auth.uid
+          role() == "lead"
+          ? (
+            writeupExists(writeupId)
+            && writeupData(writeupId).keys().hasAll(["trackId"])
+            && get(userPath(request.auth.uid)).data.keys().hasAll(["track"])
+            && writeupData(writeupId).trackId == get(userPath(request.auth.uid)).data.track
+          )
+          : (
+            writeupExists(writeupId)
+            && writeupData(writeupId).keys().hasAll(["authorId"])
+            && writeupData(writeupId).authorId == request.auth.uid
+          )
         )
       );
     }
