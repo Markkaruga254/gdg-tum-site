@@ -14,7 +14,7 @@ export default function OverviewTab({ events, writeups, setTab, startEditWriteup
       </div>
       <div className="mt-[22px] flex flex-wrap gap-[10px]">
         <button type="button" onClick={startNewWriteup} className="border-[3px] border-ink bg-yellow px-[18px] py-[12px] text-[12px] font-bold uppercase">New writeup ↗</button>
-        <button type="button" onClick={() => setTab("My events")} className="border-[3px] border-ink px-[18px] py-[12px] text-[12px] font-bold uppercase">Manage events ↗</button>
+        <button type="button" onClick={() => setTab("Track events")} className="border-[3px] border-ink px-[18px] py-[12px] text-[12px] font-bold uppercase">Manage track events ↗</button>
       </div>
       <details className="mt-[24px] border-[3px] border-ink">
         <summary className="cursor-pointer bg-ink px-[16px] py-[12px] text-[12px] font-bold uppercase text-white">
