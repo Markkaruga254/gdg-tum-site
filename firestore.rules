@@ -150,9 +150,10 @@ service cloud.firestore {
         && request.resource.data.writeupId == resource.data.writeupId
         && canManageMedia(resource.data.writeupId);
       allow delete: if isSignedIn()
-        && resource.data.get("writeupId", "") is string
-        && resource.data.get("writeupId", "") != ""
-        && canManageMedia(resource.data.get("writeupId", ""));
+        && resource.data.keys().hasAll(["writeupId"])
+        && resource.data.writeupId is string
+        && resource.data.writeupId != ""
+        && canManageMedia(resource.data.writeupId);
     }
 
     match /galleryPhotos/{id} {
