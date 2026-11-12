@@ -35,10 +35,19 @@ service cloud.firestore {
         && writeupData(writeupId).get("authorId", "") == request.auth.uid;
     }
     function canManageMedia(writeupId) {
-      return isAdmin() || (writeupExists(writeupId) && (
-        isWriteupAuthor(writeupId)
-        || isLeadOf(writeupData(writeupId).get("trackId", ""))
-      ));
+      return isAdmin() || (
+        isSignedIn()
+        && writeupExists(writeupId)
+        && (
+          writeupData(writeupId).get("authorId", "") == request.auth.uid
+          || (
+            exists(userPath(request.auth.uid))
+            && get(userPath(request.auth.uid)).data.get("role", "") == "lead"
+            && get(userPath(request.auth.uid)).data.get("track", "")
+              == writeupData(writeupId).get("trackId", "")
+          )
+        )
+      );
     }
 
     match /tracks/{id} {
