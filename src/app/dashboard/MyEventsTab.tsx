@@ -7,7 +7,7 @@ import { TRACKS } from "@/lib/tracks";
 export default function MyEventsTab({ events, role, eventForm, setEventForm, eventErrors, saveEvent, saving, editingEvent, setEditingEvent, startEditEvent, cancelEvent, deleteEvent }: any) {
   return (
     <section>
-                  <h2 className="font-display text-2xl uppercase">My events</h2>
+                  <h2 className="font-display text-2xl uppercase">Track events</h2>
                   <form onSubmit={(e) => { e.preventDefault(); saveEvent(); }} className="mt-4 grid gap-2">
                     <FormField label="Title" id="et" error={eventErrors.title}>
                       <input id="et" value={eventForm.title} onChange={(e) => setEventForm({ ...eventForm, title: e.target.value } as any)} className="border-[3px] border-ink px-3 py-2" />
