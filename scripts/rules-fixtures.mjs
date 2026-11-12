@@ -69,6 +69,9 @@ export async function seedFixtures(env) {
 
     await setDoc(doc(db, "media", "m-published"), { writeupId: "w-published-cloud", url: "https://example.invalid/a.jpg", publicId: "fixture/a", caption: "", altText: "", createdBy: "u-lead-cloud" });
     await setDoc(doc(db, "media", "m-draft"), { writeupId: "w-media-draft", url: "https://example.invalid/b.jpg", publicId: "fixture/b", caption: "", altText: "", createdBy: "u-lead-cloud" });
+    // Kept separate from m-draft because the same-track delete test removes m-draft.
+    // Cross-track denials must exercise a real existing media document, not a missing resource.
+    await setDoc(doc(db, "media", "m-draft-cross-track"), { writeupId: "w-media-draft", url: "https://example.invalid/cross-track.jpg", publicId: "fixture/cross-track", caption: "", altText: "", createdBy: "u-lead-cloud" });
     await setDoc(doc(db, "media", "m-orphan"), { writeupId: "missing-writeup", url: "https://example.invalid/orphan.jpg", publicId: "fixture/orphan", caption: "", altText: "", createdBy: "u-lead-cloud" });
 
     await setDoc(doc(db, "partners", "partner-u"), { name: "Fixture University", logoUrl: "https://example.invalid/u.png", link: "https://example.invalid/u", type: "university", order: 1, active: true });
