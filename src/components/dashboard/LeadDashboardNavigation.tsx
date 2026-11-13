@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 type DashboardRole = "lead" | "admin" | string;
 
 type DashboardNavigationProps = {
   role: DashboardRole;
   tab: string;
+  track: string;
   onTabChange: (tab: string) => void;
 };
 
@@ -30,6 +32,7 @@ const SECONDARY_ITEMS: NavigationItem[] = [
 export default function LeadDashboardNavigation({
   role,
   tab,
+  track,
   onTabChange,
 }: DashboardNavigationProps) {
   const [moreOpen, setMoreOpen] = useState(false);
@@ -83,6 +86,14 @@ export default function LeadDashboardNavigation({
         className="hidden min-w-0 border-r-[3px] border-ink md:sticky md:top-0 md:block md:self-start"
       >
         {items.map((item) => renderItem(item))}
+        {role === "lead" && track && (
+          <Link
+            href={`/track?slug=${encodeURIComponent(track)}`}
+            className="block border-b-[3px] border-ink bg-white px-[14px] py-[16px] text-[11px] font-bold uppercase hover:bg-[#f3f3f3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-5px] focus-visible:outline-blue sm:px-[18px]"
+          >
+            My track ↗
+          </Link>
+        )}
       </aside>
 
       <nav
@@ -133,6 +144,15 @@ export default function LeadDashboardNavigation({
               More workspace
             </p>
             {secondaryItems.map((item) => renderItem(item, true))}
+            {role === "lead" && track && (
+              <Link
+                href={`/track?slug=${encodeURIComponent(track)}`}
+                onClick={() => setMoreOpen(false)}
+                className="block border-b-[3px] border-ink bg-white px-[16px] py-[13px] text-[11px] font-bold uppercase hover:bg-[#f3f3f3]"
+              >
+                My track ↗
+              </Link>
+            )}
           </div>
         )}
       </nav>
