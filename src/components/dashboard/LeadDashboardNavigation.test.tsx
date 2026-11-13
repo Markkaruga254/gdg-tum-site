@@ -19,7 +19,7 @@ describe("lead dashboard navigation", () => {
     );
 
     const sidebar = within(screen.getByTestId("dashboard-sidebar"));
-    for (const label of ["Overview", "Writeups", "Events", "My media", "Live ticker", "My profile"]) {
+    for (const label of ["Overview", "New writeup", "Events", "My media", "Live ticker", "My profile"]) {
       expect(sidebar.getByRole("button", { name: label })).toBeInTheDocument();
     }
     expect(sidebar.queryByRole("button", { name: "Gallery manager" })).not.toBeInTheDocument();
