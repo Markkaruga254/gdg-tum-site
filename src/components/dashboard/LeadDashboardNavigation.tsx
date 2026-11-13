@@ -101,7 +101,7 @@ export default function LeadDashboardNavigation({
                 className={[
                   "min-w-0 px-1 py-[13px] text-center text-[10px] font-bold uppercase",
                   active ? "bg-yellow" : "bg-white",
-                  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-blue",
+                  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue",
                 ].join(" ")}
               >
                 {item.label}
@@ -117,7 +117,7 @@ export default function LeadDashboardNavigation({
             className={[
               "min-w-0 px-1 py-[13px] text-center text-[10px] font-bold uppercase",
               moreIsActive || moreOpen ? "bg-yellow" : "bg-white",
-              "focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-blue",
+              "focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue",
             ].join(" ")}
           >
             More {moreOpen ? "−" : "+"}
