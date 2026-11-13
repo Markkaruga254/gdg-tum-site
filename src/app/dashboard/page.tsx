@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { onAuthStateChanged } from "firebase/auth";
@@ -28,6 +29,7 @@ import LeadDashboardNavigation from "@/components/dashboard/LeadDashboardNavigat
 import { generatePhotoCaptions, generateWriteupDraft } from "@/lib/writeup-ai";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [allowed, setAllowed] = useState<boolean | null>(null);
   const [uid, setUid] = useState<string | null>(null);
   const [role, setRole] = useState<string>("");
@@ -125,6 +127,15 @@ export default function DashboardPage() {
   }
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (allowed && uid) { void loadEvents(); void loadWriteups(); } }, [allowed, uid, role, track]);
+
+  async function handleSignOut() {
+    try {
+      await signOut();
+      router.replace("/");
+    } catch {
+      setErr("Could not sign out. Please try again.");
+    }
+  }
 
   function validateEvent() {
     const errors = validateEventSchema(eventForm, role);
@@ -401,10 +412,10 @@ export default function DashboardPage() {
           {role === "admin" ? "Admin" : `${track.replaceAll("-", " ")} Track`}
         </span>
         <div className="order-4 flex w-full border-t-[3px] border-ink sm:order-none sm:ml-auto sm:w-auto sm:border-l-[3px] sm:border-t-0">
-          <Link href="/" aria-label="View public GDG TUM website" className="flex flex-1 items-center justify-center gap-2 bg-yellow px-[14px] py-[13px] text-[10px] font-bold uppercase tracking-[.04em] hover:bg-[#f2c900] focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-blue sm:flex-none sm:px-[16px] sm:py-[22px] sm:text-[11px]">
+          <Link href="/" aria-label="View public GDG TUM website" className="flex flex-1 items-center justify-center gap-2 bg-yellow px-[14px] py-[13px] text-[10px] font-bold uppercase tracking-[.04em] hover:bg-[#f2c900] focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue sm:flex-none sm:px-[16px] sm:py-[22px] sm:text-[11px]">
             View public site <span aria-hidden="true">↗</span>
           </Link>
-          <button type="button" onClick={() => void signOut()} className="border-l-[3px] border-ink px-[14px] py-[13px] text-[10px] font-bold uppercase hover:bg-[#f3f3f3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-blue sm:px-[16px] sm:py-[22px] sm:text-[11px]">
+          <button type="button" onClick={() => void handleSignOut()} className="border-l-[3px] border-ink px-[14px] py-[13px] text-[10px] font-bold uppercase hover:bg-[#f3f3f3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue sm:px-[16px] sm:py-[22px] sm:text-[11px]">
             Sign out
           </button>
         </div>
