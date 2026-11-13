@@ -5,7 +5,7 @@ import Link from "next/link";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/auth";
+import { auth, signOut } from "@/lib/auth";
 import { db } from "@/lib/firebase";
 import { doc, collection, addDoc, updateDoc, deleteDoc, serverTimestamp, Timestamp } from "firebase/firestore";
 import {
@@ -23,9 +23,9 @@ import MyProfileTab from "./MyProfileTab";
 import GalleryManagerTab from "./GalleryManagerTab";
 import { getUserById, getEvents, getWriteups, getMediaByWriteup } from "@/lib/data";
 import type { TrackSlug } from "@/lib/types";
+import { TRACKS } from "@/lib/tracks";
+import LeadDashboardNavigation from "@/components/dashboard/LeadDashboardNavigation";
 import { generatePhotoCaptions, generateWriteupDraft } from "@/lib/writeup-ai";
-
-const TABS = ["Overview","New writeup","Track events","Media","Gallery","Live ticker","My profile","Partners"];
 
 export default function DashboardPage() {
   const [allowed, setAllowed] = useState<boolean | null>(null);
@@ -74,12 +74,16 @@ export default function DashboardPage() {
         const userData = await getUserById(u.uid);
         if (!active) return;
         const r = userData?.role ?? "member";
-        const ok = r === "lead" || r === "admin";
+        const assignedTrack = typeof userData?.track === "string" ? userData.track : "";
+        const validLeadTrack = TRACKS.some((item) => item.slug === assignedTrack);
+        const ok = r === "admin" || (r === "lead" && validLeadTrack);
+        setRole(r);
+        setTrack(assignedTrack);
         setAllowed(ok);
         if (ok) {
           setUid(u.uid);
-          setRole(r);
-          setTrack(userData?.track ?? "");
+        } else if (r === "lead") {
+          setErr("Your Lead account needs a valid track assignment before you can access the workspace. Contact a GDG TUM administrator.");
         }
       } catch {
         if (active) {
@@ -93,7 +97,7 @@ export default function DashboardPage() {
 
   async function loadEvents() {
     try {
-      const fetched = role === "lead" && track ? await getEvents({ trackId: track as TrackSlug }) : await getEvents();
+      const fetched = role === "lead" ? await getEvents({ trackId: track as TrackSlug }) : await getEvents();
       setEvents(fetched as any[]);
     } catch {
       setEvents([]);
@@ -384,30 +388,30 @@ export default function DashboardPage() {
   }
 
   if (allowed === null) return <><Nav /><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]">Loading dashboard…</main><Footer /></>;
-  if (!allowed) return <><Nav /><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]"><h1 className="font-display text-[48px] uppercase">Not allowed</h1><p className="mt-2 text-sm">This dashboard is available to track leads and admins.</p></main><Footer /></>;
+  if (!allowed) return <><Nav /><main className="mx-auto max-w-[1280px] px-[26px] py-[32px]"><h1 className="font-display text-[48px] uppercase">Workspace unavailable</h1><p className="mt-2 max-w-[620px] text-sm">{err || "This dashboard is available to provisioned track leads and admins."}</p><Link href="/" className="mt-6 inline-flex border-[3px] border-ink bg-yellow px-[16px] py-[12px] text-[11px] font-bold uppercase">Return to public site ↗</Link></main><Footer /></>;
 
   return (
     <>
       <header className="mx-auto flex max-w-[1280px] flex-wrap items-center border-b-[3px] border-ink">
-        <Link href="/" aria-label="GDG.TUM home" className="border-r-[3px] border-ink px-[22px] py-[14px] font-display text-[30px] uppercase leading-none tracking-[1px]">
-          GDG.TUM
+        <Link href="/" aria-label="GDG.TUM home" className="border-r-[3px] border-ink px-[16px] py-[14px] font-display text-[28px] uppercase leading-none tracking-[1px] sm:px-[22px] sm:text-[30px]">
+          GDG<span className="text-blue">.</span>TUM
         </Link>
-        <span className="px-[20px] text-[12px] font-bold uppercase tracking-[.5px]">{tab === "New writeup" && writeupStep === 1 ? "Lead dashboard · New writeup" : "Lead dashboard"}</span>
-        <span className="ml-auto border-l-[3px] border-ink bg-blue px-[20px] py-[22px] text-[12px] font-bold uppercase tracking-[.5px] text-white">
+        <span className="min-w-0 flex-1 px-[12px] py-[12px] text-[10px] font-bold uppercase tracking-[.5px] sm:px-[20px] sm:text-[12px]">{tab === "New writeup" && writeupStep === 1 ? "Lead workspace · New writeup" : "Lead workspace"}</span>
+        <span className="order-3 border-t-[3px] border-ink bg-blue px-[14px] py-[13px] text-[10px] font-bold uppercase tracking-[.5px] text-white sm:order-none sm:border-l-[3px] sm:border-t-0 sm:px-[20px] sm:py-[22px] sm:text-[12px]">
           {role === "admin" ? "Admin" : `${track.replaceAll("-", " ")} Track`}
         </span>
+        <div className="order-4 flex w-full border-t-[3px] border-ink sm:order-none sm:ml-auto sm:w-auto sm:border-l-[3px] sm:border-t-0">
+          <Link href="/" aria-label="View public GDG TUM website" className="flex flex-1 items-center justify-center gap-2 bg-yellow px-[14px] py-[13px] text-[10px] font-bold uppercase tracking-[.04em] hover:bg-[#f2c900] focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-blue sm:flex-none sm:px-[16px] sm:py-[22px] sm:text-[11px]">
+            View public site <span aria-hidden="true">↗</span>
+          </Link>
+          <button type="button" onClick={() => void signOut()} className="border-l-[3px] border-ink px-[14px] py-[13px] text-[10px] font-bold uppercase hover:bg-[#f3f3f3] focus-visible:outline focus-visible:outline-2 focus-visible:outline-inset focus-visible:outline-blue sm:px-[16px] sm:py-[22px] sm:text-[11px]">
+            Sign out
+          </button>
+        </div>
       </header>
-      <div data-testid="dashboard-layout" className="mx-auto grid max-w-[1280px] grid-cols-1 border-x-[3px] md:grid-cols-[minmax(180px,230px)_minmax(0,1fr)] border-ink">
-        <aside data-testid="dashboard-sidebar" className="min-w-0 border-b-[3px] border-ink md:border-b-0 md:border-r-[3px]">
-            {(TABS.filter((t) => {
-              if (t === "Partners" || t === "Gallery") return role === "admin";
-              if (t === "Live ticker") return role === "admin" || role === "lead";
-              return true;
-            })).map((t) => (
-              <button key={t} type="button" onClick={() => t === "New writeup" ? startNewWriteup() : setTab(t)} aria-current={tab === t ? "page" : undefined} className={`block w-full border-b-[3px] border-ink px-[10px] py-[14px] text-left text-[10px] font-bold uppercase leading-[1.3] sm:px-[18px] sm:py-[17px] sm:text-[11px] ${tab === t ? "bg-yellow" : "bg-white"}`}>{t}</button>
-            ))}
-        </aside>
-        <main className="min-w-0 p-[12px] sm:p-[28px]">
+      <div data-testid="dashboard-layout" className="mx-auto grid max-w-[1280px] grid-cols-1 border-x-[3px] border-ink md:grid-cols-[minmax(180px,230px)_minmax(0,1fr)]">
+        <LeadDashboardNavigation role={role} tab={tab} onTabChange={setTab} />
+        <main className="min-w-0 px-[12px] pb-[112px] pt-[16px] sm:px-[28px] sm:pt-[28px] md:pb-[28px]">
           {msg && <p className="mb-2 text-sm text-green">{msg}</p>}
           {err && <p className="mb-2 text-sm text-red">{err}</p>}
 
