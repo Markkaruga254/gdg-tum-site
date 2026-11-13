@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, within } from "@testing-library/react";
+import type { AnchorHTMLAttributes } from "react";
+
+vi.mock("next/link", () => ({
+  default: ({ href, ...props }: AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) => <a href={href} {...props} />,
+}));
 import LeadDashboardNavigation from "./LeadDashboardNavigation";
 
 describe("lead dashboard navigation", () => {
