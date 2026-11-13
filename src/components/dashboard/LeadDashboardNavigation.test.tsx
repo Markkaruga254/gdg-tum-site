@@ -27,6 +27,7 @@ describe("lead dashboard navigation", () => {
     render(
       <LeadDashboardNavigation
         role="lead"
+        track="cloud"
         tab="Track events"
         onTabChange={onTabChange}
       />,
@@ -43,6 +44,7 @@ describe("lead dashboard navigation", () => {
     render(
       <LeadDashboardNavigation
         role="lead"
+        track="cloud"
         tab="Overview"
         onTabChange={onTabChange}
       />,
