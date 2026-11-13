@@ -88,5 +88,6 @@ test("login renders and protected staff pages reject signed-out visitors", async
   await expect(page.getByRole("heading", { name: "Not allowed", exact: true })).toBeVisible();
 
   await page.goto("/dashboard");
-  await expect(page.getByRole("heading", { name: "Not allowed", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Workspace unavailable", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: /Return to public site/ })).toHaveAttribute("href", "/");
 });
