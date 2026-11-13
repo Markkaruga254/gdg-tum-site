@@ -20,7 +20,7 @@ type NavigationItem = {
 const PRIMARY_ITEMS: NavigationItem[] = [
   { tab: "Overview", label: "Overview" },
   { tab: "Track events", label: "Events" },
-  { tab: "New writeup", label: "Writeups" },
+  { tab: "New writeup", label: "New writeup" },
 ];
 
 const SECONDARY_ITEMS: NavigationItem[] = [
