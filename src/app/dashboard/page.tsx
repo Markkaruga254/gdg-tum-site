@@ -421,7 +421,7 @@ export default function DashboardPage() {
         </div>
       </header>
       <div data-testid="dashboard-layout" className="mx-auto grid max-w-[1280px] grid-cols-1 border-x-[3px] border-ink md:grid-cols-[minmax(180px,230px)_minmax(0,1fr)]">
-        <LeadDashboardNavigation role={role} tab={tab} onTabChange={setTab} />
+        <LeadDashboardNavigation role={role} track={track} tab={tab} onTabChange={setTab} />
         <main className="min-w-0 px-[12px] pb-[112px] pt-[16px] sm:px-[28px] sm:pt-[28px] md:pb-[28px]">
           {msg && <p className="mb-2 text-sm text-green">{msg}</p>}
           {err && <p className="mb-2 text-sm text-red">{err}</p>}
