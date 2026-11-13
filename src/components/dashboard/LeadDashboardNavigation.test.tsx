@@ -7,6 +7,7 @@ describe("lead dashboard navigation", () => {
     render(
       <LeadDashboardNavigation
         role="lead"
+        track="cloud"
         tab="Overview"
         onTabChange={vi.fn()}
       />,
@@ -18,6 +19,7 @@ describe("lead dashboard navigation", () => {
     }
     expect(sidebar.queryByRole("button", { name: "Gallery manager" })).not.toBeInTheDocument();
     expect(sidebar.queryByRole("button", { name: "Partners" })).not.toBeInTheDocument();
+    expect(sidebar.getByRole("link", { name: "My track ↗" })).toHaveAttribute("href", "/track?slug=cloud");
   });
 
   it("marks the current section and changes sections when selected", () => {
@@ -52,6 +54,7 @@ describe("lead dashboard navigation", () => {
     fireEvent.click(moreButton);
 
     const moreMenu = within(screen.getByText("More workspace").parentElement as HTMLElement);
+    expect(moreMenu.getByRole("link", { name: "My track ↗" })).toHaveAttribute("href", "/track?slug=cloud");
     fireEvent.click(moreMenu.getByRole("button", { name: "My media" }));
     expect(onTabChange).toHaveBeenCalledWith("Media");
     expect(moreButton).toHaveAttribute("aria-expanded", "false");
@@ -61,6 +64,7 @@ describe("lead dashboard navigation", () => {
     render(
       <LeadDashboardNavigation
         role="admin"
+        track=""
         tab="Overview"
         onTabChange={vi.fn()}
       />,
@@ -69,5 +73,6 @@ describe("lead dashboard navigation", () => {
     const sidebar = within(screen.getByTestId("dashboard-sidebar"));
     expect(sidebar.getByRole("button", { name: "Gallery manager" })).toBeInTheDocument();
     expect(sidebar.getByRole("button", { name: "Partners" })).toBeInTheDocument();
+    expect(sidebar.queryByRole("link", { name: "My track ↗" })).not.toBeInTheDocument();
   });
 });
