@@ -8,7 +8,7 @@ function trackLabel(trackId: string) {
   if (trackId === "ai-ml") return "AI / ML";
   if (trackId === "women-in-tech") return "Women in Tech";
   if (trackId === "hackathons-solutions") return "Hackathons & Solutions";
-  return trackId.replaceAll("-", " ").replace(/\\b\\w/g, (letter) => letter.toUpperCase());
+  return trackId.replaceAll("-", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 export default function NextEventFeature({
