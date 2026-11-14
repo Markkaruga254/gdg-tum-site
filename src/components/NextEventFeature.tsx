@@ -87,10 +87,12 @@ export default function NextEventFeature({
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-black/10" />
             </div>
-            <div className="absolute -bottom-7 right-5 z-10 flex h-[112px] w-[104px] flex-col items-center justify-center rounded-2xl border border-white/20 bg-[#10141d] shadow-[0_12px_36px_rgba(0,0,0,.45)] before:absolute before:inset-0 before:-z-10 before:rounded-2xl before:bg-[linear-gradient(145deg,#4285f4_0%,#4285f4_28%,#ea4335_28%,#ea4335_52%,#fbbc04_52%,#fbbc04_76%,#34a853_76%)] before:p-[2px] md:-right-7 md:bottom-8 md:h-[126px] md:w-[112px]">
-              <span className="text-[10px] font-bold tracking-[.14em] text-white/65">{weekday}</span>
-              <span className="font-display text-5xl leading-none">{day}</span>
-              <span className="mt-1 text-sm font-bold tracking-[.12em] text-blue-300">{month}</span>
+            <div className="absolute -bottom-7 right-5 z-10 rounded-2xl bg-[linear-gradient(145deg,#4285f4_0%,#4285f4_28%,#ea4335_28%,#ea4335_52%,#fbbc04_52%,#fbbc04_76%,#34a853_76%)] p-[2px] shadow-[0_12px_36px_rgba(0,0,0,.45)] md:-right-7 md:bottom-8">
+              <div className="flex h-[108px] w-[100px] flex-col items-center justify-center rounded-[14px] bg-[#10141d] md:h-[122px] md:w-[108px]">
+                <span className="text-[10px] font-bold tracking-[.14em] text-white/65">{weekday}</span>
+                <span className="font-display text-5xl leading-none">{day}</span>
+                <span className="mt-1 text-sm font-bold tracking-[.12em] text-blue-300">{month}</span>
+              </div>
             </div>
           </div>
 
