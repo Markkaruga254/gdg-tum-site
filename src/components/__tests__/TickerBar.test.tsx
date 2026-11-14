@@ -31,7 +31,7 @@ describe("TickerBar", () => {
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
-  it("renders the active ticker message", () => {
+  it("renders the active ticker message in an accessible live region", () => {
     mocks.onSnapshot.mockImplementation((_query, onNext) => {
       onNext({ empty: false, docs: [{ data: () => ({ message: "Cloud lab is live" }) }] });
       return vi.fn();
@@ -39,7 +39,21 @@ describe("TickerBar", () => {
 
     render(<TickerBar />);
 
-    expect(screen.getByRole("status")).toHaveTextContent("Live now");
-    expect(screen.getByRole("status")).toHaveTextContent("Cloud lab is live");
+    expect(screen.getByRole("status")).toHaveTextContent("Live event update: Cloud lab is live");
+    expect(screen.getByText("Live now")).toBeInTheDocument();
+  });
+
+  it("renders two matching marquee groups for a seamless loop", () => {
+    mocks.onSnapshot.mockImplementation((_query, onNext) => {
+      onNext({ empty: false, docs: [{ data: () => ({ message: "Cloud lab is live" }) }] });
+      return vi.fn();
+    });
+
+    render(<TickerBar />);
+
+    const groups = screen.getByTestId("ticker-marquee").querySelectorAll(".ticker-marquee__group");
+    expect(groups).toHaveLength(2);
+    expect(groups[0].textContent).toBe(groups[1].textContent);
+    expect(groups[1]).toHaveAttribute("aria-hidden", "true");
   });
 });
