@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: "GDG on Campus TUM",
   description: "GDG on Campus Technical University of Mombasa",
   icons: {
-    icon: [{ url: "/icon.svg", type: "image/svg+xml" }],
+    icon: [{ url: "/gdg-tum-icon-v2.svg", type: "image/svg+xml" }],
   },
 };
 
