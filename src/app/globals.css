@@ -81,7 +81,7 @@ textarea:disabled {
 .ticker-marquee__group {
   display: flex;
   width: max-content;
-  min-width: max(100vw, 80rem);
+  min-width: max(100vw, 120rem);
   flex: 0 0 auto;
   align-items: center;
   justify-content: space-between;
