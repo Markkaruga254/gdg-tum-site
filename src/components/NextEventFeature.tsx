@@ -23,19 +23,19 @@ export default function NextEventFeature({
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
-    <div
-      aria-label="Next event"
+    <section
+      aria-labelledby="homepage-next-event-heading"
       className="relative flex-1 overflow-hidden border-b-[3px] border-ink bg-blue px-[16px] py-[18px] text-white sm:px-[20px] sm:py-[22px] xl:px-[26px] xl:py-[24px]"
     >
       <div className="mb-4 flex items-center justify-between gap-3">
-        <p className="text-[11px] font-bold uppercase tracking-[.16em] text-white/80">Next event</p>
+        <h2 id="homepage-next-event-heading" className="text-[11px] font-bold uppercase tracking-[.16em] text-white/80">Next event</h2>
         <a href="/events" className="shrink-0 text-[10px] font-bold uppercase tracking-wide underline underline-offset-4 hover:text-white/75">
           All events ↗
         </a>
       </div>
 
       {loading ? (
-        <div className="grid min-h-[220px] animate-pulse grid-cols-2 overflow-hidden border-[2px] border-ink/30 bg-white/10 sm:min-h-[240px]">
+        <div className="grid min-h-[220px] animate-pulse grid-cols-2 overflow-hidden border-[2px] border-ink/30 bg-white/10 xl:min-h-[240px]">
           <div className="bg-white/10" />
           <div className="p-4">
             <div className="h-3 w-2/3 bg-white/20" />
@@ -50,8 +50,8 @@ export default function NextEventFeature({
           <a href="/events" className="mt-5 w-fit border-[2px] border-ink bg-white px-4 py-2 text-[10px] font-bold uppercase text-ink hover:bg-yellow">Explore events ↗</a>
         </div>
       ) : (
-        <article className="grid min-h-[250px] grid-cols-1 overflow-visible border-[2px] border-ink/35 bg-[#101827]/95 sm:min-h-[260px] sm:grid-cols-2">
-          <div className="relative min-h-[190px] overflow-visible sm:min-h-[260px]">
+        <article className="grid min-h-[250px] grid-cols-1 overflow-visible border-[2px] border-ink/35 bg-[#101827]/95 xl:min-h-[260px] xl:grid-cols-2">
+          <div className="relative min-h-[190px] overflow-visible xl:min-h-[260px]">
             <div className="absolute inset-0 overflow-hidden">
               {imageUrl && !imageFailed ? (
                 <img
@@ -70,7 +70,7 @@ export default function NextEventFeature({
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10" />
             </div>
-            <div className="absolute -bottom-3 right-3 z-10 rounded-lg bg-[linear-gradient(145deg,#4285f4_0%,#4285f4_28%,#ea4335_28%,#ea4335_52%,#fbbc04_52%,#fbbc04_76%,#34a853_76%)] p-[2px] shadow-lg sm:-right-3 sm:bottom-5">
+            <div className="absolute -bottom-3 right-3 z-10 rounded-lg bg-[linear-gradient(145deg,#4285f4_0%,#4285f4_28%,#ea4335_28%,#ea4335_52%,#fbbc04_52%,#fbbc04_76%,#34a853_76%)] p-[2px] shadow-lg xl:-right-3 xl:bottom-5">
               <div className="flex h-[76px] w-[72px] flex-col items-center justify-center rounded-[6px] bg-[#10141d]">
                 <span className="text-[8px] font-bold tracking-[.12em] text-white/65">{event.date.toDate().toLocaleDateString(undefined, { weekday: "short" }).toUpperCase()}</span>
                 <span className="font-display text-[34px] leading-none">{event.date.toDate().toLocaleDateString(undefined, { day: "2-digit" })}</span>
@@ -79,7 +79,7 @@ export default function NextEventFeature({
             </div>
           </div>
 
-          <div className="flex min-w-0 flex-col justify-center px-5 pb-5 pt-8 sm:px-5 sm:py-5 sm:pl-7">
+          <div className="flex min-w-0 flex-col justify-center px-5 pb-5 pt-8 xl:px-5 xl:py-5 xl:pl-7">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full border border-blue-300/30 bg-blue-400/10 px-2.5 py-1 text-[8px] font-bold uppercase tracking-[.12em] text-blue-100">Featured</span>
               <span className="text-[9px] font-semibold uppercase tracking-[.08em] text-white/55">{trackLabel(event.trackId)}</span>
@@ -102,6 +102,6 @@ export default function NextEventFeature({
           </div>
         </article>
       )}
-    </div>
+    </section>
   );
 }
