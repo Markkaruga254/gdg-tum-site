@@ -83,7 +83,7 @@ describe("Home page moments", () => {
 
     render(<Home />);
 
-    const rsvp = await screen.findByRole("button", { name: "RSVP (coming soon)" });
+    const rsvp = await screen.findByRole("button", { name: "RSVP opening soon" });
     expect(rsvp).toBeDisabled();
     expect(rsvp).toHaveClass("text-ink");
   });
