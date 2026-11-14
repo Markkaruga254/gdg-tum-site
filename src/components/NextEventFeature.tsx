@@ -121,7 +121,7 @@ export default function NextEventFeature({
 
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <button type="button" disabled aria-describedby="rsvp-status" className="inline-flex min-h-12 flex-1 cursor-not-allowed items-center justify-center gap-2 rounded-full bg-blue-600 px-5 text-sm font-bold text-white opacity-75">
-                RSVP (coming soon) <span aria-hidden="true">→</span>
+                RSVP opening soon <span aria-hidden="true">→</span>
               </button>
               <a href={eventHref} className="inline-flex min-h-12 flex-1 items-center justify-center rounded-full border border-white/25 px-5 text-sm font-semibold text-white transition-colors hover:border-white hover:bg-white/10">View event details <span aria-hidden="true" className="ml-2">↗</span></a>
             </div>
