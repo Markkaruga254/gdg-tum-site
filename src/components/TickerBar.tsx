@@ -15,11 +15,12 @@ function MarqueeGroup({ message }: { message: string }) {
     <div className="ticker-marquee__group" aria-hidden="true">
       <span className="ticker-marquee__message">{message}</span>
       <span className="ticker-marquee__separator">◆</span>
-      {MARQUEE_ITEMS.map((item) => (
-        <span className="ticker-marquee__item" key={item}>
-          {item}
+      {MARQUEE_ITEMS.map((item, index) => (
+        <span className="ticker-marquee__segment" key={item}>
+          {index > 0 && <span className="ticker-marquee__separator">◆</span>}
+          <span className="ticker-marquee__item">{item}</span>
         </span>
-        ))}
+      ))}
       <span className="ticker-marquee__separator">◆</span>
       <span className="ticker-marquee__message">{message}</span>
     </div>
