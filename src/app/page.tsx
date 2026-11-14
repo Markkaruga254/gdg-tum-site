@@ -7,16 +7,19 @@ import { PhotoImage } from "@/components/PhotoCard";
 import TickerBar from "@/components/TickerBar";
 import Tag from "@/components/Tag";
 import SectionHeader from "@/components/SectionHeader";
+import NextEventFeature from "@/components/NextEventFeature";
 import StatBlock from "@/components/StatBlock";
 import {
   getEvents,
   getWriteups,
+  getMediaByWriteup,
   getWriteupCount,
   getPosts,
   getPartners,
   getTracks,
   getUsers,
   type EventWithId,
+  type MediaWithId,
   type WriteupWithId,
   type PostWithId,
   type PartnerWithId,
@@ -51,6 +54,7 @@ function formatDateTime(date: unknown): string {
 
 export default function Home() {
   const [events, setEvents] = useState<EventWithId[]>([]);
+  const [nextEventImage, setNextEventImage] = useState<string | undefined>(undefined);
   const [writeups, setWriteups] = useState<WriteupWithId[]>([]);
   const [writeupCount, setWriteupCount] = useState(0);
   const [posts, setPosts] = useState<PostWithId[]>([]);
@@ -84,8 +88,28 @@ export default function Home() {
 
       const [eventsResult, writeupsResult, writeupCountResult, tracksResult, leadsResult, postsResult, partnersResult, momentsResult] = results;
 
-      if (eventsResult.status === "fulfilled") setEvents(eventsResult.value);
-      else setError("Events could not be loaded.");
+      if (eventsResult.status === "fulfilled") {
+        setEvents(eventsResult.value);
+        const featuredEvent = eventsResult.value.find((event) => event.status === "upcoming");
+        if (featuredEvent) {
+          void (async () => {
+            try {
+              let writeupId = featuredEvent.writeupId;
+              if (!writeupId) {
+                const relatedWriteups = await getWriteups({ status: "published", eventId: featuredEvent.id });
+                writeupId = relatedWriteups.sort(
+                  (a, b) => (b.publishedAt?.toMillis() ?? 0) - (a.publishedAt?.toMillis() ?? 0),
+                )[0]?.id;
+              }
+              if (!writeupId) return;
+              const eventMedia = await getMediaByWriteup(writeupId);
+              if (active && eventMedia[0]?.url) setNextEventImage(eventMedia[0].url);
+            } catch {
+              // The feature remains useful with its designed visual fallback when no photo is available.
+            }
+          })();
+        }
+      } else setError("Events could not be loaded.");
 
       if (writeupsResult.status === "fulfilled") setWriteups(writeupsResult.value);
       else setError("Writeups could not be loaded.");
@@ -158,30 +182,16 @@ export default function Home() {
               Explore tracks ↗
             </a>
           </div>
-          <div className="flex flex-col">
-            <div className={`bg-blue text-white px-[20px] py-[24px] border-b-[3px] border-ink flex-1 xl:px-[32px] xl:py-[30px]`}>
-              <SectionHeader className="tracking-[1px]">Next event</SectionHeader>
-              {loading ? (
-                <p className="mt-[12px] text-[15px]">Loading…</p>
-              ) : nextEvent ? (
-                <>
-                  <h2 className="font-display text-[38px] leading-[1.05] uppercase mt-[10px] xl:mt-[12px] xl:text-[44px]">{nextEvent.title}</h2>
-                  <p className="mt-[4px] text-[14px] xl:text-[15px]">{formatDateTime(nextEvent.date)} · {nextEvent.venue}</p>
-                  <button type="button" disabled className="mt-[18px] w-fit cursor-not-allowed border-[3px] border-ink bg-white px-[18px] py-[10px] text-[12px] font-bold uppercase text-ink opacity-60">
-                    RSVP (coming soon)
-                  </button>
-                </>
-              ) : (
-                <p className="mt-[12px] text-[15px]">No upcoming events.</p>
-              )}
-            </div>
-            <div className="grid grid-cols-3">
+          <div className="flex items-end">
+            <div className="grid w-full grid-cols-3">
               <StatBlock value={held} label="Events held" />
               <StatBlock value={writeupCount} label="Writeups" />
               <StatBlock value={tracks.length} label="Tracks" />
             </div>
           </div>
         </section>
+
+        <NextEventFeature event={nextEvent} imageUrl={nextEventImage} loading={loading} />
 
         {/* Latest writeups */}
         <section id="writeups" className="border-b-[3px] border-ink">
