@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-labelledby="title">
+  <title id="title">GDG TUM monogram</title>
+  <rect x="6" y="6" width="168" height="168" rx="36" fill="#fff" stroke="#202124" stroke-width="3"/>
+  <path d="M47 132V48L90 91" fill="none" stroke="#4285F4" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M90 91l43-43v84" fill="none" stroke="#EA4335" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="90" cy="91" r="12" fill="#FBBC04" stroke="#fff" stroke-width="4"/>
+  <circle cx="133" cy="132" r="10" fill="#34A853" stroke="#fff" stroke-width="4"/>
+</svg>
