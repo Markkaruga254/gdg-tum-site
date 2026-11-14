@@ -19,7 +19,6 @@ import {
   getTracks,
   getUsers,
   type EventWithId,
-  type MediaWithId,
   type WriteupWithId,
   type PostWithId,
   type PartnerWithId,
