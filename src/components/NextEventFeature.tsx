@@ -25,9 +25,9 @@ export default function NextEventFeature({
   return (
     <section
       aria-labelledby="homepage-next-event-heading"
-      className="relative flex-1 overflow-hidden border-b-[3px] border-ink bg-blue px-[16px] py-[18px] text-white sm:px-[20px] sm:py-[22px] xl:px-[26px] xl:py-[24px]"
+      className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-blue text-white"
     >
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-white/20 px-[16px] py-[12px] sm:px-[20px] xl:px-[24px]">
         <h2 id="homepage-next-event-heading" className="text-[11px] font-bold uppercase tracking-[.16em] text-white/80">Next event</h2>
         <a href="/events" className="shrink-0 text-[10px] font-bold uppercase tracking-wide underline underline-offset-4 hover:text-white/75">
           All events ↗
@@ -35,7 +35,7 @@ export default function NextEventFeature({
       </div>
 
       {loading ? (
-        <div className="grid min-h-[220px] animate-pulse grid-cols-2 overflow-hidden border-[2px] border-ink/30 bg-white/10 xl:min-h-[240px]">
+        <div className="grid min-h-[250px] flex-1 animate-pulse grid-cols-2 overflow-hidden bg-white/10 xl:min-h-[280px]">
           <div className="bg-white/10" />
           <div className="p-4">
             <div className="h-3 w-2/3 bg-white/20" />
@@ -44,14 +44,14 @@ export default function NextEventFeature({
           </div>
         </div>
       ) : !event ? (
-        <div className="flex min-h-[220px] flex-col justify-center border-[2px] border-ink/30 bg-blue-700/25 px-5 py-6 sm:min-h-[240px]">
+        <div className="flex min-h-[250px] flex-1 flex-col justify-center bg-blue-700/25 px-5 py-6 sm:px-8 xl:min-h-[280px] xl:px-10">
           <h2 className="font-display text-[30px] uppercase leading-none sm:text-[36px]">Nothing scheduled yet.</h2>
           <p className="mt-3 max-w-sm text-[13px] leading-5 text-white/80">We’re planning the next community session. Check the events calendar for updates.</p>
           <a href="/events" className="mt-5 w-fit border-[2px] border-ink bg-white px-4 py-2 text-[10px] font-bold uppercase text-ink hover:bg-yellow">Explore events ↗</a>
         </div>
       ) : (
-        <article className="grid min-h-[250px] grid-cols-1 overflow-visible border-[2px] border-ink/35 bg-[#101827]/95 xl:min-h-[260px] xl:grid-cols-2">
-          <div className="relative min-h-[190px] overflow-visible xl:min-h-[260px]">
+        <article className="grid min-h-[250px] flex-1 grid-cols-1 overflow-visible bg-[#101827]/95 xl:min-h-[280px] xl:grid-cols-2">
+          <div className="relative min-h-[210px] overflow-visible xl:min-h-[280px]">
             <div className="absolute inset-0 overflow-hidden">
               {imageUrl && !imageFailed ? (
                 <img
@@ -70,7 +70,7 @@ export default function NextEventFeature({
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/10" />
             </div>
-            <div className="absolute -bottom-3 right-3 z-10 rounded-lg bg-[linear-gradient(145deg,#4285f4_0%,#4285f4_28%,#ea4335_28%,#ea4335_52%,#fbbc04_52%,#fbbc04_76%,#34a853_76%)] p-[2px] shadow-lg xl:-right-3 xl:bottom-5">
+            <div className="absolute -bottom-3 right-3 z-10 rounded-lg bg-[linear-gradient(145deg,#4285f4_0%,#4285f4_28%,#ea4335_28%,#ea4335_52%,#fbbc04_52%,#fbbc04_76%,#34a853_76%)] p-[2px] shadow-lg xl:-right-0 xl:bottom-5">
               <div className="flex h-[76px] w-[72px] flex-col items-center justify-center rounded-[6px] bg-[#10141d]">
                 <span className="text-[8px] font-bold tracking-[.12em] text-white/65">{event.date.toDate().toLocaleDateString(undefined, { weekday: "short" }).toUpperCase()}</span>
                 <span className="font-display text-[34px] leading-none">{event.date.toDate().toLocaleDateString(undefined, { day: "2-digit" })}</span>
