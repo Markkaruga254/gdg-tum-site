@@ -9,6 +9,10 @@ const space = Space_Grotesk({ subsets: ["latin"], variable: "--font-space" });
 export const metadata: Metadata = {
   title: "GDG on Campus TUM",
   description: "GDG on Campus Technical University of Mombasa",
+  icons: {
+    icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/favicon.ico", sizes: "16x16 32x32 48x48" }],
+    shortcut: "/favicon.ico",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
