@@ -1,8 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" role="img" aria-labelledby="title">
-  <title id="title">GDG TUM monogram</title>
-  <rect x="6" y="6" width="168" height="168" rx="36" fill="#fff" stroke="#202124" stroke-width="3"/>
-  <path d="M47 132V48L90 91" fill="none" stroke="#4285F4" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M90 91l43-43v84" fill="none" stroke="#EA4335" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="90" cy="91" r="12" fill="#FBBC04" stroke="#fff" stroke-width="4"/>
-  <circle cx="133" cy="132" r="10" fill="#34A853" stroke="#fff" stroke-width="4"/>
+  <title id="title">GDG TUM insignia</title>
+  <rect x="5" y="5" width="170" height="170" rx="30" fill="#111111"/>
+  <path d="M48 48h84v84" fill="none" stroke="#F5F1E8" stroke-width="13" stroke-linecap="square" stroke-linejoin="miter"/>
+  <path d="M48 132V48l42 42 42-42" fill="none" stroke="#F5F1E8" stroke-width="13" stroke-linecap="square" stroke-linejoin="miter"/>
+  <path d="M90 90v42" fill="none" stroke="#1967D2" stroke-width="13" stroke-linecap="square"/>
+  <rect x="38" y="38" width="20" height="20" fill="#1967D2"/>
+  <rect x="122" y="122" width="20" height="20" fill="#F5F1E8"/>
 </svg>
