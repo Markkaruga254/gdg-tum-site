@@ -35,3 +35,122 @@ select:disabled,
 textarea:disabled {
   cursor: not-allowed;
 }
+
+/* The active event strip borrows the continuous editorial marquee rhythm
+   without changing the Firestore-powered live-update workflow. */
+.ticker-bar {
+  overflow: hidden;
+  width: 100%;
+  background: var(--color-ink);
+  color: #fff;
+}
+
+.ticker-bar__inner {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+}
+
+.ticker-bar__badge {
+  flex: 0 0 auto;
+  background: var(--color-green);
+  color: var(--color-ink);
+  padding: 4px 9px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.ticker-marquee {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.ticker-marquee__track {
+  display: flex;
+  width: max-content;
+  animation: gdg-ticker-scroll 34s linear infinite;
+  will-change: transform;
+}
+
+.ticker-marquee__group {
+  display: flex;
+  width: max-content;
+  min-width: max(100vw, 80rem);
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(20px, 3vw, 44px);
+  padding-right: clamp(20px, 3vw, 44px);
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.075em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.ticker-marquee__message,
+.ticker-marquee__item {
+  flex: 0 0 auto;
+}
+
+.ticker-marquee__separator {
+  flex: 0 0 auto;
+  color: var(--color-yellow);
+  font-size: 9px;
+  line-height: 1;
+}
+
+.ticker-marquee:hover .ticker-marquee__track {
+  animation-play-state: paused;
+}
+
+@keyframes gdg-ticker-scroll {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (min-width: 640px) {
+  .ticker-bar__inner {
+    gap: 20px;
+    padding-right: 22px;
+    padding-left: 22px;
+  }
+
+  .ticker-marquee__group {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-marquee__track {
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
+
+  .ticker-marquee__group:nth-child(2) {
+    display: none;
+  }
+
+  .ticker-marquee__group:first-child {
+    width: auto;
+    min-width: 0;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 10px 16px;
+    padding-right: 0;
+    white-space: normal;
+  }
+}
