@@ -159,7 +159,7 @@ export default function Home() {
         )}
 
         {/* Hero + next event + stats */}
-        <section className="grid grid-cols-[repeat(auto-fit,minmax(340px,1fr))] border-b-[3px] border-ink">
+        <section data-testid="homepage-hero" className="grid grid-cols-[repeat(auto-fit,minmax(340px,1fr))] border-b-[3px] border-ink">
           <div className="border-b-[3px] border-ink px-[20px] py-[28px] xl:border-b-0 xl:border-r-[3px] xl:px-[40px] xl:py-[44px]">
             <h1 className="font-display font-normal text-[72px] leading-[.92] uppercase xl:text-[clamp(64px,9vw,128px)]">
               Build.<br />
@@ -176,16 +176,15 @@ export default function Home() {
               Explore tracks ↗
             </a>
           </div>
-          <div className="flex items-end">
-            <div className="grid w-full grid-cols-3">
+          <div className="flex flex-col">
+            <NextEventFeature event={nextEvent} imageUrl={nextEventImage} loading={loading} />
+            <div className="grid grid-cols-3">
               <StatBlock value={held} label="Events held" />
               <StatBlock value={writeupCount} label="Writeups" />
               <StatBlock value={tracks.length} label="Tracks" />
             </div>
           </div>
         </section>
-
-        <NextEventFeature event={nextEvent} imageUrl={nextEventImage} loading={loading} />
 
         {/* Latest writeups */}
         <section id="writeups" className="border-b-[3px] border-ink">
