@@ -10,7 +10,8 @@ export default function MediaTab({ mediaList, mediaUploading, mediaUploadProgres
                   <h2 className="font-display text-2xl uppercase">Media</h2>
                   <p className="mt-2 text-sm">Only upload photos where people have agreed to be shown.</p>
                   <p className="mt-1 text-xs">Media is attached to the writeup currently selected in &quot;New writeup&quot;. Save a draft or select an existing writeup before uploading.</p>
-                  <label htmlFor="writeup-media-upload" className="mt-[16px] block text-[11px] font-bold uppercase">Upload photo (JPEG, PNG or WebP · max 5 MB)</label>
+                  <label htmlFor="writeup-media-upload" className={`mt-[16px] inline-flex cursor-pointer items-center border-[3px] border-ink bg-yellow px-[16px] py-[12px] text-[11px] font-bold uppercase hover:bg-[#f2c900] focus-within:outline focus-within:outline-2 focus-within:outline-blue ${!editingWriteup?.id || mediaUploading ? "cursor-not-allowed opacity-50" : ""}`}>＋ Upload photo</label>
+                  <p className="mt-2 text-[11px]">JPEG, PNG or WebP · maximum 5 MB</p>
                   <input id="writeup-media-upload" type="file" accept="image/jpeg,image/png,image/webp" disabled={!editingWriteup?.id || mediaUploading} onChange={async (e) => {
                     const f = e.target.files?.[0]; if (!f) return;
                     if (f.size > 5 * 1024 * 1024) { setErr("File too large (max 5MB)"); e.target.value = ""; return; }
@@ -31,7 +32,7 @@ export default function MediaTab({ mediaList, mediaUploading, mediaUploadProgres
                       await loadMedia(wid);
                     } catch (er: any) { setErr(er?.message || "Upload failed"); }
                     finally { setMediaUploading(false); e.target.value = ""; }
-                  }} className="mt-4 disabled:opacity-50" />
+                  }} className="sr-only" />
                   {mediaUploading && (
                     <div className="mt-[12px]" aria-live="polite">
                       <div className="mb-[6px] flex justify-between text-[11px] font-bold uppercase"><span>Uploading photo</span><span>{mediaUploadProgress}%</span></div>

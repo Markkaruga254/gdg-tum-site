@@ -118,9 +118,9 @@ export function TickerTab({ uid, role, events, track, setMsg, setErr }: any) {
     <div>
       <form onSubmit={save} className="grid gap-2 border-[3px] border-ink p-[16px]">
         <label htmlFor="ticker-event" className="text-[11px] font-bold uppercase">Event</label>
-        <select id="ticker-event" value={form.eventId} disabled={Boolean(editingId)} onChange={(event) => setForm({ ...form, eventId: event.target.value })} className="border-[3px] border-ink px-3 py-2 disabled:bg-[#f5f5f5]">
+        <select id="ticker-event" value={form.eventId} disabled={Boolean(editingId)} onChange={(event) => setForm({ ...form, eventId: event.target.value })} className="w-full cursor-pointer border-[3px] border-ink bg-white px-3 py-3 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue disabled:cursor-not-allowed disabled:bg-[#f5f5f5]">
           <option value="">Select event</option>
-          {events.map((event: any) => <option key={event.id} value={event.id}>{event.title}</option>)}
+          {allEvents.filter((event: any) => role === "admin" || event.trackId === track).map((event: any) => <option key={event.id} value={event.id}>{event.title}</option>)}
         </select>
         <label htmlFor="ticker-message" className="text-[11px] font-bold uppercase">Message</label>
         <input id="ticker-message" value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} maxLength={140} placeholder="Live update" className="border-[3px] border-ink px-3 py-2" />

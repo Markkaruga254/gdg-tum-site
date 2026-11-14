@@ -261,7 +261,7 @@ export default function DashboardPage() {
 
   async function saveWriteup(publish: boolean) {
     setErr(""); setMsg("");
-    if (!validateWriteup(publish)) return;
+    if (!validateWriteup(publish)) return false;
     setSaving(true);
     try {
       const ev = events.find((x) => x.id === wf.eventId);
@@ -306,7 +306,8 @@ export default function DashboardPage() {
         });
       }
       await loadWriteups();
-    } catch (e: any) { setErr(e?.message || "Save failed"); }
+      return Boolean(savedId);
+    } catch (e: any) { setErr(e?.message || "Save failed"); return false; }
     finally { setSaving(false); }
   }
 

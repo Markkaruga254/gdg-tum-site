@@ -10,6 +10,11 @@ const PRODUCT_TAGS = ["android", "firebase", "flutter", "gemini", "chrome", "goo
 
 export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, events, saveWriteup, saving, mediaList, aiPhotoIds, setAiPhotoIds, aiConsent, setAiConsent, setTab, writeupStep, setWriteupStep, topicTags, setTopicTags, productTags, setProductTags, generateDraft, aiGenerating, generateAiCaptions, aiCaptioning, aiCaptionSuggestions, applyAiCaption, aiDrafted, aiSourceNotes, setAiSourceNotes, aiServiceConfigured }: any) {
   const [aiServiceReady, setAiServiceReady] = useState(false);
+  const saveDraftAndOpenMedia = async () => {
+    if (editingWriteup?.id) { setTab("Media"); return; }
+    const saved = await saveWriteup(false);
+    if (saved) setTab("Media");
+  };
   const toggleTag = (tag: string, selected: string[], setter: (next: string[]) => void) => {
     setter(selected.includes(tag) ? selected.filter((item) => item !== tag) : [...selected, tag]);
   };
@@ -58,7 +63,7 @@ export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, eve
             <>
               <div className="border-[3px] border-dashed border-ink bg-white p-[20px] text-center">
                 <p className="text-[12px] font-bold uppercase">Photos, slides &amp; links</p>
-                <button type="button" onClick={() => setTab("Media")} className="mt-[7px] border-[3px] border-ink px-[14px] py-[12px] text-[11px] font-bold uppercase">Drop files here or browse ↗</button>
+                <button type="button" onClick={() => void saveDraftAndOpenMedia()} disabled={saving} aria-label="Upload photo" className="mt-[7px] border-[3px] border-ink bg-yellow px-[14px] py-[12px] text-[11px] font-bold uppercase disabled:opacity-50">{editingWriteup?.id ? "Upload photo ↗" : "Save draft & upload photo"}</button>
               </div>
               <button type="button" onClick={generateAiCaptions} disabled={!aiServiceReady || !editingWriteup?.id || !aiConsent || aiPhotoIds.length === 0 || aiCaptioning} className="justify-self-start border-[3px] border-ink bg-yellow px-[16px] py-[12px] text-[11px] font-bold uppercase disabled:opacity-50">{aiCaptioning ? "Generating captions…" : "Generate selected photo captions"}</button>
             {!editingWriteup?.id && <p className="text-[10px] leading-[1.5]">Save the writeup as a draft before generating captions.</p>}
@@ -98,13 +103,13 @@ export default function NewWriteupTab({ editingWriteup, wf, setWf, wfErrors, eve
                     </span>
                   </label>
                 ))}
-                <button type="button" onClick={() => setTab("Media")} className="flex aspect-[4/3] flex-col items-center justify-center border-[3px] border-dashed border-ink bg-white p-[10px] text-[11px] font-bold uppercase">+ Add photos</button>
+                <button type="button" onClick={() => void saveDraftAndOpenMedia()} disabled={saving} className="flex aspect-[4/3] flex-col items-center justify-center border-[3px] border-dashed border-ink bg-white p-[10px] text-[11px] font-bold uppercase">+ Add photos</button>
               </div>
             ) : (
               <div className="border-[3px] border-dashed border-ink bg-white p-[28px] text-center">
                 <p className="text-[12px] font-bold uppercase">No event photos attached yet</p>
                 <p className="mt-[8px] text-[11px] leading-[1.5]">Save a draft, then use the Media tab to upload event photos. Each photo stays opted out of AI processing unless you select it here.</p>
-                <button type="button" onClick={() => setTab("Media")} className="mt-[14px] border-[3px] border-ink px-[12px] py-[8px] text-[11px] font-bold uppercase">+ Add photos</button>
+                <button type="button" onClick={() => void saveDraftAndOpenMedia()} disabled={saving} aria-label="Upload photo" className="mt-[14px] border-[3px] border-ink bg-yellow px-[12px] py-[8px] text-[11px] font-bold uppercase disabled:opacity-50">{editingWriteup?.id ? "Upload photo" : "Save draft & upload photo"}</button>
               </div>
             )}
             <div className="border-[3px] border-ink bg-yellow p-[12px] text-[11px] font-bold leading-[1.5]">Only select photos of people who have agreed to their images being used for AI captioning.</div>
