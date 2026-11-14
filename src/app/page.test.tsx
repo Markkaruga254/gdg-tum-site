@@ -83,9 +83,9 @@ describe("Home page moments", () => {
 
     render(<Home />);
 
-    const rsvp = await screen.findByRole("button", { name: "RSVP (coming soon)" });
+    const rsvp = await screen.findByRole("button", { name: "RSVP opening soon" });
     expect(rsvp).toBeDisabled();
-    expect(rsvp).toHaveClass("text-ink");
+    expect(rsvp).toHaveClass("text-white");
   });
 
   it("renders a loading block while photos are loading without reading photos[0]", async () => {
