@@ -85,7 +85,8 @@ describe("Home page moments", () => {
 
     const rsvp = await screen.findByRole("button", { name: "RSVP opening soon" });
     expect(rsvp).toBeDisabled();
-    expect(rsvp).toHaveClass("text-ink");\n    expect(screen.getByTestId("homepage-hero")).toContainElement(rsvp);
+    expect(rsvp).toHaveClass("text-ink");
+    expect(screen.getByTestId("homepage-hero")).toContainElement(rsvp);
   });
 
   it("renders a loading block while photos are loading without reading photos[0]", async () => {
